@@ -500,6 +500,17 @@ Time line: first full version by **Sun 15 Nov 22:00 CET**; no new features after
 
 ## Requests to another lane
 
+- Sat 14 Nov 23:03 CET, Oleksandr (human, after trying the new design) -> team leader: **a first-use tutorial
+  or explanation is needed.** On first sight of the orange target it is not clear what to do.
+  Idea: a short guided intro (3-4 steps: "move here", "click the orange target", "switch on
+  demo tremor and compare the two cursors", "try another filter") or at least a one-line
+  instruction above the practice area. UI is the leader's lane.
+- Sat 14 Nov 23:03 CET, builder -> team leader: **I changed `web/app.js`** (bug fix, merged): Lower
+  sensitivity now retries Pointer Lock on every click (before, one refusal, e.g. clicking
+  within a second of pressing Esc in Chrome, disabled it for the whole session) and draws a
+  clear message in the middle of the practice area ("Click here to start Lower sensitivity" /
+  "This browser blocked the pointer lock"). Please pull before your next `web/app.js` edit.
+
 - Sat 14 Nov 22:30 CET, builder -> team leader: **tested the new design** (app's built-in browser, simulated
   movement, desktop and 375 px phone width). Works: all three tabs, filters, demo tremor and
   levels, meter and live graph, correction indicator, targets and hit bars, strength slider,

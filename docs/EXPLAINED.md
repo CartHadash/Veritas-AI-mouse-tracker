@@ -792,6 +792,11 @@ Checked in the app's browser pane with simulated movement: 200 px of hand moveme
 cursor 100 px, and pushing on reached the far edge (572 of 572 px) with no restart. The pane
 itself refuses Pointer Lock, which tested the fallback (normal pointer input, with a message);
 the real lock in Chrome and Safari still needs a check by hand.
+Later fix (after Oleksandr tried it): if the browser refused the lock once (Chrome refuses for
+about a second after Esc), the page used to give up for the whole session, so the grey dot
+(the real pointer) could leave the box before the cursor reached the edge. Now every click
+tries again, and a message in the middle of the area says to click to start, or that the
+browser blocked the lock (the app's built-in browser pane always does).
 
 ### The summary page (step 13)
 

@@ -36,7 +36,8 @@ let inside = false;                 // is the pointer inside the practice area?
 // only how far the hand moved, so the drawn cursor (half the hand's movement) is the only
 // cursor and can reach every part of the area. Esc or another filter releases it.
 let locked = false;
-let lockFailed = false;             // the browser refused: fall back to normal pointer input
+let lockRefusals = 0;               // refusals in a row (Chrome refuses for ~1 s after Esc; some
+                                    // browsers, like the app's built-in pane, always refuse)
 let hand = null;                    // while locked: the hand's position, added up from its movement
 let settings = { mode: "learned", strength: 1, demo_tremor: false, tracking: false };
 let threshold = 0.165;
@@ -195,20 +196,21 @@ area.addEventListener("pointerenter", () => { trail = []; send({ type: "reset" }
 
 document.addEventListener("pointerlockchange", () => {
   locked = document.pointerLockElement === area;
+  if (locked) lockRefusals = 0;
   inside = locked;
   trail = [];
   send({ type: "reset" });                // start the filter afresh where the pointer is
 });
 document.addEventListener("pointerlockerror", () => {
-  lockFailed = true;
-  setStatus("This browser would not lock the pointer; Lower sensitivity uses the normal pointer.");
+  // Not final: every new click in the area tries again (no more giving up for the session).
+  lockRefusals += 1;
 });
 
 // The server needs the practice area's size so "Lower sensitivity" stays inside it.
 function sendArea() { send({ type: "area", width: area.clientWidth, height: area.clientHeight }); }
 
 area.addEventListener("pointerdown", (event) => {
-  if (settings.mode === "low_sensitivity" && !locked && !lockFailed && area.requestPointerLock) {
+  if (settings.mode === "low_sensitivity" && !locked && area.requestPointerLock) {
     hand = areaPosition(event);           // start where the pointer is now
     // This click only starts the mode; it is not a target click. Newer browsers also report a
     // refusal as a failed promise: "pointerlockerror" below already handles it, so ignore that.
@@ -428,6 +430,26 @@ function drawTrail(xKey, yKey, rgb, width, now) {
   }
 }
 
+// "Lower sensitivity" works only with the pointer locked (see the top of this file). Until then,
+// a clear message in the middle of the area says what to do, or that the browser blocked it.
+function drawLockInvite() {
+  const w = area.clientWidth, h = area.clientHeight;
+  const blocked = lockRefusals >= 2;
+  const narrow = w < 440;                                   // a phone: shorter words
+  ctx.fillStyle = "rgba(255, 252, 247, 0.88)";
+  ctx.fillRect(0, h / 2 - 52, w, 104);
+  ctx.textAlign = "center";
+  ctx.fillStyle = INK;
+  ctx.font = '600 20px "Avenir Next", "Segoe UI", system-ui, sans-serif';
+  ctx.fillText(blocked ? (narrow ? "Pointer lock blocked" : "This browser blocked the pointer lock")
+                       : (narrow ? "Click to start" : "Click here to start Lower sensitivity"), w / 2, h / 2 - 8);
+  ctx.fillStyle = MUTED;
+  ctx.font = '500 15px "Avenir Next", "Segoe UI", system-ui, sans-serif';
+  ctx.fillText(blocked ? (narrow ? "Click to retry, or use Chrome" : "Lower sensitivity needs it. Click to try again, or use Chrome or Safari.")
+                       : (narrow ? "Esc gives the pointer back" : "Your pointer is then held in the box; press Esc to get it back."),
+               w / 2, h / 2 + 20);
+}
+
 function draw() {
   const now = performance.now();
   ctx.clearRect(0, 0, area.clientWidth, area.clientHeight);
@@ -446,12 +468,7 @@ function draw() {
     circle(target.x, target.y, 5, PAPER);
   }
   drawEffects(now);
-  if (settings.mode === "low_sensitivity" && !locked && !lockFailed) {
-    ctx.fillStyle = MUTED;
-    ctx.font = '600 17px "Avenir Next", "Segoe UI", system-ui, sans-serif';
-    ctx.textAlign = "center";
-    ctx.fillText("Lower sensitivity: click here to start (Esc to stop)", area.clientWidth / 2, 34);
-  }
+  if (settings.mode === "low_sensitivity" && !locked) drawLockInvite();
   if (inside && latest) {
     // Forget trail points older than TRAIL_MS, then draw the two lines.
     while (trail.length && now - trail[0].at > TRAIL_MS) trail.shift();
@@ -462,7 +479,7 @@ function draw() {
     if (!locked) circle(latest.raw_x, latest.raw_y, 9, "rgba(120, 108, 98, 0.45)");
     circle(shown.x, shown.y, 9, INK);                                      // corrected: solid
     circle(shown.x, shown.y, 3.5, PAPER);
-  } else {
+  } else if (!(settings.mode === "low_sensitivity" && !locked)) {   // (that mode has its own message)
     ctx.fillStyle = MUTED;
     ctx.font = '500 21px "Avenir Next", "Segoe UI", system-ui, sans-serif';
     ctx.textAlign = "center";
