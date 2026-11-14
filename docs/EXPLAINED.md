@@ -530,6 +530,16 @@ Full write-up: `evaluation/results/failures/failures.md` (charts in the same fol
   rhythm, the detector keeps the gate closed, so our system leaves it alone; One Euro smooths
   everything (and pays with 40 ms of lag everywhere else).
 
+## The results package (step 14)
+
+`evaluation/results/RESULTS.md` is the one place to read the results for the write-up: the main
+tables, per-group numbers with how many test people each group has, the data facts, the
+demo-page figures, where it fails, what did not work, the limits, and five plain sentences for
+a 30-second explanation. Every number in it was copied from a file a script generated, and
+`python evaluation/check_results.py` checks that: it fails if a number cannot be found in those
+files (it does not check that each number is quoted in the right place, so a human read is
+still needed). The dataset counts come from `python evaluation/data_facts.py`.
+
 ## The app
 
 ### The server (step 10)
