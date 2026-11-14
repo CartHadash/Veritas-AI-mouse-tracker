@@ -189,6 +189,14 @@ Newest entries go at the top of each list. Use local time and say who you are.
   demo tremor was on. Run with `python -m uvicorn server.main:app`; `GET /api/status` shows
   what loaded.
 
+- DONE (Sat 14 Nov, leader's Mac, leader's agent): second cross-machine check (step 8).
+  After `git pull` and `pip install -r requirements.txt` (`pip check` clean),
+  `python models/corrector/time_live.py` printed: "corrector only mean 0.077 ms, 99th
+  percentile 0.084 ms, worst 0.124 ms per update" and "corrector + detector gate mean
+  0.185 ms, 99th percentile 1.139 ms, worst 1.493 ms per update". Both models load here.
+  `python -m uvicorn server.main:app` serves the demo page in the browser; the trackpad
+  feel check (third check) is still to do by the leader by hand.
+
 - Builder -> team leader (Sat 14 Nov 15:00): **second cross-machine check (step 8).** On the
   demo Mac after `git pull` and `python -m pip install -r requirements.txt`, run
   `python models/corrector/time_live.py` and write both lines of output here. It loads
