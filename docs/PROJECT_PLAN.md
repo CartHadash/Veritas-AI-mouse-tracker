@@ -137,7 +137,8 @@ samples.
 The reply streams back as text. The assistant module offers
 `assistant.router` (a FastAPI router), which the server includes with one line. It also
 serves `GET /api/assistant/explain`, `GET /api/assistant/status` and
-`POST /api/assistant/delete-my-data`, and reads the live summary by calling the server's
+`GET /api/assistant/history` (earlier sessions saved on this laptop, newest first; example in
+`docs/contracts/history_example.json`), `POST /api/assistant/delete-my-data`, and reads the live summary by calling the server's
 `get_summary()` (so that name must stay).
 
 ## Timeline

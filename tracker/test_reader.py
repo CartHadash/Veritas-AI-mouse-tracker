@@ -55,7 +55,10 @@ def test_log_file_and_delete(monkeypatch, tmp_path):
     sample_log.write({"t": 0.01, "x": 1.0, "y": 2.0})
     sample_log.close()
     assert sample_log.path.read_text(encoding="utf-8") == "t,x,y\n0.0100,1.0,2.0\n"
-    assert log.delete_all_logs() == 1
+    sessions = tmp_path / "local_logs" / "sessions"            # saved session summaries
+    sessions.mkdir()
+    (sessions / "session_x.json").write_text("{}", encoding="utf-8")
+    assert log.delete_all_logs() == 2
     assert list((tmp_path / "local_logs").iterdir()) == []
 
 
