@@ -8,7 +8,7 @@ Newest entries go at the top of each list. Use local time and say who you are.
 
 | Lane | Working on | Branch | Blocked by |
 |---|---|---|---|
-| Builder | Steps 1-13 built (4, 9, 11 await human checks below) + full code review fixed. App = detector v2 + corrector v4. Next: step 14, results package | main | - |
+| Builder | IN PROGRESS: step 14, results package (evaluation/results/RESULTS.md). Steps 1-13 built | builder/results-package | - |
 | Team leader | B1 (whole-laptop tracker) DONE and merged. Next: B2, the assistant | - | - |
 | Writer | not started | - | - |
 
