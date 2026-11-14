@@ -41,7 +41,31 @@ exits with no error on the builder's Mac (Python 3.12.10).
 
 ## Where the data comes from
 
-(To be written by the builder's agent after steps 2-5.)
+### Looking at the data first (step 2)
+
+**What it does.** `data_pipeline/look_at_data.py` counts the people in the PADS dataset and
+draws two known tremor recordings: the signal over time, a 3-second zoom, and its
+**frequency spectrum**. A spectrum answers "how much of this movement repeats at each speed?";
+a tremor is one tall, narrow peak between 3 and 12 repetitions per second (Hz).
+
+**Why.** Before training anything we check the data is complete and really contains tremor.
+If a file were missing or read wrongly, every later number would be wrong without us noticing.
+
+**What we found** (output of `python data_pipeline/look_at_data.py`):
+
+- PADS has 469 people: 276 Parkinson's, 79 healthy, 60 other movement disorders, 28 essential
+  tremor, 15 atypical Parkinsonism, 11 multiple sclerosis.
+- By age: 161 under 60, 149 aged 60-69, 159 aged 70 and over. By sex: 281 male, 188 female.
+- PADS subject 060 (Parkinson's, right wrist, resting): a peak at 4.30 Hz, with 99% of the
+  movement in the 3-12 Hz band.
+- TremorDB recording `rofh/s6rof.let` (fingertip at rest, treatment off): a peak at 4.88 Hz,
+  98% in 3-12 Hz, plus a smaller second peak near 10 Hz (an echo of the first, called a harmonic).
+
+**How we know it works.** The counts and both peaks match the numbers published for these
+datasets (written in `docs/DATASETS.md` before the hackathon). The charts are in
+`evaluation/results/figures/`: the zoom shows a regular wave of about 4-5 beats per second.
+
+Note: the PADS chart and spectrum use the one gyroscope axis with the most movement.
 
 ## The baselines
 
