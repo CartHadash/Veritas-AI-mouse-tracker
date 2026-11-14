@@ -22,7 +22,7 @@ from synthetic_paths import KIND_NAMES, RATE, SCREEN_H, SCREEN_W, device_view, g
 ROOT = Path(__file__).resolve().parents[1]
 OUT = ROOT / "web" / "path_check_paths.json"
 PER_VERSION = 6
-SEED = 2026
+SEED = 2027               # round 2 (version 2); round 1 used 2026 (version 1)
 
 
 def main():

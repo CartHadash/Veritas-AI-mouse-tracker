@@ -183,7 +183,22 @@ number are unchanged. Whether to retrain on it is decided after the team's blind
 `data_pipeline/make_path_check.py`) replays 6 paths from each version, shuffled, at real
 speed; each teammate rates them 1-5 without knowing the version and ticks what looks wrong.
 This turns step 4's "a human finds the paths plausible" into something repeatable. Only the
-clean movement is shown (no tremor). Results: not in yet.
+clean movement is shown (no tremor).
+
+**Round 1 (Timofey, `evaluation/results/path_check_ratings_1.md`).** Current generator 2.3 / 5,
+realistic version 1 only 1.5 / 5: "too straight" on all 6 of its paths and "too smooth /
+robotic" on 11 of all 12. So rounding to pixels and uneven timing are not what makes movement
+look human; natural imperfection is. Version 1 also peaked faster (it looked like jumps), and
+both versions had many deliberate look-alikes (wiggles, circles), which looked odd.
+
+**Realistic version 2.** Reaches curve and wobble slowly sideways, their speed is a little
+uneven, and the small corrective movement starts before the main one has stopped, so they
+blend. Reaches are slower (Fitts's law with a larger slope). A held hand settles by a pixel or
+so and sometimes makes a tiny adjustment; drifts wander; text selection sweeps unevenly and
+sometimes drops to the next line; look-alikes are rarer (12.5% of the time instead of about
+28%). Every wobble is slower than 2 per second, far below the 3-12 Hz tremor band, so it
+cannot be mistaken for tremor. The original generator is still unchanged (identical paths).
+Round 2 of the blind check (seed 2027) compares version 2 with the original: results not in yet.
 
 ### Training, validation and test sets (step 5)
 
