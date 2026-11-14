@@ -12,8 +12,10 @@ with replayed tremor, at browser-like timing (about 60 uneven samples per second
   jerk      average change in velocity from one 10 ms step to the next (px): "jumpiness"
   lag       how far behind the hand the cursor runs while moving (ms; reaches and glide)
 
-Filters: no filter, One Euro (original settings), our model (the app's), and our model with
-One Euro smoothing on top, applied only as much as our detector's gate is open.
+Filters: no filter, One Euro (original settings), our model's network alone, and our model with
+One Euro smoothing on top, applied only as much as our detector's gate is open (option A; the
+app's "Our model" since Sat 14 Nov 23:30). Both versions of our model run through the app's own
+code (server.SMOOTH_OUTPUT switches the smoothing).
 
 Whose tremor (--people): val (default; development) or test (report once).
 Run from the repository folder (a few minutes):
@@ -32,12 +34,11 @@ ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT))
 import evaluation.compare_modes as cm  # noqa: E402
 import server.main as server  # noqa: E402
-from baselines.classical_filters import OneEuroFilter  # noqa: E402
 from evaluation.metrics import estimate_lag_ms, jerkiness, moving_mask  # noqa: E402
 
 RATE = 100
 BAND_B, BAND_A = butter(4, [3, 12], btype="bandpass", fs=RATE)   # for measuring only (not live)
-METHODS = ["No filter", "One Euro", "Our model", "Our model + One Euro"]
+METHODS = ["No filter", "One Euro", "Our network alone", "Our model + One Euro (the app)"]
 
 
 def even(positions, t):
@@ -57,11 +58,12 @@ def measure(out, path, t, moving):
     return result
 
 
-def gated_one_euro(ours, gate, t):
-    f = OneEuroFilter()
-    smooth = np.array([f.update(float(x), float(y), float(ti)) for (x, y), ti in zip(ours, t)])
-    g = np.nan_to_num(gate)[:, None]
-    return ours + g * (smooth - ours)
+def ours(t, path, level, smooth):
+    server.SMOOTH_OUTPUT["on"] = smooth
+    try:
+        return cm.run("learned", t, path, level=level)[0]
+    finally:
+        server.SMOOTH_OUTPUT["on"] = True
 
 
 def main():
@@ -85,9 +87,9 @@ def main():
             path = paths[name]
             none, _ = cm.run("none", t, path, level=level)
             euro, _ = cm.run("one_euro", t, path, level=level)
-            ours, gate = cm.run("learned", t, path, level=level)
-            outs = {"No filter": none, "One Euro": euro, "Our model": ours,
-                    "Our model + One Euro": gated_one_euro(ours, gate, t)}
+            outs = {"No filter": none, "One Euro": euro,
+                    "Our network alone": ours(t, path, level, smooth=False),
+                    "Our model + One Euro (the app)": ours(t, path, level, smooth=True)}
             for method, out in outs.items():
                 m = measure(out, path, t, moving=(name != "still"))
                 for k in totals[method]:

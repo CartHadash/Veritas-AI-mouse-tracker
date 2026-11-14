@@ -1,8 +1,8 @@
 # Where our models fail (step 9, updated for the final models)
 
 All examples and counts come from `python evaluation/find_failures.py` on **test** people, with
-the models the app uses: detector v2 (cut-off 0.155) and corrector v4 (smoothness penalty 2,
-the app's corrector since Sat 14 Nov 23:00) gated by detector v2. One Euro is our rewritten
+the models the app uses: detector v2 (cut-off 0.155) and corrector v5 (shake penalty 3, the
+app's network since Sun 15 Nov 00:30) gated by detector v2. One Euro is our rewritten
 filter, which follows the authors' reference code (`docs/REUSED_CODE.md`). Exact figures are in `failure_facts.md`, charts in this folder. The
 explanations are our interpretation after looking at each chart; they are labelled as such.
 
@@ -66,13 +66,13 @@ the others.
 ## Corrector: sequences where it does worse
 
 Our system is further from the intended path than the *better* of no filter and One Euro in
-415 of 930 test sequences, and in 43 of the 236 with marked tremor. This is a strict
+364 of 930 test sequences, and in 24 of the 236 with marked tremor. This is a strict
 comparison, because it takes whichever of the two was best for each sequence; on sequences
 without marked tremor the gate is mostly closed, so our output is close to the raw cursor.
 
 **Examples** (`corrector_worse_1.png`, `_2.png`): a Parkinson's patient's and a healthy
 person's action-task segment, neither marked as tremor, carrying 17 and 12.5 px of irregular
-3-12 Hz movement. Average distance to the intended path: ours 12.92 / 10.40 px, no filter
+3-12 Hz movement. Average distance to the intended path: ours 12.89 / 10.38 px, no filter
 13.02 / 10.70 px, One Euro 5.47 / 4.80 px.
 
 **Our explanation.** This movement is not a steady rhythm, so the detector keeps the gate
@@ -83,18 +83,18 @@ sequences without marked tremor it is far further from the path than ours: 8.28 
 
 ## Corrector on REAL marked tremor: when it makes things worse (step 9 addition)
 
-From `extras.md` (`python evaluation/failure_extras.py`): 19 of 236 test sequences with marked
-tremor end up further from the intended path with our system than with no filter: 7 of 47 with
-mild tremor, 10 of 88 medium, 2 of 101 strong.
+From `extras.md` (`python evaluation/failure_extras.py`): 12 of 236 test sequences with marked
+tremor end up further from the intended path with our system than with no filter: 6 of 47 with
+mild tremor, 6 of 88 medium, 0 of 101 strong.
 
 **Examples** (`corrector_worse_tremor_1.png`, `_2.png`): Parkinson's patients at rest, marked
-tremor of only 1.3 and 1.2 px, the detector's gate open (mean 0.83 and 0.88). Ours 4.45 / 4.19
+tremor of only 1.3 and 1.2 px, the detector's gate open (mean 0.83 and 0.88). Ours 4.62 / 4.04
 px from the path, no filter 1.18 / 1.16 px.
 
 **Our explanation (after looking at the charts).** The tremor is real but tiny, so the gate is
 rightly open. The error spikes (up to about 35 px) come during a fast, deliberate back-and-forth
 movement in the same window: the corrector mistakes part of that movement for tremor and
-subtracts it. It happens mostly with mild and medium tremor (2 of 101 strong-tremor sequences).
+subtracts it. It happens only with mild and medium tremor (0 of 101 strong-tremor sequences).
 A possible fix, not tried: cap the correction at a few times the tremor size the detector
 measures.
 
@@ -102,7 +102,7 @@ measures.
 
 **Uncertainty.** Redrawing the 72 test people with repeats 1000 times (`extras.md`): missed
 tremor windows 12.9% (95% range 9.7% to 18.4%), false alarms 27.1% (24.7% to 29.5%), tremor
-removed 86% (75% to 90%). The missed-cases range is the widest because only 35 test people
+removed 88% (78% to 91%). The missed-cases range is the widest because only 35 test people
 have tremor windows; another set of people could give a noticeably different number.
 
 **Failures per person** (`failures_per_person.png`). Missed windows are concentrated: 8 of the
@@ -111,13 +111,15 @@ spread out: it takes 25 of 72 people to cause half, and every person has at leas
 reading: misses depend on the person (some people's tremor is small or comes and goes), while
 false alarms come from movement that occurs for everyone (purposeful tasks, look-alikes).
 
-## The demo page's weak spot: a hand held still
+## The demo page's weak spot: a hand held still (fixed by the app's smoothing)
 
-`demo_still_hand.png` (medium replayed tremor of test people, server code): no filter 6.08 px
-from the hold point, One Euro 1.62 px, our model 4.07 px, with our correction more than half on
-92% of the time. When the hand is still, a smoothing filter has nothing to lag behind, so it is
-the best tool there; our corrector predicts and subtracts the tremor, which leaves a few pixels
-of error. Our advantage is during movement, where smoothing lags (`RESULTS.md`).
+`demo_still_hand.png` and `extras.md` (medium replayed tremor of test people, server code). With
+our network alone the still hand was its weak spot (One Euro was closer). Since the app adds
+One Euro smoothing switched by our detector (Sat 14 Nov, late), a still hand is held best by our
+model: no filter 6.08 px from the hold point, One Euro 1.62 px, our model 1.09 px, with our
+correction more than half on 92% of the time. The new weak spot is the other side: that
+smoothing lags behind a moving hand, so while reaching with mild or medium tremor our cursor is
+further from the path than no filter (`RESULTS.md`, "On the demo page").
 
 ## The patterns in one paragraph
 

@@ -29,6 +29,8 @@ from pathlib import Path
 import numpy as np
 
 ROOT = Path(__file__).resolve().parents[1]
+# The network these results were recorded with (the app's corrector then: v4, penalty 2).
+PINNED_WEIGHTS = ROOT / "models" / "corrector" / "weights_v4_s2.pt"
 sys.path.insert(0, str(ROOT))
 sys.path.insert(0, str(ROOT / "data_pipeline"))
 import build_dataset  # noqa: E402
@@ -74,7 +76,7 @@ def detector_numbers(detector, xy, labels):
 
 def corrector_numbers(detector, shaky, clean, tremor):
     gate = detector_gate(detector, shaky)[..., None]
-    ours = shaky + gate * corrector_offsets(load_corrector(WEIGHTS), shaky)
+    ours = shaky + gate * corrector_offsets(load_corrector(PINNED_WEIGHTS), shaky)
     out = {}
     for name, cursor in [("No filter", shaky), ("One Euro", run_filter(OneEuroFilter, shaky)), ("Our system", ours)]:
         out[name] = corrector_scores(cursor[tremor], clean[tremor], shaky[tremor], skip=SKIP)

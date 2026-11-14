@@ -15,8 +15,10 @@ for choosing any setting, unless a table says "validation".
    2.56 seconds) missed 12.9% of tremor windows with 27.1% false alarms on people it had never
    seen, where a simple frequency rule set to the same standard raised 59.0% false alarms.
 3. Our corrector (a small neural network that only uses past movement, switched on by the
-   detector) removed 86% of the tremor with no measurable delay, where the classic One Euro
-   filter removed 49% and trailed the hand by 20 ms.
+   detector) removed 88% of the tremor with no measurable delay, where the classic One Euro
+   filter removed 49% and trailed the hand by 20 ms; in the app it is combined with One Euro
+   smoothing, which leaves less visible shake than One Euro alone (2.56 vs 3.39 px) but lags
+   behind a moving hand like One Euro does.
 4. No public recordings of mouse movement from people with tremor exist, so we added real wrist
    and fingertip tremor from two public datasets (484 people) to computer-generated mouse
    movement, and split the data by person so test people never appeared in training.
@@ -111,8 +113,9 @@ every method; the correction is switched on and off by detector v2, as in the ap
 | One Euro + our detector switching it | 13.99 / 7.43 | 48% | 20 ms | - |
 | Our corrector v1 | 7.15 / 5.93 | 84% | 0 ms | 2.09 |
 | Our corrector v3 | 6.85 / 4.93 | 86% | 0 ms | 1.96 |
-| Our corrector v4, penalty 0.5 (the app's earlier choice) | 6.94 / 4.86 | 87% | 0 ms | 1.37 |
-| **Our corrector v4, penalty 2 (the app)** | **7.30 / 5.17** | **86%** | **0 ms** | **1.12** |
+| Our corrector v4, penalty 0.5 (first choice) | 6.94 / 4.86 | 87% | 0 ms | 1.37 |
+| Our corrector v4, penalty 2 (second choice) | 7.30 / 5.17 | 86% | 0 ms | 1.12 |
+| **Our corrector v5, shake penalty 3 (the app's network)** | **7.32 / 4.29** | **88%** | **0 ms** | **1.27** |
 
 Sources: `smoothness.md` (no filter, One Euro original, v1, v3, v4, jerkiness) and
 `corrector_v1_gate_v2.md` (the other baselines; jerkiness was not measured for them). The
@@ -120,11 +123,14 @@ Kalman filter is only in `baselines.md`, scored on slightly different samples (a
 Jerkiness = average size of the change in cursor velocity from one 10 ms step to the next.
 Penalty 2 replaced 0.5 after the team leader found the cursor still jittery by hand; it was
 chosen on validation by a rule fixed in advance (`smoother_output.md`): smoother, no lag, 5%
-further from the path while moving. One Euro's numbers are from our rewritten filter, which
-follows the authors' reference code (`docs/REUSED_CODE.md`).
+further from the path while moving. v5 was then trained with an extra penalty on visible shake
+(option B) and replaced it, chosen by a rule fixed before training on how the app looks with
+its smoothing (`option_b.md`). This table scores the network alone; in the app it is smoothed
+(see "On the demo page"). One Euro's numbers are from our rewritten filter, which follows the
+authors' reference code (`docs/REUSED_CODE.md`).
 
-On sequences without marked tremor (should be left alone): our v4 (penalty 2) is 1.91 px from
-the intended path, no filter 2.30 px, One Euro 8.28 px. By tremor size (v3, `improvements.md`): 8% of mild,
+On sequences without marked tremor (should be left alone): our v5 network is 1.83 px from the
+intended path, no filter 2.30 px, One Euro 8.28 px. By tremor size (v3, `improvements.md`): 8% of mild,
 50% of medium and 87% of strong tremor removed.
 
 **Why no lag?** A smoothing filter averages the past, so it trails behind. Our network predicts
@@ -132,27 +138,47 @@ where the steady tremor rhythm is right now from the last 0.64 s and subtracts i
 
 ## On the demo page (what judges see)
 
-Replayed tremor of test people, through the server's own code; our cursor compared with no
-filter (`demo_modes_test.md`, `python evaluation/compare_modes.py --people test`):
+**What the app's "Our model" is now (Sun 15 Nov):** the corrector network (v5), plus One Euro
+smoothing of its output, both switched on only as much as our detector says tremor is present
+(a steady hand is left exactly as it is). The team found the network alone looked jittery by
+eye; measuring what the eye sees confirmed it (below), so the smoothing was added.
 
-| Replayed tremor | Closer to the intended path: hand still / reaching | Jerkiness, no filter -> ours: still / reaching (px) |
+**As a person sees it** (`vs_one_euro_test.md`, `python evaluation/vs_one_euro.py --people test`):
+the demo page's own code, browser-like timing, test people's replayed tremor, averaged over
+mild/medium/strong tremor and reaching/gliding/still. Shake = leftover 3-12 Hz wobble (RMS);
+jerk = change in velocity per 10 ms step; distance = from the intended path (all px).
+
+| Method | Distance | Shake | Jerk |
+|---|---|---|---|
+| No filter | 6.60 | 7.91 | 1.00 |
+| One Euro | 5.23 | 3.39 | 0.30 |
+| Our network alone | 3.64 | 4.01 | 0.79 |
+| **Our model (network + gated One Euro; the app)** | **5.22** | **2.56** | **0.24** |
+
+The app's cursor shakes least and is least jumpy, and stays closer to the intended path than
+One Euro; the network alone is closest to the path but nearly as jumpy as no filter.
+
+**Still vs reaching** (`demo_modes_test.md`, `python evaluation/compare_modes.py --people test`;
+distance from the intended path, no filter / One Euro / the app, px):
+
+| Replayed tremor | Hand still | Reaching |
 |---|---|---|
-| Strong | 67% / 49% | 1.82 -> 0.92 / 1.94 -> 1.18 |
-| Medium | 33% / 19% | 0.91 -> 0.62 / 1.10 -> 0.91 |
-| Mild | 41% / 3% | 0.30 -> 0.15 / 0.60 -> 0.55 |
+| Strong | 13.12 / 4.16 / 0.97 (93% closer than no filter) | 13.12 / 9.87 / 9.74 (26% closer) |
+| Medium | 6.08 / 1.62 / 1.09 (82% closer) | 6.08 / 7.77 / 7.38 (21% further) |
+| Mild | 1.55 / 0.29 / 0.43 (73% closer) | 1.55 / 7.04 / 6.53 (320% further) |
 
-Honest weakness: for a hand held perfectly still, One Euro is closer (medium tremor 1.62 vs
-4.07 px; strong 4.16 vs 4.33 px) and smoother; our advantage is during movement (reaching
-with medium tremor: One Euro 7.77 px off the path, ours 4.90 px; strong: 9.87 vs 6.66 px).
+**Honest weakness:** the smoothing lags behind a moving hand like One Euro does, so while
+reaching with mild or medium tremor the app's cursor is further from the path than no filter
+(the network alone has no lag, but looked jittery). The detector switches the correction on for
+mild tremor too, so mild tremor while moving is the worst case.
 
 ## Click freeze (simulation)
 
 A click needs press and release on the target; tremor while the button is held can carry the
 cursor off. "Click freeze" holds the shown cursor still from press to release (at most 0.3 s).
 Simulated clicks (perfect aim, held 80-200 ms) on a 10 px target with strong replayed tremor of
-test people: no filter 24% land, 39% with freeze; our model 89%, 92% with freeze; One Euro
-88%, 92% (`click_freeze_test.md`, `python evaluation/click_sim.py --people test`). For a hand
-held still while clicking, our model and One Euro do equally well; freeze helps both a little.
+test people: no filter 24% land, 39% with freeze; our model (the app) 99%, 99% with freeze;
+One Euro 88%, 92% (`click_freeze_test.md`, `python evaluation/click_sim.py --people test`).
 
 ## Where it fails
 
@@ -164,8 +190,8 @@ Full write-up with charts: `failures/failures.md`. In short (`failures/failure_f
   strong, regular 5 Hz shake.
 - The corrector loses to One Euro on irregular shaking that the detector correctly does not call
   tremor, so the correction stays off.
-- On real marked tremor, 19 of 236 test sequences end up further from the path than with no
-  filter (7 of 47 mild, 10 of 88 medium, 2 of 101 strong): during a fast deliberate movement
+- On real marked tremor, 12 of 236 test sequences end up further from the path than with no
+  filter (6 of 47 mild, 6 of 88 medium, 0 of 101 strong): during a fast deliberate movement
   the corrector can subtract a large wrong offset (`failures/extras.md`, charts
   `corrector_worse_tremor_1.png` and `_2.png`).
 
@@ -178,7 +204,7 @@ range that holds 95% of the results (`failures/extras.md`, `python evaluation/fa
 |---|---|---|
 | Detector: missed tremor windows | 12.9% | 9.7% to 18.4% |
 | Detector: false alarms | 27.1% | 24.7% to 29.5% |
-| Corrector, marked tremor: tremor removed | 86% | 75% to 90% |
+| Corrector, marked tremor: tremor removed | 88% | 78% to 91% |
 
 The missed-cases range is wide because few test people have tremor. Missed windows are
 concentrated (8 people cause half of them); false alarms are spread out (25 people cause half).
@@ -197,7 +223,13 @@ concentrated (8 people cause half of them); false alarms are spread out (25 peop
 - Smoothness penalties: the first rule (`smoothness.md`) chose the weakest penalty (0.5) that
   is no jerkier than no filter; by hand it still looked jittery, so a second rule
   (`smoother_output.md`) chose penalty 2. Extra smoothing layers (One Euro or a short average
-  on our output) made the cursor smoother still but too far from the path while moving.
+  on our output) made the cursor smoother still but further from the path while moving, so
+  that rule rejected them. By eye the network alone still looked jittery, and measuring shake
+  and jumpiness (`vs_one_euro_val.md`) showed why, so the app now adds gated One Euro smoothing
+  (see "On the demo page"). Lesson: we first chose by distance from the path, which hid jitter.
+- Less lag by retuning that smoothing (`tune_lag.md`, validation): every setting with less lag
+  shook more (lag 67 -> 52 ms raised shake 2.98 -> 3.18 px and jerk 0.21 -> 0.25), beyond the limit fixed in
+  advance, so the settings were kept. Steadiness and lag are a trade-off here.
 - Our pre-hackathon One Euro filter did not follow the published algorithm and made One Euro
   look smoother and laggier than it is; the rewritten one follows the authors' reference code.
 - Detector v1 treated movement that never pauses as tremor (45.3% false alarms on pause-free
@@ -207,10 +239,14 @@ concentrated (8 people cause half of them); false alarms are spread out (25 peop
 - Our first demo looked weak and jumpy because of bugs in the live pipeline (a drifting 10 ms
   clock, replayed tremor skipping samples, a staircase at browser rates); found by testing the
   live path and a code review, and fixed. Offline scores could not see them.
-- For a perfectly still hand, a classic filter (One Euro) still beats our model.
-- A 10 s calibration test that picks the filter for each person (Godson's idea): on validation
-  people it did worse than always using our model (2.45 px off the path in later use; the
-  test's choice 3.40 px; the best possible choice 2.36 px, `calibration_val.md`). The page's
+- For a perfectly still hand, a classic filter (One Euro) beat our network alone; with the
+  app's smoothing, ours is now closer (medium tremor 1.09 vs 1.62 px, strong 0.97 vs 4.16 px,
+  `demo_modes_test.md`).
+- A 10 s calibration test that picks the filter for each person (Godson's idea): with the
+  network alone it did worse than always using our model, so the page's test only reports.
+  Re-run with the app's smoothed model (`calibration_val.md`, normal size): always our model
+  4.83 px off the path in later use, the test's choice 3.61 px, the best possible 2.46 px, so
+  per-person choice would now help; not switched on (no time to re-test it properly). The page's
   test now only reports each filter's distance; it never switches the filter.
 
 ## Limits to say out loud

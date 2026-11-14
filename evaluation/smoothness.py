@@ -35,7 +35,10 @@ DERIVED = ROOT / "data" / "derived"
 CORRECTOR = ROOT / "models" / "corrector"
 RESULT = ROOT / "evaluation" / "results" / "smoothness.md"
 CANDIDATES = [("v1", "weights.pt"), ("v3", "weights_v3.pt"), ("v4, S=0.5", "weights_v4_s0.5.pt"),
-              ("v4, S=2", "weights_v4_s2.pt"), ("v4, S=8", "weights_v4_s8.pt")]
+              ("v4, S=2", "weights_v4_s2.pt"), ("v4, S=8", "weights_v4_s8.pt"),
+              # Added Sun 15 Nov for reporting only (the rule below picks among v4 versions): the
+              # network the app uses now, chosen by evaluation/option_b.py.
+              ("v5, shake penalty 3 (the app's network)", "weights_v5_k3.pt")]
 
 
 def score_split(split):

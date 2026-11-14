@@ -123,6 +123,16 @@ python evaluation/check_results.py            # step 14: every number in RESULTS
 python evaluation/click_sim.py                # click freeze, validation people's tremor
 python evaluation/click_sim.py --people test  # click freeze, final figure (test people)
 python evaluation/calibration_sim.py          # calibration test, validation people (about 7 min)
+python evaluation/failure_extras.py           # step 9 additions (ranges, per person, more failures)
+python evaluation/smoother_output.py --test   # chose corrector v4 penalty 2 (still-jittery request)
+python evaluation/realism_stress.py           # step 4 stress test on realistic movement
+python evaluation/notch_canceller.py          # tremor-rhythm notch canceller (not kept)
+python evaluation/vs_one_euro.py              # our model vs One Euro as the eye sees it (val)
+python evaluation/vs_one_euro.py --people test
+python models/corrector/train.py --version v5_k1 --loss distance --smooth 2 --shake 1   # option B (~20 min)
+python models/corrector/train.py --version v5_k3 --loss distance --smooth 2 --shake 3   # the app's network
+python evaluation/option_b.py --test          # chose v5_k3 over option A
+python evaluation/tune_lag.py --test          # smoothing settings vs lag (kept as they were)
 ```
 
 For the pixel-factor check in `evaluate_detector.py` (detector v1), also run

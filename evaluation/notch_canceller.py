@@ -29,6 +29,8 @@ from pathlib import Path
 import numpy as np
 
 ROOT = Path(__file__).resolve().parents[1]
+# The network these results were recorded with (the app's corrector then: v4, penalty 2).
+PINNED_WEIGHTS = ROOT / "models" / "corrector" / "weights_v4_s2.pt"
 sys.path.insert(0, str(ROOT))
 from evaluation.evaluate_corrector import SKIP, corrector_offsets  # noqa: E402
 from evaluation.metrics import corrector_scores, jerkiness  # noqa: E402
@@ -86,7 +88,7 @@ def candidates(split, only=None):
     detector = Detector()
     gate, hz = gate_and_rhythm(detector, shaky)
     g = gate[..., None]
-    ours = shaky + g * corrector_offsets(load_corrector(WEIGHTS), shaky)
+    ours = shaky + g * corrector_offsets(load_corrector(PINNED_WEIGHTS), shaky)
     outs = {"No filter": shaky, CURRENT: ours}
     for q in QS:
         for base_name, base in [("Notch", shaky), ("Our corrector + notch", ours)]:
