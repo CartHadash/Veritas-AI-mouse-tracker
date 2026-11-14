@@ -8,9 +8,35 @@ Newest entries go at the top of each list. Use local time and say who you are.
 
 | Lane | Working on | Branch | Blocked by |
 |---|---|---|---|
-| Builder | Steps 1-15 built (4, 9, 11, 14, 15 await human or Mac checks) + click freeze + calibration test + step 4 path check. Next: team does the path check, then the saved step 4/9 questions | main | - |
+| Builder | Steps 1-15 built (4, 9, 11, 14, 15 await human or Mac checks) + click freeze + calibration test + step 4 path check. Next: see "Builder's plan" below | main | - |
 | Team leader | B1 (tracker) and B2 (assistant) DONE and merged. Next: Part A checks; B3 only if the leader decides | - | - |
 | Writer | not started | - | - |
+
+### Builder's plan: what is left (written Sat 14 Nov 20:03 CET; tick or delete lines as they finish)
+
+Time line: first full version by **Sun 15 Nov 22:00 CET**; no new features after about Sun
+20:00 CET; hard deadline Mon 16 Nov 05:59 CET.
+
+**1. Builder can do now (no one else needed), in this order:**
+- [ ] Bug: "Lower sensitivity" cursor offset (leader's request 20:30). Plan: Pointer Lock in
+      that mode (click the area to lock, Esc to leave), so the drawn cursor is the only one and
+      cannot leave the area. About 45 min.
+- [ ] Session history on the summary page (leader's request 21:00), plus saving the last
+      minute when "New session" is pressed. About 45 min.
+
+**2. Waiting for people (builder is blocked until then):**
+- [ ] Everyone: the step 4 path check (`web/path_check.html`, 5 min), reports in the group chat.
+      Then the builder asks the two saved questions below (step 4 rework scope, step 9 additions).
+- [ ] Oleksandr: read `evaluation/results/failures/failures.md` (step 9) and `RESULTS.md` (step 14).
+- [ ] Timofey: trackpad check on the demo Mac (step 11) and the fresh-clone test (step 15).
+- [ ] Timofey: answer the open question on rewriting the two pre-hackathon files.
+
+**3. After the answers (only if time allows; cut from the bottom up):**
+- [ ] Step 9 additions that the team picks (about 1 h).
+- [ ] Step 4: stress test the models on the realistic movement (about 1 h); retrain only if
+      they clearly drop (2-3 h more).
+- [ ] Timofey's idea 3, sticky targets (about 1 h).
+- [ ] Step 16, the desktop window (cut first).
 
 ## Done (newest first)
 
