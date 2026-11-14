@@ -163,6 +163,28 @@ and we say so: real people move in more varied ways than these six kinds of even
 paths and one speed curve: reaches are bell-shaped in speed, look-alikes are fast and jumpy.
 A fixed random seed means the same paths come out every time.
 
+**A review found five gaps (Sat 14 Nov evening).** Measured with the generator itself
+(`data_pipeline/synthetic_paths.py`, validation windows from step 5):
+1. a "still" hand is never still: the jitter makes it creep at a median 19.4 px/s, while a
+   real mouse held still sends nothing;
+2. real cursors move in whole pixels (half pixels on Retina screens); 6.7% of validation
+   tremor windows are under 1 px, which a real screen would partly erase;
+3. timing is a perfect 100 per second; browsers send about 60 uneven samples per second;
+4. reaches speed up and slow down symmetrically and ignore target size; real reaches brake
+   for longer, and small or far targets take longer (Fitts's law);
+5. no text selection or dragging in the normal mix.
+
+So there is now a **realistic version** (`generate_path(..., realistic=True)` plus
+`device_view()`) that fixes all five. It is opt-in: the old version still produces exactly
+the same paths (checked over 200 paths), so the datasets, the models and every reported
+number are unchanged. Whether to retrain on it is decided after the team's blind check.
+
+**The team's blind check.** `web/path_check.html` (paths made by
+`data_pipeline/make_path_check.py`) replays 6 paths from each version, shuffled, at real
+speed; each teammate rates them 1-5 without knowing the version and ticks what looks wrong.
+This turns step 4's "a human finds the paths plausible" into something repeatable. Only the
+clean movement is shown (no tremor). Results: not in yet.
+
 ### Training, validation and test sets (step 5)
 
 **What it does.** `data_pipeline/build_dataset.py` puts every person into exactly one of

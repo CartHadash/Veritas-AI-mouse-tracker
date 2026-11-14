@@ -17,6 +17,17 @@ What a generated path contains, chosen at random one after another:
 All positions are in pixels, 100 samples per second, on a 1920 x 1080 screen.
 Every path comes from a numpy random generator, so a fixed seed gives the same paths.
 
+REALISTIC VERSION (opt-in: generate_path(..., realistic=True), then device_view). Added after
+the step 4 review found gaps; the models were trained WITHOUT it, and it is not used for
+training until the team's path check (web/path_check.html) and a stress test say so:
+  - a reach's duration follows Fitts's law (a well-known rule of pointing: small or far
+    targets take longer) and it slows down for longer than it speeds up, as real reaches do;
+  - a hand held still is perfectly still (no fake jitter; a real mouse then sends nothing);
+  - two everyday movements: selecting text (a steady sideways line) and dragging (a glide);
+  - device_view(): what the computer actually receives - whole pixels (half pixels on a
+    Retina screen) at an uneven 60 or 125 samples per second - turned back into 100 per
+    second by straight lines between samples, as the app does (models/resample.py).
+
 Run from the repository folder to draw example paths:
     python data_pipeline/synthetic_paths.py
 """
@@ -33,8 +44,8 @@ SCREEN_W, SCREEN_H = 1920, 1080
 MARGIN = 60                     # keep targets this far from the screen edge
 
 # What each sample is part of (saved alongside the path, used later to describe windows).
-STILL, REACH, CORRECTION, DRIFT, WIGGLE, CIRCLE, ZIGZAG, GLIDE = range(8)
-KIND_NAMES = ["still", "reach", "correction", "drift", "wiggle", "circle", "zigzag", "glide"]
+STILL, REACH, CORRECTION, DRIFT, WIGGLE, CIRCLE, ZIGZAG, GLIDE, SELECT = range(9)
+KIND_NAMES = ["still", "reach", "correction", "drift", "wiggle", "circle", "zigzag", "glide", "select"]
 LOOKALIKES = (WIGGLE, CIRCLE, ZIGZAG)
 
 FIGURES = Path(__file__).resolve().parents[1] / "evaluation" / "results" / "figures"
@@ -46,10 +57,14 @@ def minimum_jerk(n):
     return 10 * s ** 3 - 15 * s ** 4 + 6 * s ** 5
 
 
-def move(start, end, seconds, curve=0.0):
-    """Smooth movement from start to end. curve bends the path sideways (0 = straight)."""
+def move(start, end, seconds, curve=0.0, early_peak=False):
+    """Smooth movement from start to end. curve bends the path sideways (0 = straight).
+    early_peak: reach top speed earlier and brake for longer (realistic version)."""
     n = max(2, int(round(seconds * RATE)))
-    s = minimum_jerk(n)[:, None]
+    if early_peak:
+        s = (10 * (u := np.linspace(0, 1, n) ** 0.8) ** 3 - 15 * u ** 4 + 6 * u ** 5)[:, None]
+    else:
+        s = minimum_jerk(n)[:, None]
     path = start + s * (end - start)
     direction = end - start
     sideways = np.array([-direction[1], direction[0]])        # perpendicular to the movement
@@ -81,6 +96,31 @@ def reach(rng, here):
     if miss:
         parts.append((move(landing, target, rng.uniform(0.15, 0.35)), CORRECTION))
     return parts
+
+
+def reach_realistic(rng, here):
+    """Realistic version of reach(). Duration from Fitts's law, T = 0.1 + 0.15 * log2(D/W + 1)
+    seconds for a target W px wide at distance D (typical values from pointing studies, our
+    choice), and a speed profile that peaks early and brakes for longer."""
+    target = random_target(rng, here)
+    distance = np.linalg.norm(target - here)
+    width = rng.uniform(10, 60)                          # target size, px
+    seconds = np.clip(0.1 + 0.15 * np.log2(distance / width + 1) + rng.normal(0, 0.05), 0.2, 1.5)
+    curve = rng.normal(0, 0.08)
+    miss = rng.random() < 0.6
+    landing = target + (rng.normal(0, 0.04 * distance, 2) if miss else 0)
+    parts = [(move(here, landing, seconds, curve, early_peak=True), REACH)]
+    if miss:
+        parts.append((move(landing, target, rng.uniform(0.15, 0.35), early_peak=True), CORRECTION))
+    return parts
+
+
+def select_text(rng, here):
+    """Selecting text: a steady sideways line, 100-400 px/s for 0.5-2 s."""
+    seconds, speed = rng.uniform(0.5, 2.0), rng.uniform(100, 400) * rng.choice([-1, 1])
+    t = np.arange(int(seconds * RATE)) / RATE
+    path = here + np.stack([speed * t, np.zeros_like(t)], axis=1)
+    return [(np.clip(path, MARGIN, [SCREEN_W - MARGIN, SCREEN_H - MARGIN]), SELECT)]
 
 
 def pause(rng, here):
@@ -145,13 +185,39 @@ EVENTS = [(reach, 0.40), (pause, 0.20), (drift, 0.12), (wiggle, 0.10), (circle, 
 # Step 12: movement that never pauses (reaches straight into glides and drifts).
 CONTINUOUS_EVENTS = [(reach, 0.40), (glide, 0.45), (drift, 0.15)]
 
+# Realistic version: realistic reaches, plus selecting text and dragging.
+REALISTIC_EVENTS = [(reach_realistic, 0.36), (pause, 0.18), (drift, 0.08), (select_text, 0.06),
+                    (glide, 0.06), (wiggle, 0.09), (circle, 0.08), (zigzag, 0.09)]
 
-def generate_path(rng, n_samples, jitter_px=None, events=EVENTS):
+
+def device_view(xy, rng, retina=None, rate=None):
+    """
+    What the computer receives from a 100-per-second path xy: positions rounded to whole
+    pixels (half pixels on a Retina screen) at an uneven 60 (browser) or 125 (mouse) samples
+    per second, then turned back into 100 per second by straight lines between the samples,
+    as the app's resampler does. Apply it to the CURSOR (movement + tremor), since the device
+    rounds whatever it shows.
+    """
+    retina = rng.random() < 0.5 if retina is None else retina
+    rate = rng.choice([60, 125]) if rate is None else rate
+    grid = np.arange(len(xy)) / RATE
+    times = np.cumsum(rng.uniform(0.6, 1.4, int(grid[-1] * rate) + 2) / rate) - 1 / rate
+    times = times[(times >= 0) & (times <= grid[-1])]
+    step = 0.5 if retina else 1.0
+    seen = np.stack([np.round(np.interp(times, grid, xy[:, k]) / step) * step for k in range(2)], axis=1)
+    return np.stack([np.interp(grid, times, seen[:, k]) for k in range(2)], axis=1).astype(np.float32)
+
+
+def generate_path(rng, n_samples, jitter_px=None, events=EVENTS, realistic=False):
     """
     One synthetic path of n_samples. Returns:
       xy   - (n_samples, 2) positions in pixels, float32
       kind - (n_samples,) what each sample is part of (STILL, REACH, ... see top of file)
+    realistic=True uses REALISTIC_EVENTS and no jitter (a still hand stays still); use
+    device_view() afterwards for whole pixels and uneven timing.
     """
+    if realistic:
+        events, jitter_px = REALISTIC_EVENTS, 0.0
     functions = [f for f, _ in events]
     weights = np.array([w for _, w in events])
     here = np.array([rng.uniform(MARGIN, SCREEN_W - MARGIN), rng.uniform(MARGIN, SCREEN_H - MARGIN)])
@@ -168,7 +234,8 @@ def generate_path(rng, n_samples, jitter_px=None, events=EVENTS):
     # Sensor jitter: tiny random noise, a different amount for each path (0-0.3 px).
     if jitter_px is None:
         jitter_px = rng.uniform(0, 0.3)
-    xy = xy + rng.normal(0, jitter_px, xy.shape)
+    if jitter_px > 0:
+        xy = xy + rng.normal(0, jitter_px, xy.shape)
     return xy.astype(np.float32), kind.astype(np.int8)
 
 

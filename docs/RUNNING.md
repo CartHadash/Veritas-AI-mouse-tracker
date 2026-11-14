@@ -37,6 +37,14 @@ python server/test_ws.py
 
 It sends 500 pointer samples in each filter mode and prints the reply time.
 
+### The step 4 path check (any teammate, about 5 minutes)
+
+With the app running, open http://127.0.0.1:8000/path_check.html . It replays 12
+computer-generated mouse paths (10 s each) and asks how much each looks like a real person
+using a mouse (1-5) and what looks wrong. Half come from the generator the models were
+trained on, half from a more realistic version; you are told which only at the end. Copy the
+report at the end into the group chat. Nothing is saved or sent anywhere.
+
 ### Check the whole-laptop tracker (team leader's lane, macOS only)
 
 ```bash
@@ -128,6 +136,9 @@ Check the server (second PowerShell window, after activating):
 ```powershell
 python server\test_ws.py
 ```
+
+The step 4 path check works the same way on Windows: open
+http://127.0.0.1:8000/path_check.html (instructions in the macOS section).
 
 ### Rebuild the data and re-score everything (optional)
 

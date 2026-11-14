@@ -8,11 +8,18 @@ Newest entries go at the top of each list. Use local time and say who you are.
 
 | Lane | Working on | Branch | Blocked by |
 |---|---|---|---|
-| Builder | Steps 1-15 built (4, 9, 11, 14, 15 await human or Mac checks) + click freeze + calibration test. Next: waiting for the team | main | - |
+| Builder | Steps 1-15 built (4, 9, 11, 14, 15 await human or Mac checks) + click freeze + calibration test + step 4 path check. Next: team does the path check, then the saved step 4/9 questions | main | - |
 | Team leader | B1 (tracker) and B2 (assistant) DONE and merged. Next: Part A checks; B3 only if the leader decides | - | - |
 | Writer | not started | - | - |
 
 ## Done (newest first)
+
+- Sat 14 Nov 19:59 CET, builder's agent: step 4 review. Found five realism gaps in the generated movement
+  (still hand creeps at a median 19.4 px/s; no whole pixels, 6.7% of validation tremor
+  windows under 1 px; perfect 100 Hz timing; symmetric reaches that ignore target size; no
+  text selection or dragging). Added an opt-in realistic version (`realistic=True`,
+  `device_view()`); the original is unchanged (identical paths), so no data, model or number
+  changed. Added the blind team test `web/path_check.html` (`data_pipeline/make_path_check.py`).
 
 - Sat 14 Nov 20:00 CET, team leader's agent: assistant v3 (leader's requests): key details
   highlighted, simpler and shorter wording, and follow-up questions after every answer that
@@ -304,6 +311,10 @@ Newest entries go at the top of each list. Use local time and say who you are.
 
 ## Requests to another lane
 
+- Sat 14 Nov 19:59 CET, builder -> everyone (Timofey, Godson, Oleksandr): please do the step 4 path check
+  (about 5 min): `git pull`, run the app, open http://127.0.0.1:8000/path_check.html, rate the
+  12 paths, and paste the report at the end into the group chat.
+
 - Team leader -> builder (Sat 14 Nov 20:00): **one line in `web/app.js`, please:** in
   `loadAssistant()`, use `script.src = "assistant/assistant.js?v=" + Date.now();`. Browsers
   kept an OLD cached copy of the assistant panel after an update (it then showed raw `**`
@@ -441,6 +452,14 @@ Newest entries go at the top of each list. Use local time and say who you are.
 - DONE (Sat 14 Nov, leader's Mac): builder's first cross-machine check. See "Done".
 
 ## Questions waiting for the team leader
+
+- Sat 14 Nov 20:20, from the builder (to ask AFTER the team's step 4 path check,
+  `web/path_check.html`): (1) step 4 rework scope: A) stress test first: measure the current
+  models on the realistic movement (validation people), retrain only if they clearly drop
+  (recommended); B) full rework now: rebuild, retrain, re-run everything (2-3 h, every number
+  changes); C) only fix the chart and docs. (2) step 9 additions (any): per-person
+  uncertainty ranges; failures per person; a corrector failure on real marked tremor; the
+  live still-hand weak spot.
 
 - Sat 14 Nov 14:10, from the builder: rewrite `scripts/download_data.py` and
   `baselines/classical_filters.py` from scratch to remove any rule-2 risk? Builder's agent
