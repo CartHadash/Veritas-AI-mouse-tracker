@@ -8,7 +8,7 @@ Newest entries go at the top of each list. Use local time and say who you are.
 
 | Lane | Working on | Branch | Blocked by |
 |---|---|---|---|
-| Builder | Steps 1-14 built (4, 9, 11, 14 await human checks below). Next: step 15, fresh-clone test | main | Human reads/checks |
+| Builder | IN PROGRESS: step 15, fresh-clone test. Steps 1-14 built (4, 9, 11, 14 await human checks) | main | - |
 | Team leader | B1 (whole-laptop tracker) DONE and merged. Next: B2, the assistant | - | - |
 | Writer | not started | - | - |
 
