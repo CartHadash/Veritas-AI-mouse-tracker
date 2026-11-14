@@ -95,6 +95,7 @@ python evaluation/data_facts.py               # step 14: dataset counts
 python evaluation/check_results.py            # step 14: every number in RESULTS.md is sourced
 python evaluation/click_sim.py                # click freeze, validation people's tremor
 python evaluation/click_sim.py --people test  # click freeze, final figure (test people)
+python evaluation/calibration_sim.py          # calibration test, validation people (about 7 min)
 ```
 
 For the pixel-factor check in `evaluate_detector.py` (detector v1), also run

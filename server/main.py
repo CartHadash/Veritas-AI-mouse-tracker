@@ -16,6 +16,12 @@ What it offers:
                      server replies with the corrected position, the detector's tremor score,
                      and the estimated size and frequency. The page can also send
                      {"type": "click", "hit": true/false} and {"type": "reset"}.
+                     Calibration test (Godson's idea): {"type": "calibrate_start"}, then
+                     samples carrying "dot_x"/"dot_y", then {"type": "calibrate_end"}; the
+                     server tries every filter in CANDIDATES on the recorded test and replies
+                     {"type": "calibration", ...} with each one's distance from the dot. It
+                     does not switch the filter (see calibration_val.md). Kept in memory only.
+                     {"type": "calibrate_cancel"} drops the test.
   GET  /api/summary  the session summary, exactly as Contract 2 in docs/PROJECT_PLAN.md
   GET  /api/settings and POST /api/settings: filter mode, strength, demo tremor, tracking
   GET  /api/status   which optional parts (leader's tracker and assistant) are loaded
@@ -27,6 +33,7 @@ in /api/status.
 This project is a prototype and is not medical advice.
 """
 
+import asyncio
 import json
 import math
 import sys
@@ -74,6 +81,9 @@ async def only_local_pages(request: Request, call_next):
 
 settings = {"mode": "learned", "strength": 1.0, "demo_tremor": False, "demo_level": "medium", "tracking": False}
 DEMO_LEVELS = ["mild", "medium", "strong"]
+# The filters the calibration test tries on the user's own movement: (mode, strength).
+CANDIDATES = [("none", 1.0), ("one_euro", 1.0), ("learned", 0.5), ("learned", 1.0)]
+CANDIDATE_NAMES = ["No filter", "One Euro", "Our model (half strength)", "Our model"]
 status = {}
 LOCAL_HOSTS = {"127.0.0.1", "localhost"}
 
@@ -225,23 +235,33 @@ class LowSensitivity:
 
 
 class CursorSession:
-    """One open demo page: its filter, its detector and its demo tremor."""
+    """One open demo page: its filter, its detector and its demo tremor.
 
-    def __init__(self, stats):
+    fixed: None (normal use) follows the shared settings. A settings dict instead gives a
+    session of its own for replaying recorded samples (the calibration test); it runs the
+    detector in line and never touches the live settings."""
+
+    def __init__(self, stats, fixed=None):
         self.stats = stats
-        self.detector = LiveDetector(DETECTOR)
+        self.fixed = fixed
+        self.detector = LiveDetector(DETECTOR, background=fixed is None)
         self.demo = None
         self.area = None
+        self.calibration = None       # while a calibration test runs: [(t, x, y, dot_x, dot_y)]
         self.build()
+
+    def conf(self):
+        return settings if self.fixed is None else self.fixed
 
     def build(self):
         """(Re)create the filter. Only needed when the mode or the demo level changes, so
         moving the strength slider does not throw away the detector's 2.56 s of history."""
-        self.key = (settings["mode"], settings["demo_level"])
-        self.mode = settings["mode"]
-        self.strength = float(settings["strength"])
-        if self.demo is None or self.demo.info[0]["level"] != settings["demo_level"]:
-            self.demo = DemoTremor(settings["demo_level"])
+        conf = self.conf()
+        self.key = (conf["mode"], conf["demo_level"])
+        self.mode = conf["mode"]
+        self.strength = float(conf["strength"])
+        if self.demo is None or self.demo.info[0]["level"] != conf["demo_level"]:
+            self.demo = DemoTremor(conf["demo_level"])
         self.detector.reset()
         if self.mode == "learned":
             self.filter = LiveCorrector(live_detector=self.detector, strength=self.strength, model=CORRECTOR_MODEL)
@@ -259,17 +279,20 @@ class CursorSession:
         if isinstance(self.filter, LowSensitivity):
             self.filter.area = self.area
 
-    def update(self, t, x, y):
-        if self.key != (settings["mode"], settings["demo_level"]):
+    def update(self, t, x, y, dot=None):
+        conf = self.conf()
+        if self.key != (conf["mode"], conf["demo_level"]):
             self.build()
-        self.strength = float(settings["strength"])      # strength changes apply immediately
+        self.strength = float(conf["strength"])          # strength changes apply immediately
         if self.mode == "learned":
             self.filter.strength = self.strength
         demo_info = None
-        if settings["demo_tremor"]:
+        if conf["demo_tremor"]:
             dx, dy, demo_info = self.demo.offset(t)
             x, y = x + dx, y + dy
             self.stats.demo_used = True
+        if self.calibration is not None and dot is not None:
+            self.calibration.append((t, x, y, dot[0], dot[1]))   # what the hand did (+ demo tremor)
 
         if self.mode == "learned":
             cx, cy = self.filter.update(x, y, t)            # also feeds the detector
@@ -289,6 +312,52 @@ class CursorSession:
                 "size_px": None if result is None else round(result["size_px"], 2),
                 "frequency_hz": None if result is None else round(result["frequency_hz"], 2),
                 "demo": demo_info}
+
+
+# ---------------------------------------------------------------- calibration test (Godson's idea)
+
+CALIBRATION_SKIP = 2.56       # s; score after the detector's first full window (as the evaluations do)
+CALIBRATION_MIN_SECONDS = 8.0  # a shorter test (pointer left the area, ...) is not scored
+
+
+def replay(mode, strength, samples):
+    """Run recorded samples [(t, x, y), ...] through a fresh session with one filter, in line.
+    Returns the server's replies (shown cursor, detector result) for every sample."""
+    session = CursorSession(SessionStats(), fixed={"mode": mode, "strength": strength,
+                                                   "demo_tremor": False, "demo_level": settings["demo_level"]})
+    return [session.update(t, x, y) for t, x, y in samples]
+
+
+def score_calibration(record):
+    """
+    record: [(t, x, y, dot_x, dot_y), ...] from the calibration test (x, y include demo tremor).
+    Tries every filter in CANDIDATES on it and returns each one's distance from the dot, the
+    closest one, and what was measured. Kept in memory only (decision L1).
+    """
+    rows = np.array(record, float)
+    t, xy, dot = rows[:, 0], rows[:, 1:3], rows[:, 3:5]
+    seconds = float(t[-1] - t[0])
+    if seconds < CALIBRATION_MIN_SECONDS:
+        return {"ok": False, "message": "The test was too short (%.1f s). Keep the pointer in the area "
+                "until the dot stops." % seconds}
+    keep = t - t[0] >= CALIBRATION_SKIP
+    distances, results = [], None
+    for mode, strength in CANDIDATES:
+        replies = replay(mode, strength, list(zip(t, xy[:, 0], xy[:, 1])))
+        shown = np.array([[r["x"], r["y"]] for r in replies])
+        distances.append(float(np.linalg.norm(shown[keep] - dot[keep], axis=1).mean()))
+        if (mode, strength) == ("learned", 1.0):
+            results = [r for r, k in zip(replies, keep) if k and r["score"] is not None]
+    best = int(np.argmin(distances))
+    return {
+        "ok": True,
+        "chosen": CANDIDATE_NAMES[best], "mode": CANDIDATES[best][0], "strength": CANDIDATES[best][1],
+        "distances": [{"name": n, "px": round(d, 2)} for n, d in zip(CANDIDATE_NAMES, distances)],
+        "samples_per_second": round(len(t) / seconds, 1),
+        "tremor_share": None if not results else round(float(np.mean([r["tremor"] for r in results])), 2),
+        "size_px": None if not results else round(float(np.median([r["size_px"] for r in results])), 2),
+        "frequency_hz": None if not results else round(float(np.median([r["frequency_hz"] for r in results])), 2),
+    }
 
 
 # ---------------------------------------------------------------- leader's optional modules
@@ -431,6 +500,15 @@ def read_sample(message):
     return values if all(math.isfinite(v) for v in values) else None
 
 
+def read_dot(message):
+    """The calibration dot's position sent with a sample during the test, or None."""
+    try:
+        dot = (float(message["dot_x"]), float(message["dot_y"]))
+    except (KeyError, TypeError, ValueError):
+        return None
+    return dot if all(math.isfinite(v) for v in dot) else None
+
+
 @app.websocket("/ws/cursor")
 async def cursor_socket(websocket: WebSocket):
     if not is_local(websocket.headers.get("host"), websocket.headers.get("origin")):
@@ -452,6 +530,21 @@ async def cursor_socket(websocket: WebSocket):
                 demo_stats.add_click(message.get("hit", False))
             elif kind == "reset":
                 session.build()
+            elif kind == "calibrate_start":
+                session.calibration = []
+            elif kind == "calibrate_cancel":
+                session.calibration = None
+            elif kind == "calibrate_end":
+                record, session.calibration = session.calibration or [], None
+                if len(record) < 2:
+                    outcome = {"ok": False, "message": "No movement was recorded during the test."}
+                else:
+                    # A few seconds of work: on a worker thread, so the server stays responsive.
+                    outcome = await asyncio.to_thread(score_calibration, record)
+                # The filter is NOT switched to the closest one: on validation people, choosing
+                # it from one 10 s test did worse than always using our model
+                # (evaluation/results/calibration_val.md). The test only reports.
+                await websocket.send_json({"type": "calibration", **outcome})
             elif kind == "area":
                 try:
                     session.set_area(float(message["width"]), float(message["height"]))
@@ -461,7 +554,7 @@ async def cursor_socket(websocket: WebSocket):
                 sample = read_sample(message)
                 if sample is None:
                     continue                             # skip a broken message, keep the connection
-                await websocket.send_json(session.update(*sample))
+                await websocket.send_json(session.update(*sample, dot=read_dot(message)))
     except WebSocketDisconnect:
         pass
     finally:

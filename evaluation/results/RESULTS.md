@@ -180,6 +180,10 @@ Full write-up with charts: `failures/failures.md`. In short (`failures/failure_f
   clock, replayed tremor skipping samples, a staircase at browser rates); found by testing the
   live path and a code review, and fixed. Offline scores could not see them.
 - For a perfectly still hand, a classic filter (One Euro) still beats our model.
+- A 10 s calibration test that picks the filter for each person (Godson's idea): on validation
+  people it did worse than always using our model (2.37 px off the path in later use; the
+  test's choice 3.15 px; the best possible choice 2.30 px, `calibration_val.md`). The page's
+  test now only reports each filter's distance; it never switches the filter.
 
 ## Limits to say out loud
 

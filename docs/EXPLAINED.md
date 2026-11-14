@@ -568,6 +568,34 @@ small sample. Real people also jolt the mouse when pressing; we have no data for
 Checked in the browser: a press with the cursor pushed 60 px off before release was a miss
 without freeze and a hit with it.
 
+## Calibration test (an idea from Godson, a team member)
+
+**What it is.** A "Calibrate for my mouse (10 s)" button on the demo page. The user holds the
+cursor on a blue dot for 4 s, then follows it slowly round a circle. Because the app knows
+exactly where the dot was, the server can replay the user's own test through each filter (no
+filter, One Euro, our model at half and full strength) and measure how far each kept the
+cursor from the dot. It also shows how many samples per second the device sends and how big
+and how fast the shaking was during the test.
+
+**What it cannot do.** The idea was to adjust to the mouse's speed (DPI) setting. But the
+cursor alone cannot tell strong tremor on a slow mouse from mild tremor on a fast mouse, so
+the device setting itself cannot be measured. We tested the next best thing: let the test
+choose the filter for each person.
+
+**How we know whether it helps.** `python evaluation/calibration_sim.py` (validation people,
+the server's own code): for each of 72 people, one of their recordings is the test, two other
+recordings of the same person are later use, with the tremor at half, normal and double size
+(like different mouse settings). Average distance from the intended path in later use, at
+normal size: always our model 2.37 px, the calibration's choice 3.15 px, the best choice in
+hindsight 2.30 px (`evaluation/results/calibration_val.md`). The calibration's choice was
+worse at every size. Why: one 10 s test is short and noisy, and a slow, smooth test flatters
+filters that are bad at real reaches (One Euro: 12.14 px in later use).
+
+**So.** The test stays on the page, but it only reports; it never switches the filter. The
+default (our model at full strength) was already almost as good as the best possible choice
+per person. Not run on test people, because the method was not kept. Nothing from the test is
+saved to disk, and it is worded as "settings for your device", never as a diagnosis.
+
 ## Can someone else reproduce it? (step 15)
 
 Yes. A fresh copy of the repository from GitHub, set up with the commands in `docs/RUNNING.md`,
