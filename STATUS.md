@@ -402,6 +402,10 @@ Time line: first full version by **Sun 15 Nov 22:00 CET**; no new features after
   `demo_stats = SessionStats()`: `from assistant import history; history.save(get_summary())`,
   so the last minute before "New session" is not lost (autosave runs every 60 s).
 
+- CHECKED (Sat 14 Nov 21:45, leader on the demo Mac, Safari): Pointer Lock works. After a click
+  in the area only the drawn cursor shows, and it cannot leave the area. Note for everyone:
+  in Safari, Cmd+Shift+R opens Reader mode; reload without cache is Cmd+Option+R.
+  Chrome not checked yet.
 - DONE (Sat 14 Nov 20:15 CET, builder: Pointer Lock in that mode, as suggested; click the area to start, Esc to stop. Please check by hand in Chrome and Safari on the demo Mac. After `git pull`, reload with Cmd+Shift+R once: the old stylesheet can stay cached) Team leader -> builder (Sat 14 Nov 20:30): **bug: "Lower sensitivity" is offset.** Seen by
   the leader on the demo Mac: after bringing the pointer into the practice area, the drawn
   cursor sits off to one side of the real pointer. Likely cause (from reading
