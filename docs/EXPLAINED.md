@@ -134,6 +134,33 @@ By task type (PADS): rest 528 of 3,752 marked, postural 490 of 4,690, action 145
 random pieces on the same scale: the tremor-marked patients wave regularly with one sharp
 spectrum peak (4.7-5.5 Hz), the healthy controls are nearly flat.
 
+### Synthetic "intended" mouse movement (step 4)
+
+**What it does.** `data_pipeline/synthetic_paths.py` makes up realistic clean mouse
+movement: no tremor, just what a person *meant* to do. Step 5 adds real tremor on top, so
+for every example we know both the shaky version and the clean answer.
+
+**What is in it.** Reaches to targets 50-900 px away lasting 0.3-1.2 s, using the
+"minimum-jerk" shape (the smooth speed-up-then-slow-down that real human pointing follows),
+often slightly curved, and 60% of the time landing a little off target followed by a short
+correction. Also pauses and slow drifts. Plus **tremor look-alikes** that are deliberate,
+not tremor: back-and-forth wiggles (2-6 per second), fast small circles (1.5-4 per second)
+and zig-zags. Wiggles overlap the tremor speed range on purpose: if the detector only
+looked for "something rhythmic at 3-12 Hz" it would raise false alarms here, so this tests
+whether it learns more than that. Finally a little sensor jitter (0-0.3 px).
+
+Share of time over 500 generated paths (from `python data_pipeline/synthetic_paths.py`):
+still 19.7%, reach 27.9%, correction 6.7%, drift 17.4%, wiggle 11.2%, circle 10.3%,
+zigzag 6.8%. So about 28% of the time contains a look-alike.
+
+**Why synthetic.** No public dataset of mouse movement from people with tremor exists, and
+the rules forbid recording real people for training. Generated movement is our assumption,
+and we say so: real people move in more varied ways than these six kinds of event.
+
+**How we know it works.** `evaluation/results/figures/synthetic_paths_examples.png` shows six
+paths and one speed curve: reaches are bell-shaped in speed, look-alikes are fast and jumpy.
+A fixed random seed means the same paths come out every time.
+
 ## The baselines
 
 (To be written after step 6.)

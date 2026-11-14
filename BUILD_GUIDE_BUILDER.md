@@ -270,6 +270,10 @@ toward targets, pauses, small corrections. This plays the role of "what the pers
 - 100 samples per second, in pixels. A fixed random seed so it is repeatable.
 - Save a chart of a few generated paths.
 
+Done (Sat 14 Nov): `generate_path(rng, n)` returns positions and a per-sample "kind"
+(still / reach / correction / drift / wiggle / circle / zigzag) so step 5 can describe each
+window. Chart sent to the builder for the plausibility check.
+
 **Done when:** a human looking at the chart finds the paths plausible, and variety is
 obvious (not all straight lines of the same length).
 
