@@ -735,6 +735,15 @@ Time line: first full version by **Sun 15 Nov 22:00 CET**; no new features after
 
 ## Questions waiting for the team leader
 
+- Sat 14 Nov 23:18 CET, from the builder (answers Timofey 23:14, "extensive comparison, whether to redo the
+  model"): see `docs/EXPLAINED.md` "Why our model looked worse than One Euro by eye" and
+  `evaluation/results/vs_one_euro_val.md`. Our cursor is closest to the hand but almost as jumpy
+  as no filter; One Euro is twice as smooth. Builder's recommendation: no full redo (too risky
+  before the deadline). Instead (A) our model + One Euro smoothing, switched by our detector
+  (best on shake and jumpiness in the comparison; about 45 min), and if time allows (B) retrain
+  the corrector to aim at what the eye sees (leftover shake and jumpiness, with a lag limit;
+  2-3 h, may not win). Both chosen on validation by a rule fixed in advance, test once.
+
 - Sat 14 Nov 20:20, from the builder (to ask AFTER the team's step 4 path check,
   `web/path_check.html`): (1) step 4 rework scope: A) stress test first: measure the current
   models on the realistic movement (validation people), retrain only if they clearly drop

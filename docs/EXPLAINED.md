@@ -677,6 +677,30 @@ default (our model at full strength) was already almost as good as the best poss
 per person. Not run on test people, because the method was not kept. Nothing from the test is
 saved to disk, and it is worded as "settings for your device", never as a diagnosis.
 
+## Why our model looked worse than One Euro by eye (Sat 14 Nov, late)
+
+Oleksandr and Timofey found that our model "doesn't work at all" next to One Euro on the demo
+page. `python evaluation/vs_one_euro.py` (validation people, the demo page's own code,
+browser-like timing) measured what the eye sees, not only distance from the path. Average over
+mild/medium/strong tremor and reaching/gliding/still (`vs_one_euro_val.md`):
+
+| | Distance | Shake (leftover 3-12 Hz) | Jerk |
+|---|---|---|---|
+| No filter | 6.40 | 7.82 | 0.73 |
+| One Euro | 5.62 | 3.86 | 0.27 |
+| Our model | 3.99 | 4.59 | 0.60 |
+| Our model + One Euro | 5.17 | 3.08 | 0.22 |
+
+**The diagnosis.** Our cursor stays closest to the real hand, but it is almost as jumpy as no
+filter (jerk 0.60 vs 0.73), while One Euro's is more than twice as smooth. The eye reads
+jitter as "not working". Our earlier choices were judged mainly on distance, which hid this.
+With a still hand One Euro wins outright; ours only wins while reaching, where One Euro lags.
+
+**Oleksandr's idea tested: a canceller tuned to the person's rhythm** (a notch filter at the
+rhythm the detector measures; `python evaluation/notch_canceller.py` -> `notch_canceller.md`).
+With our corrector it held a still hand steadier (3.62 vs 5.40 px) but strayed further while
+moving (8.47 vs 7.16 px), so by the rule fixed in advance it was not kept.
+
 ## Correcting the real cursor everywhere (B3, `systemwide/`, macOS only)
 
 **What it is.** A small program that makes the actual macOS cursor steadier in every app, not
