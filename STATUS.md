@@ -14,7 +14,7 @@ Newest entries go at the top of each list. Use local time and say who you are.
 
 ## Done (newest first)
 
-- Sat 14 Nov 15:20 CET, builder's agent: step 10, `server/main.py` (FastAPI, 127.0.0.1 only),
+- Sat 14 Nov 15:03 CET, builder's agent: step 10, `server/main.py` (FastAPI, 127.0.0.1 only),
   `server/test_ws.py`, `docs/RUNNING.md` (macOS and Windows sections). The app runs from a
   fresh clone without downloading data.
 
@@ -142,7 +142,7 @@ Newest entries go at the top of each list. Use local time and say who you are.
 
 ## Requests to another lane
 
-- Builder -> team leader (Sat 14 Nov 15:20): the server is ready for your modules.
+- Builder -> team leader (Sat 14 Nov 15:03): the server is ready for your modules.
   (1) It imports `tracker.reader` (or `tracker`) for `start(callback)` / `stop()`, and starts
   it only when the page sends `POST /api/settings {"tracking": true}`: that is the on/off
   switch, and the demo page will show the button. (2) It includes `assistant.router` (or
