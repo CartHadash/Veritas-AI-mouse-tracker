@@ -8,11 +8,15 @@ Newest entries go at the top of each list. Use local time and say who you are.
 
 | Lane | Working on | Branch | Blocked by |
 |---|---|---|---|
-| Builder | Steps 1-2 done and confirmed on the demo Mac. Next: step 3, tremor library | main | - |
+| Builder | Steps 1-3 done (1-2 confirmed on the demo Mac). Next: step 4, synthetic mouse movement | main | - |
 | Team leader | not started | - | - |
 | Writer | not started | - | - |
 
 ## Done (newest first)
+
+- Sat 14 Nov 14:20 CET, builder's agent: step 3, `data_pipeline/tremor_library.py` builds
+  `data/derived/tremor_library.npz` (13,764 segments of 10.24 s) in about 30 s, peak memory
+  about 0.5 GB on the builder's 8 GB Mac. Step 1 ticked in the guide after the leader's check.
 
 - Sat 14 Nov, team leader's agent: **first cross-machine check PASSED on the demo Mac**
   (Apple Silicon, macOS 26, Python 3.12.16, fresh `.venv`). `pip install -r
@@ -42,6 +46,12 @@ Newest entries go at the top of each list. Use local time and say who you are.
 
 ## Results so far (real numbers only; say which script produced them)
 
+- `data_pipeline/tremor_library.py`: 13,764 segments. Tremor-marked: PADS Parkinson's 635 of
+  7,728 (156 people), essential tremor 217 of 784 (26), other movement disorders 221 of
+  1,680 (40), atypical Parkinsonism 13 of 420 (6), MS 16 of 308 (5), healthy 61 of 2,212
+  (33); TremorDB 261 of 632 (14 of 16 people). Pixel factor: PADS 594 px/rad, TremorDB
+  98.6 px/unit. Tremor-marked size median 6.2 px (10th-90th percentile 1.5-34.3 px).
+
 - `data_pipeline/look_at_data.py`: PADS 469 subjects (276 Parkinson's, 79 healthy, 60 other
   movement disorders, 28 essential tremor, 15 atypical Parkinsonism, 11 MS); ages 161 / 149 /
   159 (under 60 / 60-69 / 70+); 281 male, 188 female. PADS 060 right wrist Relaxed: peak
@@ -49,11 +59,20 @@ Newest entries go at the top of each list. Use local time and say who you are.
 
 ## Decisions made along the way (what, why, who decided)
 
-- None yet beyond `docs/PROJECT_PLAN.md`.
+- Sat 14 Nov, builder (human): DECISION 1 = A, one pixel factor per dataset with the median
+  tremor-marked Parkinson's segment at 6 px; re-check at half and double later.
+- Sat 14 Nov, builder (human): DECISION 2 = A, all PADS task types, labelled rest /
+  postural / action.
+- Sat 14 Nov, builder's agent: tremor-marking rule fixed before any model (see
+  `data_pipeline/tremor_library.py`); strength compared with healthy controls of the same
+  task type, because deliberate movement looks like tremor-band power otherwise.
 
 ## Problems and things that did not work
 
-- None yet. (Keep this honest; the write-up needs a "what didn't work" section.)
+- Sat 14 Nov, builder's agent: step 3 was merged before its `STATUS.md` entry was written (a
+  scripted edit failed silently); fixed in the next commit on `main`. Lesson: check each
+  edit succeeded before committing.
+- None else yet. (Keep this honest; the write-up needs a "what didn't work" section.)
 
 ## Requests to another lane
 

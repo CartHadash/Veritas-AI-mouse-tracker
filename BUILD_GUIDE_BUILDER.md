@@ -151,7 +151,7 @@ simpler fallback written in the step, note it in `STATUS.md`, and move on.
 
 ## Phase 1: foundations (target: Saturday 16:00 CET)
 
-### - [ ] Step 1. Environment
+### - [x] Step 1. Environment
 
 **In plain words:** install the Python libraries the project needs and write them down so
 teammates get the same ones.
