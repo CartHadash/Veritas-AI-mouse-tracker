@@ -57,12 +57,13 @@ works for them. In the write-up the *named user* stays the person with tremor.
 
 | Person | Tools | Owns |
 |---|---|---|
-| **Builder** | Claude Code (**Windows PC**) | Data pipeline, both models, evaluation, server, main interface. Follows `BUILD_GUIDE_BUILDER.md` |
+| **Builder** | Claude Code (**MacBook**, Apple Silicon; not the demo machine) | Data pipeline, both models, evaluation, server, main interface. Follows `BUILD_GUIDE_BUILDER.md` |
 | **Team leader** | Claude Code (MacBook, **the demo machine**) | Whole-laptop pointer reader, the assistant, system-wide stretch goal, final decisions. Follows `BUILD_GUIDE_LEADER.md` |
 | **Writer** | ChatGPT | Write-up text, sources list, demo video script and recording, submission form. Works from `STATUS.md`, `evaluation/results/` and `docs/` |
 
-**Two operating systems.** The builder develops on Windows; the demo runs on the leader's
-Mac. All builder-lane code must run on both. The Mac-only parts (`tracker/`,
+**Two machines.** The builder develops on their own Mac (until Sat 14 Nov afternoon the
+plan was a Windows PC); the demo runs on the leader's Mac. All builder-lane code must still
+run on macOS and Windows. The Mac-only parts (`tracker/`,
 `systemwide/`) are in the leader's lane for exactly this reason. The leader pulls and runs
 the builder's work on the Mac at the checkpoints listed in `BUILD_GUIDE_BUILDER.md`.
 

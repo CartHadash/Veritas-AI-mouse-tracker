@@ -1,0 +1,15 @@
+# Libraries the project needs. Install inside .venv with:
+#   python -m pip install -r requirements.txt
+# Versions are pinned (the ones installed on the builder's Mac, Python 3.12, Sat 14 Nov)
+# so every teammate and the demo Mac get the same ones. Each is cited in docs/SOURCES.md.
+numpy==2.5.4
+pandas==3.1.1
+scipy==1.18.1
+scikit-learn==1.9.1
+matplotlib==3.11.2
+torch==2.15.0
+fastapi==0.162.7
+uvicorn[standard]==0.54.0
+anthropic==2.8.0
+python-dotenv==1.2.4
+pytest==9.2.0

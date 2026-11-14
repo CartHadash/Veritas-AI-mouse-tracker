@@ -131,7 +131,7 @@ permission for routine work inside your lane.
 
 ## Commands (keep this list current)
 
-Windows (PowerShell), the builder's machine:
+Windows (PowerShell), if anyone runs it on a PC:
 
 ```powershell
 python -m venv .venv                      # once
@@ -140,10 +140,10 @@ python -m pip install -r requirements.txt # after requirements change
 python scripts\download_data.py           # once; 1.5 GB into data\
 ```
 
-macOS, the team leader's machine and the demo machine:
+macOS, the builder's machine, the team leader's machine and the demo machine:
 
 ```bash
-python3 -m venv .venv                     # once
+python3.12 -m venv .venv                  # once (the built-in python3 is 3.9: too old)
 source .venv/bin/activate                 # every new terminal window
 python -m pip install -r requirements.txt # after requirements change
 python scripts/download_data.py           # once; 1.5 GB into data/
@@ -153,8 +153,8 @@ python scripts/download_data.py           # once; 1.5 GB into data/
 
 ## Things we learned the hard way
 
-- **The team uses two operating systems** (builder: Windows; leader and demo: macOS).
-  Shared code must run on both: `pathlib` paths, `encoding="utf-8"` on every text file,
+- **Two Macs, plus Windows compatibility** (builder: own MacBook; leader and demo: the
+  leader's MacBook). Shared code must still run on macOS and Windows: `pathlib` paths, `encoding="utf-8"` on every text file,
   no worker processes outside `if __name__ == "__main__":`, model weights saved from the
   CPU. Find out which machine you are on before running any command.
 

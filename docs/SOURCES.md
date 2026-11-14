@@ -22,8 +22,19 @@ copied from here at the end.
 
 ## Libraries
 
-- Add each one when first installed, with its link. Expected: NumPy, pandas, SciPy,
-  scikit-learn, PyTorch, Matplotlib, FastAPI, Uvicorn, Anthropic Python SDK.
+Installed in step 1 (exact versions in `requirements.txt`). Add new ones here when first used.
+
+- NumPy, https://numpy.org (arrays and maths)
+- pandas, https://pandas.pydata.org (tables)
+- SciPy, https://scipy.org (signal filters, frequency spectra)
+- scikit-learn, https://scikit-learn.org (classic machine learning: the detector v1)
+- Matplotlib, https://matplotlib.org (charts)
+- PyTorch, https://pytorch.org (neural networks: the corrector)
+- FastAPI, https://fastapi.tiangolo.com (the local web server)
+- Uvicorn, https://www.uvicorn.org (runs the FastAPI server)
+- Anthropic Python SDK, https://github.com/anthropics/anthropic-sdk-python (Claude API)
+- python-dotenv, https://github.com/theskumar/python-dotenv (reads the API key from `.env`)
+- pytest, https://pytest.org (automatic tests)
 
 ## AI tools used while building
 

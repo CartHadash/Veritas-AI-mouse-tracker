@@ -8,11 +8,20 @@ Newest entries go at the top of each list. Use local time and say who you are.
 
 | Lane | Working on | Branch | Blocked by |
 |---|---|---|---|
-| Builder | not started | - | - |
+| Builder | Step 1 done on the builder's Mac; waiting for the Mac check. Data download finishing; then step 2 | main | Leader's Mac check of step 1 (see Requests) |
 | Team leader | not started | - | - |
 | Writer | not started | - | - |
 
 ## Done (newest first)
+
+- Sat 14 Nov 14:05 CET, builder's agent: step 1. `requirements.txt` (pinned versions) and
+  `models/device.py` added. Import check passes on the builder's Mac (Python 3.12.10,
+  Apple M3); `python models/device.py` prints `mps`.
+
+- Sat 14 Nov 14:00 CET, builder's agent: the builder now works on a MacBook (Apple
+  Silicon), not a Windows PC. Builder guide setup/commands, `CLAUDE.md` commands and the
+  plan's "Who does what" updated. Code must still run on macOS and Windows. The demo is
+  still the leader's Mac, so the cross-machine checks stay.
 
 - Sat 14 Nov 14:00 CET, team leader's agent: builder guide rewritten for a Windows PC;
   cross-machine checks added (builder on Windows, demo on the leader's Mac).
@@ -33,7 +42,11 @@ Newest entries go at the top of each list. Use local time and say who you are.
 
 ## Requests to another lane
 
-- None.
+- Builder → team leader (Sat 14 Nov 14:05): first cross-machine check. On your Mac:
+  `git pull`, then `python3.12 -m venv .venv` (if not done), `source .venv/bin/activate`,
+  `python -m pip install -r requirements.txt`, then
+  `python -c "import numpy, pandas, scipy, sklearn, torch, fastapi, anthropic"` and
+  `python models/device.py`. Write the result (or the error text) here.
 
 ## Questions waiting for the team leader
 
