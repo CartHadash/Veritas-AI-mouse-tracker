@@ -8,7 +8,7 @@ Newest entries go at the top of each list. Use local time and say who you are.
 
 | Lane | Working on | Branch | Blocked by |
 |---|---|---|---|
-| Builder | Steps 1-10 done (8 awaits the Mac check; 9 awaits the builder reading failures.md). Next: step 11, live demo page | main | - |
+| Builder | IN PROGRESS: step 11, live demo page (web/). Steps 1-10 done | builder/demo-page | - |
 | Team leader | not started | - | - |
 | Writer | not started | - | - |
 
