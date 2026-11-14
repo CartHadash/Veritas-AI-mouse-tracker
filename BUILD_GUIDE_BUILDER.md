@@ -205,7 +205,7 @@ Because we built each example ourselves, we know the correct answer for it (how 
 tremor is in it, and what the clean movement was). That is what lets us train and score
 models. The weakness is that it is a construction, and we say so openly.
 
-### - [ ] Step 3. The tremor library
+### - [x] Step 3. The tremor library
 
 **In plain words:** go through both datasets, pull out the shaking part of each recording,
 and store it in one tidy file, together with who it came from.
@@ -240,6 +240,14 @@ simpler but throws away the real differences between people.
 (rest / postural / action), so we can report results per type. Action tasks are closest to
 using a mouse, but in those the patient's deliberate arm movement is mixed in; the
 band-pass removes most of it.
+
+Done (Sat 14 Nov): DECISION 1 = A (median tremor-marked Parkinson's segment = 6 px RMS),
+DECISION 2 = A (all tasks, labelled). Segments are 10.24 s (1024 samples). PADS uses the two
+main directions (PCA) of the integrated, band-passed gyroscope. The rule is written at the
+top of `data_pipeline/tremor_library.py`.
+Changed: the "enough power" part of the rule compares each segment with the 95th percentile
+of healthy controls doing the same task type, because deliberate movement in action tasks
+puts as much 3-12 Hz power in healthy people as tremor does in patients.
 
 **Done when:** the script runs in one command, prints the counts, and the example chart
 shows clearly rhythmic segments for tremor-marked patients and nearly flat ones for healthy
