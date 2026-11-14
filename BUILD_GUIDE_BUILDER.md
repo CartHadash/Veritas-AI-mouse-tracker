@@ -277,7 +277,7 @@ window. Chart sent to the builder for the plausibility check.
 **Done when:** a human looking at the chart finds the paths plausible, and variety is
 obvious (not all straight lines of the same length).
 
-### - [ ] Step 5. The training, validation and test sets
+### - [x] Step 5. The training, validation and test sets
 
 **In plain words:** combine steps 3 and 4 into labelled examples, and split the *people*
 into three groups: one to learn from, one to tune on, one locked away for the final score.
@@ -300,6 +300,12 @@ model can recognise the person instead of the tremor, and the score is fake.
   tremor sizes and also sequences with no tremor at all (the corrector must leave a steady
   hand alone).
 - Print a table: number of examples per split, per label, per group.
+
+Done (Sat 14 Nov): 484 people (TremorDB subject v3 has no recordings). Detector windows take
+all 4 windows of each tremor-marked segment, 2 per healthy segment, 1 per unmarked patient
+segment, plus 20% synthetic-only. Corrector sequences are 512 samples. Healthy segments that
+pass the tremor rule are left out. `--tremor-scale 0.5` / `2` builds the DECISION 1 check
+sets with suffix `_x0.5` / `_x2`.
 
 **Done when:** no subject id appears in more than one split (write a test in
 `data_pipeline/test_split.py` that fails if one does, and run it), and the table is in

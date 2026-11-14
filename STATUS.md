@@ -8,11 +8,15 @@ Newest entries go at the top of each list. Use local time and say who you are.
 
 | Lane | Working on | Branch | Blocked by |
 |---|---|---|---|
-| Builder | Steps 1-4 done (step 4 chart awaiting the builder's look). Next: step 5, train/validation/test sets | main | - |
+| Builder | Steps 1-5 done (step 4 chart awaiting the builder's look). Next: step 6, baselines | main | - |
 | Team leader | not started | - | - |
 | Writer | not started | - | - |
 
 ## Done (newest first)
+
+- Sat 14 Nov 14:30 CET, builder's agent: step 5, `data_pipeline/build_dataset.py` splits 484
+  people by person (340 / 72 / 72, seed 42, `data_pipeline/split.json`) and builds detector
+  windows and corrector sequences; `python -m pytest data_pipeline/test_split.py` passes (4).
 
 - Sat 14 Nov 14:25 CET, builder's agent: step 4, `data_pipeline/synthetic_paths.py` generates
   clean mouse paths with reaches, corrections, pauses, drifts and tremor look-alikes
@@ -50,10 +54,15 @@ Newest entries go at the top of each list. Use local time and say who you are.
 
 ## Results so far (real numbers only; say which script produced them)
 
+- `data_pipeline/build_dataset.py`: detector windows train 16,771 (3,848 tremor), val 3,452
+  (660), test 3,708 (944). Corrector sequences train 4,207, val 809, test 930. Test people:
+  PD 43, healthy 12, other movement disorders 9, ET 4, atypical 2, MS 2 (TremorDB 2); ages
+  19 / 24 / 29 (under 60 / 60-69 / 70+); 28 female, 44 male. Groups under 10 are unreliable.
+
 - `data_pipeline/tremor_library.py`: 13,764 segments. Tremor-marked: PADS Parkinson's 635 of
   7,728 (156 people), essential tremor 217 of 784 (26), other movement disorders 221 of
   1,680 (40), atypical Parkinsonism 13 of 420 (6), MS 16 of 308 (5), healthy 61 of 2,212
-  (33); TremorDB 261 of 632 (14 of 16 people). Pixel factor: PADS 594 px/rad, TremorDB
+  (33); TremorDB 261 of 632 (14 of the 15 people with recordings; subject v3 has none). Pixel factor: PADS 594 px/rad, TremorDB
   98.6 px/unit. Tremor-marked size median 6.2 px (10th-90th percentile 1.5-34.3 px).
 
 - `data_pipeline/look_at_data.py`: PADS 469 subjects (276 Parkinson's, 79 healthy, 60 other
