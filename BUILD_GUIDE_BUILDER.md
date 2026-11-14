@@ -544,6 +544,10 @@ Test the page in **Safari and Chrome on the builder's Mac**, and write it with s
 features only, because on the Mac it will be opened in Safari or Chrome. Use the browser's
 pointer events, which behave the same for a mouse and a trackpad.
 
+Done on the builder's Mac (Sat 14 Nov): DECISION 6 = C (warm and friendly), DECISION 7 =
+plain JavaScript. Tested in the Claude app's built-in browser with simulated pointer
+movement. Waiting for the builder's own try and the leader's Mac/trackpad check before ticking.
+
 **Done when:** your human can open the page, switch demo tremor on, and see the corrected
 cursor visibly steadier than the raw one, switching between filter modes live; **and** the
 leader has run the same page on the Mac with the trackpad (third cross-machine check).

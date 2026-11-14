@@ -439,6 +439,33 @@ clicks and click accuracy, and a steadiness score (1 = no shaking, 0 = typical s
 missing or cannot load (the tracker is Mac-only), the server carries on and says so at
 `GET /api/status`. The tracker only starts when the user switches tracking on.
 
+### The live demo page (step 11)
+
+**What it does.** `web/index.html`, `web/styles.css` and `web/app.js`: the page judges see at
+http://127.0.0.1:8000. In the practice area the normal mouse pointer is hidden and two
+cursors are drawn: a faint grey one (the raw movement: your hand, plus replayed tremor in demo
+mode) and a solid dark one (the corrected cursor). Clicks count where the **corrected** cursor
+is, and a table tallies hits, misses and time per target for each filter mode, so you can
+feel and see the difference.
+
+On the right: filter buttons (no filter / lower sensitivity / One Euro / our model), a
+strength slider, the demo tremor switch (with the required banner "Demo mode: replaying
+recorded tremor from a public dataset." and which test-set recording is playing), and the
+live tremor meter (score bar with the cut-off marked, estimated frequency and size). The
+whole-laptop tracking button appears only when the leader's tracker can run. The disclaimer
+is in the footer.
+
+**Decisions.** Style C, warm and friendly (Decision 6), with large text and 48 px tall buttons
+so they are easy to hit with a shaky hand. Plain JavaScript with no build tools (Decision 7).
+It uses the browser's "pointer events", which behave the same for a mouse and a trackpad.
+
+**How we know it works.** Tested in the app's built-in browser on the builder's Mac: with demo
+tremor on and a hand held nearly still, the meter showed "Tremor-like movement detected",
+score 0.79, and 3.9 Hz, the same frequency as the replayed recording (an essential tremor
+patient, 3.9 Hz). Clicks were tallied per mode and counted in the summary. The size estimate
+showed 5.4 px while that recording's average size is 14.2 px over 10 s, so the size readout
+can underestimate.
+
 **Something we noticed while testing:** a perfectly smooth, slow circular movement without
 any pauses scored 0.185, just over the cut-off (0.165), so the meter said "tremor". Our
 synthetic training movement almost always contains pauses, so the detector learned that
