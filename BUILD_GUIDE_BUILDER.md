@@ -576,7 +576,7 @@ because it answered a teammate's question and could be measured at x0.5 / x1 / x
 **Done when:** `improvements.md` exists with real before/after numbers for both models, and
 the app loads whichever versions won.
 
-### - [ ] Step 13. The summary page
+### - [x] Step 13. The summary page
 
 **In plain words:** turn a session's measurements into a few clear charts.
 
@@ -589,6 +589,9 @@ the app loads whichever versions won.
   about a third of your active time", never "your condition is worsening".
 - Draw charts with the browser's canvas, or include one small chart library **as a file in
   the repo** (not from the internet), so the demo works offline. Cite it in `SOURCES.md`.
+
+Done (Sat 14 Nov): `web/summary.html`, `summary.js`, `summary.css`; canvas charts, no library.
+Checked with a 75 s simulated session through the server; numbers match `/api/summary`.
 
 **Done when:** the page shows real values from a live session and the numbers match what
 `/api/summary` returns.

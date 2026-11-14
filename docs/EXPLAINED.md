@@ -507,6 +507,23 @@ patient, 3.9 Hz). Clicks were tallied per mode and counted in the summary. The s
 showed 5.4 px while that recording's average size is 14.2 px over 10 s, so the size readout
 can underestimate.
 
+### The summary page (step 13)
+
+**What it does.** `web/summary.html` (with `summary.js`, `summary.css`) turns the session into
+a few tiles and one chart: share of analysed time with tremor-like movement, typical rhythm
+(Hz) and size (px), steadiness score, active minutes, distance, clicks and click accuracy, and
+a minute-by-minute chart (bars: share of time with tremor-like movement; line: typical size).
+When the whole-laptop tracker has data, a second block shows the same for the whole laptop.
+It also states the detector's real test error rates and that "tremor-like movement" is not a
+diagnosis. Charts are drawn with the browser's canvas, with no chart library from the internet,
+so the demo works offline.
+
+**How we know it works.** A 75-second simulated session at 100 samples per second (demo tremor
+on for the first 40 s, then off) gave 1.25 active minutes; minute 0 had tremor-like movement
+43-55% of the time, minute 1 had 0%. Every number on the page matched `GET /api/summary`.
+This test found a bug: slow movement (under 0.5 px between samples) was not counted as active
+time; now any movement counts.
+
 **Something we noticed while testing:** a perfectly smooth, slow circular movement without
 any pauses scored 0.185, just over the cut-off (0.165), so the meter said "tremor". Our
 synthetic training movement almost always contains pauses, so the detector learned that

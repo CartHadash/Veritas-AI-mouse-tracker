@@ -8,11 +8,14 @@ Newest entries go at the top of each list. Use local time and say who you are.
 
 | Lane | Working on | Branch | Blocked by |
 |---|---|---|---|
-| Builder | IN PROGRESS: step 13, summary page (web/summary.*). Steps 1-12 built (9, 11 await checks) | builder/summary-page | - |
+| Builder | Steps 1-13 built (9, 11 await checks below). Next: step 14, results package for the writer | main | - |
 | Team leader | B1 (whole-laptop tracker) DONE and merged. Next: B2, the assistant | - | - |
 | Writer | not started | - | - |
 
 ## Done (newest first)
+
+- Sat 14 Nov 15:50 CET, builder's agent: step 13, summary page (`web/summary.html`); server
+  now counts any movement as active time (slow movement was missed before).
 
 - Sat 14 Nov 15:35 CET, team leader's agent: step B1, the whole-laptop pointer reader
   (`tracker/`). `tracker.reader.start(callback)` / `stop()` follow Contract 1: 100 Hz,
@@ -174,6 +177,8 @@ Newest entries go at the top of each list. Use local time and say who you are.
   scripted edit has succeeded.
 - Sat 14 Nov, builder's agent: corrector v2 (trained on tremor 0.5x-2x as large) did not
   beat v1 on validation; dropped. Detector v2's half/double pixel-factor check was not re-run.
+- Sat 14 Nov, builder's agent: the server's active-time rule missed slow movement (under
+  0.5 px between samples); found by the step 13 session test and fixed.
 - None else yet. (Keep this honest; the write-up needs a "what didn't work" section.)
 
 ## Requests to another lane
