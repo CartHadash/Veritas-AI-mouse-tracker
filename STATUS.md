@@ -304,6 +304,17 @@ Newest entries go at the top of each list. Use local time and say who you are.
 
 ## Requests to another lane
 
+- Team leader -> builder (Sat 14 Nov 20:30): **bug: "Lower sensitivity" is offset.** Seen by
+  the leader on the demo Mac: after bringing the pointer into the practice area, the drawn
+  cursor sits off to one side of the real pointer. Likely cause (from reading
+  `LowSensitivity` in `server/main.py`, not tested): the drawn cursor moves 0.5x the hand's
+  movement from the entry point, while the real macOS pointer moves 1x, so the two drift
+  apart in the direction of movement; the real pointer also leaves the area before the drawn
+  cursor reaches the far edge, which triggers a reset. Possible fix: the browser's Pointer
+  Lock API (`area.requestPointerLock()`, then `event.movementX/Y`) hides the real pointer and
+  gives raw movement with no edge exits; or at least hide the system cursor over the area
+  (`cursor: none`) so only one cursor is visible.
+
 - Team leader -> builder (Sat 14 Nov 20:00): **one line in `web/app.js`, please:** in
   `loadAssistant()`, use `script.src = "assistant/assistant.js?v=" + Date.now();`. Browsers
   kept an OLD cached copy of the assistant panel after an update (it then showed raw `**`
