@@ -5,6 +5,13 @@
 // press until the release (at most 0.3 s), so tremor while the button is down cannot carry
 // it off the target.
 //
+// "Calibrate for my mouse" (an idea from Godson, a team member): a 10 s test. Hold the cursor
+// on a blue dot (4 s), then follow it slowly round a circle. The page sends the dot's position
+// with every sample; the server tries each filter on this recorded test and reports how close
+// each kept the cursor to the dot (server/main.py, score_calibration). It does NOT switch the
+// filter: in a simulation, choosing it from one short test did worse than always using our model
+// (evaluation/results/calibration_val.md).
+//
 // What happens:
 //  1. Inside the practice area the system cursor is hidden. Every pointer movement is sent
 //     to the local server over a WebSocket (/ws/cursor) as {t, x, y}.
@@ -28,11 +35,20 @@ const tally = {};                   // per mode (+ click freeze): {hits, misses,
 const FREEZE_MS = 300;              // click freeze never holds the cursor longer than this
 let freezeOn = false;
 let press = null;                   // while the button is down: {x, y, at, downInside}
+const CALIB_SECONDS = 10.24;        // the test's length; the server needs at least 8 s
+let calib = null;                   // during the test: {phase: "waiting"|"running"|"scoring", start, centre, radius}
 
 // Where the corrected cursor is shown: frozen at the press position during a click freeze.
 function shownPosition() {
   if (press && freezeOn && performance.now() - press.at < FREEZE_MS) return { x: press.x, y: press.y };
   return latest ? { x: latest.x, y: latest.y } : null;
+}
+// Where the calibration dot is, `seconds` into the test: still for 4 s, then once round a
+// circle every 8 s (about 94 px/s). evaluation/calibration_sim.py uses the same path.
+function calibrationDot(seconds) {
+  const angle = 2 * Math.PI * Math.max(0, seconds - 4) / 8;
+  return { x: calib.centre.x + calib.radius * Math.sin(angle),
+           y: calib.centre.y - calib.radius * (1 - Math.cos(angle)) };
 }
 function onTarget(p) { return Math.hypot(p.x - target.x, p.y - target.y) <= TARGET_RADIUS; }
 
@@ -42,7 +58,12 @@ function connect() {
   const protocol = location.protocol === "https:" ? "wss" : "ws";
   socket = new WebSocket(`${protocol}://${location.host}/ws/cursor`);
   socket.onopen = () => { setStatus("Connected to the local server."); sendArea(); };
-  socket.onmessage = (event) => { latest = JSON.parse(event.data); updateMeter(); };
+  socket.onmessage = (event) => {
+    const message = JSON.parse(event.data);
+    if (message.type === "calibration") { showCalibration(message); return; }
+    latest = message;
+    updateMeter();
+  };
   socket.onclose = () => { setStatus("Connection lost - retrying..."); setTimeout(connect, 1000); };
 }
 
@@ -85,10 +106,31 @@ area.addEventListener("pointermove", (event) => {
   const events = event.getCoalescedEvents ? event.getCoalescedEvents() : [event];
   for (const e of (events.length ? events : [event])) {
     const p = areaPosition(e);
-    send({ t: e.timeStamp / 1000, x: p.x, y: p.y });
+    const message = { t: e.timeStamp / 1000, x: p.x, y: p.y };
+    if (calib && calib.phase === "waiting") {
+      const dot = calibrationDot(0);
+      if (Math.hypot(p.x - dot.x, p.y - dot.y) <= 20) {      // the hand reached the dot: start
+        send({ type: "calibrate_start" });
+        calib.phase = "running";
+        calib.start = e.timeStamp;
+      }
+    }
+    if (calib && calib.phase === "running") {
+      const dot = calibrationDot((e.timeStamp - calib.start) / 1000);
+      message.dot_x = dot.x;
+      message.dot_y = dot.y;
+    }
+    send(message);
   }
 });
-area.addEventListener("pointerleave", () => { inside = false; });
+area.addEventListener("pointerleave", () => {
+  inside = false;
+  if (calib && calib.phase !== "scoring") {                 // left the area: the test is void
+    if (calib.phase === "running") send({ type: "calibrate_cancel" });
+    calib = null;
+    showCalibrationText("Calibration stopped: keep the pointer inside the practice area. Try again.");
+  }
+});
 // Coming back into the area (maybe somewhere else): start the filter afresh, so the
 // cursor never jumps across from where the pointer left.
 area.addEventListener("pointerenter", () => send({ type: "reset" }));
@@ -97,7 +139,7 @@ area.addEventListener("pointerenter", () => send({ type: "reset" }));
 function sendArea() { send({ type: "area", width: area.clientWidth, height: area.clientHeight }); }
 
 area.addEventListener("pointerdown", (event) => {
-  if (!latest || !target) return;
+  if (!latest || !target || calib) return;
   try { area.setPointerCapture(event.pointerId); } catch (error) { /* not essential */ }  // see the release even off the area
   press = { x: latest.x, y: latest.y, at: performance.now(), downInside: onTarget(latest) };
 });
@@ -220,6 +262,34 @@ document.getElementById("reset").addEventListener("click", async () => {
   newTarget();
 });
 
+// ------------------------------------------------------------ calibration test
+
+document.getElementById("calibrate").addEventListener("click", () => {
+  const radius = Math.min(120, area.clientWidth / 2 - 30, area.clientHeight / 2 - 30);
+  calib = { phase: "waiting", start: null, radius,
+            centre: { x: area.clientWidth / 2, y: area.clientHeight / 2 + radius } };
+  showCalibrationText("Move your cursor onto the blue dot and hold it there. Then follow the dot.");
+});
+
+function showCalibrationText(text) {
+  const line = document.getElementById("calib-result");
+  line.hidden = false;
+  line.textContent = text;
+}
+
+function showCalibration(result) {
+  calib = null;
+  if (!result.ok) { showCalibrationText(result.message); return; }
+  const others = result.distances.map((d) => `${d.name} ${d.px.toFixed(1)} px`).join(" · ");
+  const shake = result.size_px === null ? "" :
+    ` Shaking during the test: about ${result.size_px.toFixed(1)} px` +
+    (result.tremor_share > 0 ? `, tremor-like ${Math.round(result.tremor_share * 100)}% of the time at about ${result.frequency_hz.toFixed(1)} Hz.` : ", not tremor-like.");
+  showCalibrationText(`On your test, average distance from the dot: ${others} (closest: ${result.chosen}). ` +
+    `Your device sent ${result.samples_per_second} samples per second.${shake} ` +
+    "The filter is not changed automatically: one short test is not enough to choose well. " +
+    "Kept only until the server stops; not a diagnosis.");
+}
+
 // ------------------------------------------------------------ drawing
 
 function resizeCanvas() {
@@ -241,7 +311,16 @@ function circle(x, y, r, fill) {
 
 function draw() {
   ctx.clearRect(0, 0, area.clientWidth, area.clientHeight);
-  if (target) {
+  if (calib && calib.phase === "running" && (performance.now() - calib.start) / 1000 >= CALIB_SECONDS) {
+    calib.phase = "scoring";
+    send({ type: "calibrate_end" });
+    showCalibrationText("Trying each filter on your test...");
+  }
+  if (calib && calib.phase !== "scoring") {
+    const dot = calibrationDot(calib.phase === "running" ? (performance.now() - calib.start) / 1000 : 0);
+    circle(dot.x, dot.y, 14, "#2f6db5");
+    circle(dot.x, dot.y, 4, "#fffdf9");
+  } else if (target) {
     circle(target.x, target.y, TARGET_RADIUS, "#d9661a");
     circle(target.x, target.y, 5, "#fffdf9");
   }

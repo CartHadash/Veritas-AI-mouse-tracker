@@ -8,11 +8,19 @@ Newest entries go at the top of each list. Use local time and say who you are.
 
 | Lane | Working on | Branch | Blocked by |
 |---|---|---|---|
-| Builder | Steps 1-15 built (4, 9, 11, 14, 15 await human or Mac checks) + click freeze. Next: Godson's calibration idea if wanted | main | - |
+| Builder | Steps 1-15 built (4, 9, 11, 14, 15 await human or Mac checks) + click freeze + calibration test. Next: waiting for the team | main | - |
 | Team leader | B1 (whole-laptop tracker) DONE and merged. Next: B2, the assistant | - | - |
 | Writer | not started | - | - |
 
 ## Done (newest first)
+
+- Sat 14 Nov 19:34 CET, builder's agent: Godson's calibration idea. "Calibrate for my mouse (10 s)" on the
+  demo page: hold a blue dot, then follow it; the server replays the test through each filter
+  and reports each one's distance from the dot, the samples per second and the shaking.
+  `evaluation/calibration_sim.py` (validation): letting the test choose the filter was WORSE
+  than always using our model (later use, normal size: 2.37 px vs 3.15 px; best possible
+  2.30 px), so the test only reports and never switches the filter. Measuring the mouse's
+  speed setting itself is impossible from the cursor alone (explained in `docs/EXPLAINED.md`).
 
 - Sat 14 Nov 18:14 CET, builder's agent: click freeze (Timofey's idea 2). Demo page hits need
   press and release on the target; a "Click freeze" switch holds the cursor until release
@@ -124,6 +132,9 @@ Newest entries go at the top of each list. Use local time and say who you are.
 - `evaluation/compare_modes.py --people test` (demo page, final): our model vs no filter, hand
   still / reaching: strong 69% / 53% closer, medium 39% / 23%, mild 53% / 6%; smoother than no
   filter in every case. One Euro is closer for a perfectly still hand (medium 1.44 vs 3.70 px).
+- `evaluation/calibration_sim.py` (validation, 72 people; later-use distance from the path,
+  px, at 0.5x / 1x / 2x tremor): always our model 1.35 / 2.37 / 3.91; calibration's choice
+  1.51 / 3.15 / 5.17; best in hindsight 1.26 / 2.30 / 3.86; always One Euro 11.90 / 12.14 / 12.99.
 - `evaluation/find_failures.py` (final models, test): detector v2 misses 34.2% of mild tremor
   vs 2.9% of strong; false alarms 41.7% on action-task segments vs 19.5% rest.
 - `models/corrector/time_live.py` (builder's Mac, final): mean 0.48 ms, worst 3.4 ms per update.
@@ -198,6 +209,9 @@ Newest entries go at the top of each list. Use local time and say who you are.
 - Sat 14 Nov, team leader (human): DECISION L1 = A. Keep only the current session in memory,
   plus an optional local file the user can delete. A history across days to show trends
   (option B) is wanted as a future extension, not for the hackathon.
+- Sat 14 Nov 19:34, builder's agent (chosen on validation): the calibration test only reports;
+  it does not switch the filter, because choosing from the test did worse than always using
+  our model (`calibration_val.md`). Not run on test people (method not kept).
 - Sat 14 Nov 16:57, builder's agent (chosen on validation by a rule fixed in advance): keep
   corrector v4 with smoothness penalty 0.5; the app uses detector v2 + corrector v4.
 - Sat 14 Nov 16:02, builder's agent (chosen on validation): keep corrector v3 over v1.
