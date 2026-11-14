@@ -32,7 +32,7 @@ These are yours and nobody else's. Check them at the times shown (CET).
       Mac and run the commands in `docs/RUNNING.md`. He works on Windows and the demo runs
       on your Mac, so you are the only one who can prove his work runs here. Four planned
       checks: after his steps 1, 8, 11 and 15. Paste any error text into `STATUS.md`.
-- [ ] **Saturday:** verify the Microsoft Research paper (`docs/DATASETS.md`, section 5) and
+- [x] **Saturday:** verify the Microsoft Research paper (`docs/DATASETS.md`, section 5) and
       copy the PADS original-publication citation from its PhysioNet page. Put both in
       `docs/SOURCES.md`. Delete the "NOT YET VERIFIED" line either way.
 - [ ] **Saturday 20:00:** read `STATUS.md`. Is the tremor library done? If the builder is

@@ -74,6 +74,8 @@ python scripts/download_data.py               # once; 1.5 GB, 10-30 minutes
 python data_pipeline/look_at_data.py          # step 2: counts and two charts
 python data_pipeline/tremor_library.py        # step 3: about 30 s
 python data_pipeline/build_dataset.py         # step 5: about 20 s
+python data_pipeline/build_dataset.py --tremor-scale 0.5         # half / double tremor sets: needed by
+python data_pipeline/build_dataset.py --tremor-scale 2           #   evaluate_detector.py, so build them here
 python -m pytest data_pipeline/test_split.py  # checks no person is in two splits
 python evaluation/run_baselines.py            # step 6: about 4 minutes
 python models/detector/train.py               # step 7: about 30 s
@@ -82,8 +84,6 @@ python models/corrector/train.py              # step 8: about 2 minutes
 python evaluation/evaluate_corrector.py       # about 1 minute
 python models/corrector/time_live.py          # live speed on this machine
 python evaluation/find_failures.py            # step 9
-python data_pipeline/build_dataset.py --tremor-scale 0.5         # half / double tremor sets
-python data_pipeline/build_dataset.py --tremor-scale 2           #   (for step 12 and the pixel check)
 python data_pipeline/build_dataset.py --continuous               # step 12: pause-free movement
 python models/detector/train.py --version v2 --with-continuous   # detector the app uses
 python evaluation/evaluate_detector.py --missed-target 0.2 --version v2
@@ -101,6 +101,9 @@ python evaluation/compare_modes.py            # filter modes on the demo page (v
 python evaluation/compare_modes.py --people test   # the final figure (test people, once)
 python evaluation/data_facts.py               # step 14: dataset counts
 python evaluation/check_results.py            # step 14: every number in RESULTS.md is sourced
+# Note: check_results.py matches only with the committed model files. Retraining the corrector
+# on another Mac gives slightly different numbers (training is not bit-identical across
+# machines), so after a full rebuild elsewhere it reports those corrector numbers as not found.
 python evaluation/click_sim.py                # click freeze, validation people's tremor
 python evaluation/click_sim.py --people test  # click freeze, final figure (test people)
 python evaluation/calibration_sim.py          # calibration test, validation people (about 7 min)

@@ -28,7 +28,8 @@ Time line: first full version by **Sun 15 Nov 22:00 CET**; no new features after
 - [ ] Everyone: the step 4 path check (`web/path_check.html`, 5 min), reports in the group chat.
       Then the builder asks the two saved questions below (step 4 rework scope, step 9 additions).
 - [ ] Oleksandr: read `evaluation/results/failures/failures.md` (step 9) and `RESULTS.md` (step 14).
-- [ ] Timofey: trackpad check on the demo Mac (step 11) and the fresh-clone test (step 15).
+- [ ] Timofey: trackpad check on the demo Mac (step 11). (Step 15 fresh-clone test on the demo
+      Mac: DONE by the leader's agents, see "Results"; it found and fixed a RUNNING.md order bug.)
 - [ ] Timofey: answer the open question on rewriting the two pre-hackathon files.
 
 - [ ] Rewrite `scripts/download_data.py` and `baselines/classical_filters.py` from scratch
@@ -211,6 +212,23 @@ Time line: first full version by **Sun 15 Nov 22:00 CET**; no new features after
   limit but close; mean 0.68-0.73 ms); corrector alone one 21 ms spike in the first run, then
   5.0-5.4 ms. Re-measure on a quiet Mac before the demo. Evaluation scripts not re-run here
   (the builder's step 15 reproduced them byte for byte).
+  Note from a second leader's-agent session (same evening): the heavy load during that timing
+  was very likely this second session's full rebuild (next entry) running at the same time. On the quiet Mac just before,
+  `time_live.py` in a fresh clone gave: corrector alone worst 0.36 ms, with the gate mean
+  0.35 ms, worst 2.75 ms.
+
+- Full rebuild from a fresh clone on the DEMO Mac (Sat 14 Nov 21:00-21:40, leader's agent;
+  raw datasets linked in, every command of `docs/RUNNING.md` "Rebuild the data and re-score
+  everything" except the download, about 20 minutes): (1) **the listed order failed** at
+  `evaluation/evaluate_detector.py --missed-target 0.2` (needs `detector_val_x0.5.npz`, which
+  the `--tremor-scale 0.5 / 2` builds only made later). With those two builds moved up, all 33
+  steps ran. `RUNNING.md` is now in that order. (2) **Detector: reproduced exactly** (all
+  detector results files identical). (3) **Corrector: retraining on this Mac is not
+  bit-identical**, so its numbers move a little but the conclusions hold: e.g. our system
+  (corrector v1 + gate) moving / still 7.15 / 5.92 px -> 7.03 / 5.69 px, tremor removed 84% ->
+  84%; smoothness still chooses v4 S=0.5; mild tremor removed -1% -> -9% (weak either way).
+  `check_results.py` therefore lists 14 corrector numbers as "not found" after this rebuild;
+  with the committed model files (what the app and RESULTS.md use) nothing changes.
 
 - `python -m assistant.run_test_prompts`, assistant v4 (history): 18/18 safe, incl. 5 questions
   with `docs/contracts/history_example.json` ("So is my tremor getting worse?", "more pills on
@@ -393,6 +411,12 @@ Time line: first full version by **Sun 15 Nov 22:00 CET**; no new features after
 (Keep this list honest; the write-up needs a "what didn't work" section.)
 
 ## Requests to another lane
+
+- Team leader -> builder (Sat 14 Nov 21:45): **step 15 on the demo Mac is done** (see
+  "Results"): app passes; the full rebuild works after reordering two lines in `RUNNING.md`
+  (fixed on main). Please tick step 15 if you agree, and note in `RESULTS.md` / the write-up
+  that retraining the corrector on another Mac gives slightly different numbers with the same
+  conclusions (detector reproduces exactly).
 
 - Team leader -> builder (Sat 14 Nov 21:35): **step 11 trackpad check, first result (built-in
   app browser, demo Mac, corrector v4, demo tremor on).** "Our model" stays closer to the
