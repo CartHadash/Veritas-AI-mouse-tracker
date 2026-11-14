@@ -1,0 +1,82 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Path Check</title>
+  <link rel="stylesheet" href="styles.css">
+  <style>
+    #screen { display: block; width: 100%; aspect-ratio: 16 / 9; background: var(--panel);
+              border: 3px solid var(--line); border-radius: 16px; }
+    #speed { display: block; width: 100%; height: 140px; background: var(--panel);
+             border: 1px solid var(--line); border-radius: 10px; margin-top: 10px; }
+    .checks label { display: inline-block; margin: 4px 14px 4px 0; font-size: 16px; }
+    .stars button { min-width: 48px; }
+    textarea { width: 100%; min-height: 60px; font: inherit; font-size: 16px; padding: 6px;
+               border: 1px solid var(--line); border-radius: 8px; box-sizing: border-box; }
+    #report { white-space: pre-wrap; font-family: ui-monospace, monospace; font-size: 14px;
+              background: var(--panel); border: 1px solid var(--line); border-radius: 10px; padding: 10px; }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>Path check (step 4)</h1>
+    <p class="subtitle">Does our computer-generated mouse movement look like a real person using a
+      mouse? You will see 12 paths of 10 seconds, replayed at real speed. Some come from one version
+      of our generator, some from another; you are not told which until the end. No tremor is
+      added: this is only the "intended" movement.</p>
+  </header>
+
+  <main>
+    <section class="left">
+      <canvas id="screen" aria-label="A replayed mouse path on a full-size screen, scaled down"></canvas>
+      <canvas id="speed" aria-label="Speed of the replayed path over time"></canvas>
+      <p class="small">Top: the whole 1920 x 1080 screen, scaled down; the dot is the cursor and the
+        line is where it has been. Bottom: cursor speed over time (pixels per second).</p>
+    </section>
+
+    <section class="right">
+      <div class="panel" id="rating-panel">
+        <h2 id="path-title">Path 1 of 12</h2>
+        <div class="buttons"><button id="replay">Replay</button>
+          <button id="slow" class="toggle">Half speed: off</button></div>
+        <p>How much does this look like a real person moving a mouse?</p>
+        <div class="buttons stars" id="stars">
+          <button data-score="1">1</button><button data-score="2">2</button><button data-score="3">3</button>
+          <button data-score="4">4</button><button data-score="5">5</button>
+        </div>
+        <p class="small">1 = clearly a computer, 5 = could be a real person.</p>
+        <p>What looks wrong? (any)</p>
+        <div class="checks" id="problems">
+          <label><input type="checkbox" value="too smooth / robotic"> too smooth / robotic</label>
+          <label><input type="checkbox" value="too straight"> too straight</label>
+          <label><input type="checkbox" value="too fast"> too fast</label>
+          <label><input type="checkbox" value="too slow"> too slow</label>
+          <label><input type="checkbox" value="shaky / jittery"> shaky / jittery</label>
+          <label><input type="checkbox" value="pauses look wrong"> pauses look wrong</label>
+          <label><input type="checkbox" value="odd shapes (wiggles, circles)"> odd shapes (wiggles, circles)</label>
+          <label><input type="checkbox" value="jumps"> jumps</label>
+        </div>
+        <textarea id="note" placeholder="Anything else? (optional)"></textarea>
+        <div class="buttons"><button id="next" disabled>Next path</button></div>
+      </div>
+
+      <div class="panel" id="done-panel" hidden>
+        <h2>Thank you! Your results</h2>
+        <p>Copy this into the group chat (nothing was saved or sent anywhere):</p>
+        <div id="report"></div>
+        <div class="buttons"><button id="copy">Copy</button>
+          <a class="button-link" href="path_check.html">Start again</a></div>
+      </div>
+    </section>
+  </main>
+
+  <footer>
+    <p><b>This project is a prototype and is not medical advice.</b></p>
+    <p class="small">Paths from <code>data_pipeline/make_path_check.py</code>. Ratings stay in this
+      browser tab only.</p>
+  </footer>
+
+  <script src="path_check.js"></script>
+</body>
+</html>

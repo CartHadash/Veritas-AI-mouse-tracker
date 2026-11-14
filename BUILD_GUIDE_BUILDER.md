@@ -274,8 +274,14 @@ Done (Sat 14 Nov): `generate_path(rng, n)` returns positions and a per-sample "k
 (still / reach / correction / drift / wiggle / circle / zigzag) so step 5 can describe each
 window. Chart sent to the builder for the plausibility check.
 
-**Done when:** a human looking at the chart finds the paths plausible, and variety is
-obvious (not all straight lines of the same length).
+Changed (Sat 14 Nov evening): a review found five realism gaps (`docs/EXPLAINED.md`, step 4),
+so there is an opt-in realistic version (`realistic=True` + `device_view()`); the models are
+still trained on the original. The plausibility check is now a blind team test:
+`web/path_check.html` (see `docs/RUNNING.md`). Afterwards: decide whether to stress-test or
+retrain on the realistic version (question saved in `STATUS.md`).
+
+**Done when:** teammates have done the path check (`web/path_check.html`) and posted their
+reports, and the paths they rate are plausible.
 
 ### - [x] Step 5. The training, validation and test sets
 
