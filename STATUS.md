@@ -36,6 +36,11 @@ Time line: first full version by **Sun 15 Nov 22:00 CET**; no new features after
 - [ ] Step 4: stress test the models on the realistic movement (about 1 h); retrain only if
       they clearly drop (2-3 h more).
 - [ ] Timofey's idea 3, sticky targets (about 1 h).
+- [ ] Accessibility (Oleksandr's idea): a "Read aloud" button for the summary numbers (the
+      browser's built-in speech, no new library), a font toggle that is easier to read with
+      dyslexia, colour-blind-safe colours for the two cursors, targets and charts, and larger
+      text. About 1-1.5 h for all. Reading the assistant's answers aloud touches
+      `web/assistant/` (leader's lane): needs the leader's OK, or the leader adds it.
 - [ ] Step 16, the desktop window (cut first).
 
 ## Done (newest first)
