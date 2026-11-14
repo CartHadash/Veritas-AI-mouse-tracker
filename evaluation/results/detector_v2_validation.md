@@ -8,11 +8,11 @@ Chosen settings: `{'learning_rate': 0.05, 'max_leaf_nodes': 31, 'max_iter': 400}
 
 | Missed cases at most | Cut-off | Missed (all) | False alarms (all) | Missed (hand moving) | False alarms (hand moving) |
 |---|---|---|---|---|---|
-| 5% | 0.058 | 5.0% | 53.3% | 4.1% | 62.7% |
-| 10% | 0.083 | 10.0% | 40.8% | 9.6% | 48.9% |
-| 15% | 0.113 | 15.0% | 32.1% | 16.3% | 39.3% |
-| 20% | 0.158 | 20.0% | 23.3% | 21.9% | 28.5% |
-| 30% | 0.270 | 30.0% | 12.6% | 34.3% | 15.6% |
+| 5% | 0.058 | 5.0% | 53.3% | 5.1% | 55.4% |
+| 10% | 0.083 | 10.0% | 40.8% | 10.1% | 42.3% |
+| 15% | 0.113 | 15.0% | 32.1% | 15.2% | 33.2% |
+| 20% | 0.158 | 20.0% | 23.3% | 20.6% | 24.2% |
+| 30% | 0.270 | 30.0% | 12.6% | 30.7% | 13.2% |
 
 Size estimate error on validation tremor windows: median 0.98 px (tremor windows' median size 5.10 px).
 

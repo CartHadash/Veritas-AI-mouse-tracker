@@ -13,28 +13,28 @@ Frequency rule cut-offs (share of movement power in 3-12 Hz): balanced 0.592; mi
 | Detector | Windows | Missed cases | False alarms | Accuracy |
 |---|---|---|---|---|
 | Always "no tremor" | all | 100.0% | 0.0% | 80.9% |
-| Always "no tremor" | hand moving | 100.0% | 0.0% | 80.3% |
-| Always "no tremor" | hand still | 100.0% | 0.0% | 82.0% |
+| Always "no tremor" | hand moving | 100.0% | 0.0% | 80.8% |
+| Always "no tremor" | hand still | 100.0% | 0.0% | 81.0% |
 | Frequency rule (balanced) | all | 52.9% | 21.5% | 72.5% |
-| Frequency rule (balanced) | hand moving | 58.2% | 19.4% | 73.0% |
-| Frequency rule (balanced) | hand still | 41.0% | 25.8% | 71.5% |
+| Frequency rule (balanced) | hand moving | 54.9% | 20.5% | 72.9% |
+| Frequency rule (balanced) | hand still | 46.1% | 24.8% | 71.1% |
 | Frequency rule (missed <= 10% on val) | all | 9.7% | 74.4% | 38.0% |
-| Frequency rule (missed <= 10% on val) | hand moving | 9.7% | 76.4% | 36.7% |
-| Frequency rule (missed <= 10% on val) | hand still | 9.8% | 70.3% | 40.6% |
+| Frequency rule (missed <= 10% on val) | hand moving | 9.8% | 75.6% | 37.0% |
+| Frequency rule (missed <= 10% on val) | hand still | 9.2% | 70.2% | 41.4% |
 
 ### Test (3708 windows: 944 tremor, 2764 no tremor)
 
 | Detector | Windows | Missed cases | False alarms | Accuracy |
 |---|---|---|---|---|
 | Always "no tremor" | all | 100.0% | 0.0% | 74.5% |
-| Always "no tremor" | hand moving | 100.0% | 0.0% | 74.7% |
-| Always "no tremor" | hand still | 100.0% | 0.0% | 74.2% |
+| Always "no tremor" | hand moving | 100.0% | 0.0% | 75.0% |
+| Always "no tremor" | hand still | 100.0% | 0.0% | 72.7% |
 | Frequency rule (balanced) | all | 47.2% | 19.4% | 73.5% |
-| Frequency rule (balanced) | hand moving | 53.1% | 16.7% | 74.1% |
-| Frequency rule (balanced) | hand still | 35.2% | 25.2% | 72.2% |
+| Frequency rule (balanced) | hand moving | 50.5% | 18.0% | 73.9% |
+| Frequency rule (balanced) | hand still | 36.7% | 24.6% | 72.1% |
 | Frequency rule (missed <= 10% on val) | all | 7.4% | 72.9% | 43.8% |
-| Frequency rule (missed <= 10% on val) | hand moving | 8.2% | 74.6% | 42.2% |
-| Frequency rule (missed <= 10% on val) | hand still | 5.9% | 69.2% | 47.2% |
+| Frequency rule (missed <= 10% on val) | hand moving | 7.6% | 73.2% | 43.1% |
+| Frequency rule (missed <= 10% on val) | hand still | 6.8% | 71.5% | 46.1% |
 
 ## Corrector baselines (test: 236 sequences with marked tremor, 694 without)
 

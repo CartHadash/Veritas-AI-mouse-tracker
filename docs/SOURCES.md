@@ -10,7 +10,8 @@ copied from here at the end.
   https://doi.org/10.13026/m0w9-zx22 (CC BY-NC-SA 4.0). Full citation in `DATASETS.md`.
 - Effect of Deep Brain Stimulation on Parkinsonian Tremor (TremorDB), PhysioNet,
   https://doi.org/10.13026/C2D097 (ODC-By 1.0). Full citation in `DATASETS.md`.
-- PhysioNet platform citation: see `DATASETS.md`.
+- PhysioNet platform citation: see `DATASETS.md`. The download script uses PhysioNet's public
+  mirror on Amazon S3 (https://physionet-open.s3.amazonaws.com/).
 
 ## Pretrained models
 
@@ -25,11 +26,11 @@ copied from here at the end.
 Installed in step 1 (exact versions in `requirements.txt`). Add new ones here when first used.
 
 - NumPy, https://numpy.org (arrays and maths)
-- pandas, https://pandas.pydata.org (tables)
+- pandas, https://pandas.pydata.org (installed in step 1; not used by our code so far)
 - SciPy, https://scipy.org (signal filters, frequency spectra)
-- scikit-learn, https://scikit-learn.org (classic machine learning: the detector v1)
+- scikit-learn, https://scikit-learn.org (classic machine learning: detectors v1 and v2)
 - Matplotlib, https://matplotlib.org (charts)
-- PyTorch, https://pytorch.org (neural networks: the corrector)
+- PyTorch, https://pytorch.org (neural networks: the corrector; trained with the Adam optimiser)
 - FastAPI, https://fastapi.tiangolo.com (the local web server)
 - Uvicorn, https://www.uvicorn.org (runs the FastAPI server)
 - Anthropic Python SDK, https://github.com/anthropics/anthropic-sdk-python (Claude API)
@@ -57,7 +58,14 @@ Installed in step 1 (exact versions in `requirements.txt`). Add new ones here wh
 
 - One Euro filter: Casiez, Roussel, Vogel (2012), "1€ Filter: A Simple Speed-based Low-pass
   Filter for Noisy Input in Interactive Systems", CHI 2012. Used as a baseline.
-- Kalman filter: Kalman (1960). Used as a baseline.
+- Kalman filter: Kalman, R. E. (1960), "A New Approach to Linear Filtering and Prediction
+  Problems", Journal of Basic Engineering 82(1). Used as a baseline.
+- Gradient boosting: Friedman, J. H. (2001), "Greedy function approximation: a gradient
+  boosting machine", Annals of Statistics 29(5). The detector model (scikit-learn's version).
+- Permutation importance ("which features mattered"): Breiman, L. (2001), "Random Forests",
+  Machine Learning 45. The idea of shuffling one feature to see how much worse a model gets.
+- Adam optimiser: Kingma, D. P. & Ba, J. (2014), "Adam: A Method for Stochastic Optimization",
+  arXiv:1412.6980. Used to train the corrector.
 - Minimum-jerk model of human reaching: Flash, T. & Hogan, N. (1985), "The coordination of arm
   movements: an experimentally confirmed mathematical model", Journal of Neuroscience 5(7).
   Used for the synthetic reaches (step 4).

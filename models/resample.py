@@ -12,11 +12,14 @@ the corrector mistook the stairs for shaking: on the demo page it made the curso
 no filter (found with evaluation/compare_modes.py).
 
 After a gap of more than 1 second (the pointer stopped, or the tracker paused), it starts
-again at the new position instead of drawing a slow line across the gap.
+again at the new position instead of drawing a slow line across the gap, and sets
+`restarted` so the caller can forget its old history (otherwise the models would see one
+huge jump between the old and the new position).
 """
 
 RATE = 100
 MAX_GAP = 1.0
+EPSILON = 1e-9    # tolerance for rounding in times (a tick at 0.07 s must count at t = 0.07)
 
 
 class Resampler:
@@ -25,19 +28,26 @@ class Resampler:
 
     def reset(self):
         self.prev = None          # (t, x, y) of the previous sample
-        self.next_t = None        # time of the next 10 ms tick
+        self.start_t = None       # time of tick number 0
+        self.next_k = None        # number of the next tick; its time is start_t + next_k / RATE
+        self.restarted = False    # True right after a fresh start (first sample, or after a gap)
 
     def feed(self, x, y, t):
         """Give one sample; returns the list of (x, y) positions at the ticks it completes."""
         ticks = []
-        if self.prev is None or t - self.prev[0] > MAX_GAP:
+        self.restarted = self.prev is None or t - self.prev[0] > MAX_GAP
+        if self.restarted:
             self.prev = (t, x, y)
-            self.next_t = t + 1.0 / RATE
+            self.start_t, self.next_k = t, 1
             return [(x, y)]
         t0, x0, y0 = self.prev
-        while self.next_t <= t:
-            share = (self.next_t - t0) / (t - t0) if t > t0 else 1.0
+        # Tick times are computed from a whole-number tick count, not by adding 0.01 again and
+        # again: repeated adding drifts, and then most ticks landed a hair AFTER their own
+        # sample, so the corrected cursor trailed by 10 ms (found on the demo page).
+        while self.start_t + self.next_k / RATE <= t + EPSILON:
+            tick_t = self.start_t + self.next_k / RATE
+            share = min(1.0, (tick_t - t0) / (t - t0)) if t > t0 else 1.0
             ticks.append((x0 + share * (x - x0), y0 + share * (y - y0)))
-            self.next_t += 1.0 / RATE
+            self.next_k += 1
         self.prev = (t, x, y)
         return ticks

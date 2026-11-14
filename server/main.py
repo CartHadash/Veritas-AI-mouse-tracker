@@ -28,14 +28,16 @@ This project is a prototype and is not medical advice.
 """
 
 import json
+import math
 import sys
 import threading
 import time
 from datetime import datetime
 from pathlib import Path
+from urllib.parse import urlsplit
 
 import numpy as np
-from fastapi import FastAPI, WebSocket, WebSocketDisconnect
+from fastapi import FastAPI, Request, WebSocket, WebSocketDisconnect
 from fastapi.responses import JSONResponse
 from fastapi.staticfiles import StaticFiles
 
@@ -52,12 +54,28 @@ DEMO_NOTE = "Tremor replay (demo mode) was ON for part of this session."
 
 app = FastAPI(title="Tremor-aware pointer assistant (prototype, not medical advice)")
 
+
+def is_local(host_header, origin_header):
+    """Only this computer's own pages may talk to the server. Blocks other websites the user
+    visits (their Origin is not local) and 'DNS rebinding' tricks (their Host is not local)."""
+    host = (host_header or "").rsplit(":", 1)[0].strip("[]")
+    if host not in LOCAL_HOSTS:
+        return False
+    return origin_header is None or urlsplit(origin_header).hostname in LOCAL_HOSTS
+
+
+@app.middleware("http")
+async def only_local_pages(request: Request, call_next):
+    if not is_local(request.headers.get("host"), request.headers.get("origin")):
+        return JSONResponse({"error": "only pages served by this computer may use this server"}, status_code=403)
+    return await call_next(request)
+
 # ---------------------------------------------------------------- shared state
 
 settings = {"mode": "learned", "strength": 1.0, "demo_tremor": False, "demo_level": "medium", "tracking": False}
 DEMO_LEVELS = ["mild", "medium", "strong"]
-settings_version = [0]          # bumped on every change, so open sessions rebuild their filter
 status = {}
+LOCAL_HOSTS = {"127.0.0.1", "localhost"}
 
 # The models are loaded once and shared (they are only read, never changed).
 DETECTOR = Detector()
@@ -159,29 +177,51 @@ class DemoTremor:
         self.start_t = None
 
     def offset(self, t):
+        """The recorded tremor at time t, blended between the two nearest recorded samples.
+        (Taking int(...) of the position used to repeat or skip about 7% of samples because of
+        rounding, and at browser rates made a staircase: both put fake jerks into the demo.)"""
         if self.start_t is None:
             self.start_t = t
-        i = int((t - self.start_t) * RATE)
-        segment = (i // self.segments.shape[1]) % len(self.segments)     # next recording every 10 s
-        dx, dy = self.segments[segment, i % self.segments.shape[1]]
-        return float(dx), float(dy), self.info[segment]
+        position = (t - self.start_t) * RATE
+        i = int(math.floor(position + 1e-6))                 # whole sample, robust to rounding
+        share = min(max(position - i, 0.0), 1.0)
+        n = self.segments.shape[1]
+
+        def sample(k):                                        # next recording every 10.24 s
+            return self.segments[(k // n) % len(self.segments), k % n]
+        a, b = sample(i), sample(i + 1)
+        dx, dy = a + share * (b - a)
+        return float(dx), float(dy), self.info[(i // n) % len(self.segments)]
 
 
 class LowSensitivity:
-    """The cursor moves half as far as the hand (a baseline from step 6)."""
+    """
+    The cursor moves half as far as the hand (a baseline from step 6). It adds up the hand's
+    movements step by step (times 0.5) and stays inside the practice area, so every part of
+    the area can still be reached, just with more hand travel. After a pause or when the
+    pointer comes back into the area, it does not jump.
+    """
 
-    def __init__(self, gain=0.5):
+    def __init__(self, gain=0.5, area=None):
         self.gain = gain
+        self.area = area              # (width, height) of the practice area in px, if known
         self.reset()
 
     def reset(self):
-        self.anchor = None
+        self.prev = None
+        self.out = None
 
     def update(self, x, y, t):
-        if self.anchor is None:
-            self.anchor = (x, y)
-        return (self.anchor[0] + self.gain * (x - self.anchor[0]),
-                self.anchor[1] + self.gain * (y - self.anchor[1]))
+        if self.out is None:
+            self.out = [x, y]
+        elif t - self.prev[0] < 0.1:              # a normal step (not a pause or a re-entry)
+            self.out[0] += self.gain * (x - self.prev[1])
+            self.out[1] += self.gain * (y - self.prev[2])
+            if self.area is not None:
+                self.out[0] = min(max(self.out[0], 0.0), self.area[0])
+                self.out[1] = min(max(self.out[1], 0.0), self.area[1])
+        self.prev = (t, x, y)
+        return self.out[0], self.out[1]
 
 
 class CursorSession:
@@ -191,11 +231,13 @@ class CursorSession:
         self.stats = stats
         self.detector = LiveDetector(DETECTOR)
         self.demo = None
-        self.version = None
+        self.area = None
         self.build()
 
     def build(self):
-        self.version = settings_version[0]
+        """(Re)create the filter. Only needed when the mode or the demo level changes, so
+        moving the strength slider does not throw away the detector's 2.56 s of history."""
+        self.key = (settings["mode"], settings["demo_level"])
         self.mode = settings["mode"]
         self.strength = float(settings["strength"])
         if self.demo is None or self.demo.info[0]["level"] != settings["demo_level"]:
@@ -206,15 +248,23 @@ class CursorSession:
         elif self.mode == "one_euro":
             self.filter = OneEuroFilter()
         elif self.mode == "low_sensitivity":
-            self.filter = LowSensitivity()
+            self.filter = LowSensitivity(area=self.area)
         else:
             self.filter = None
         if self.filter is not None:
             self.filter.reset()
 
+    def set_area(self, width, height):
+        self.area = (width, height)
+        if isinstance(self.filter, LowSensitivity):
+            self.filter.area = self.area
+
     def update(self, t, x, y):
-        if self.version != settings_version[0]:
+        if self.key != (settings["mode"], settings["demo_level"]):
             self.build()
+        self.strength = float(settings["strength"])      # strength changes apply immediately
+        if self.mode == "learned":
+            self.filter.strength = self.strength
         demo_info = None
         if settings["demo_tremor"]:
             dx, dy, demo_info = self.demo.offset(t)
@@ -309,9 +359,12 @@ except Exception as error:
 
 # ---------------------------------------------------------------- routes
 
+DEMO_SEGMENT_COUNT = len(np.load(DEMO_TREMOR_FILE)["xy"])
+
+
 @app.get("/api/status")
 def get_status():
-    return {**status, "demo_tremor_segments": len(np.load(DEMO_TREMOR_FILE)["xy"]),
+    return {**status, "demo_tremor_segments": DEMO_SEGMENT_COUNT,
             "detector_threshold": round(DETECTOR.threshold, 3),
             "disclaimer": "This project is a prototype and is not medical advice."}
 
@@ -324,22 +377,28 @@ def get_settings():
 @app.post("/api/settings")
 def post_settings(new: dict):
     """Change any of: mode (none / low_sensitivity / one_euro / learned), strength (0-1),
-    demo_tremor (true/false), demo_level (mild / medium / strong), tracking (true/false)."""
-    if "mode" in new:
-        if new["mode"] not in MODES:
-            return JSONResponse({"error": "mode must be one of %s" % MODES}, status_code=400)
-        settings["mode"] = new["mode"]
+    demo_tremor (true/false), demo_level (mild / medium / strong), tracking (true/false).
+    Everything is checked first; if anything is invalid, nothing is changed."""
+    if "mode" in new and new["mode"] not in MODES:
+        return JSONResponse({"error": "mode must be one of %s" % MODES}, status_code=400)
+    if "demo_level" in new and new["demo_level"] not in DEMO_LEVELS:
+        return JSONResponse({"error": "demo_level must be one of %s" % DEMO_LEVELS}, status_code=400)
     if "strength" in new:
-        settings["strength"] = float(np.clip(float(new["strength"]), 0.0, 1.0))
+        try:
+            strength = float(new["strength"])
+        except (TypeError, ValueError):
+            strength = float("nan")
+        if not math.isfinite(strength):
+            return JSONResponse({"error": "strength must be a number from 0 to 1"}, status_code=400)
+    for key in ("mode", "demo_level"):
+        if key in new:
+            settings[key] = new[key]
+    if "strength" in new:
+        settings["strength"] = float(np.clip(strength, 0.0, 1.0))
     if "demo_tremor" in new:
         settings["demo_tremor"] = bool(new["demo_tremor"])
-    if "demo_level" in new:
-        if new["demo_level"] not in DEMO_LEVELS:
-            return JSONResponse({"error": "demo_level must be one of %s" % DEMO_LEVELS}, status_code=400)
-        settings["demo_level"] = new["demo_level"]
     if "tracking" in new:
         set_tracking(bool(new["tracking"]))
-    settings_version[0] += 1
     return settings
 
 
@@ -363,13 +422,29 @@ def reset_summary():
     return {"ok": True}
 
 
+def read_sample(message):
+    """(t, x, y) as finite numbers, or None if the message is not a valid sample."""
+    try:
+        values = tuple(float(message[k]) for k in ("t", "x", "y"))
+    except (KeyError, TypeError, ValueError):
+        return None
+    return values if all(math.isfinite(v) for v in values) else None
+
+
 @app.websocket("/ws/cursor")
 async def cursor_socket(websocket: WebSocket):
+    if not is_local(websocket.headers.get("host"), websocket.headers.get("origin")):
+        await websocket.close(code=1008)                 # another website: refuse
+        return
     await websocket.accept()
+    with demo_stats.lock:
+        demo_stats.last = None                           # a new page: do not join its path to the old one
     session = CursorSession(demo_stats)
     try:
         while True:
             message = await websocket.receive_json()
+            if not isinstance(message, dict):
+                continue
             if session.stats is not demo_stats:          # the summary was reset
                 session.stats = demo_stats
             kind = message.get("type", "sample")
@@ -377,11 +452,21 @@ async def cursor_socket(websocket: WebSocket):
                 demo_stats.add_click(message.get("hit", False))
             elif kind == "reset":
                 session.build()
+            elif kind == "area":
+                try:
+                    session.set_area(float(message["width"]), float(message["height"]))
+                except (KeyError, TypeError, ValueError):
+                    pass
             else:
-                reply = session.update(float(message["t"]), float(message["x"]), float(message["y"]))
-                await websocket.send_json(reply)
+                sample = read_sample(message)
+                if sample is None:
+                    continue                             # skip a broken message, keep the connection
+                await websocket.send_json(session.update(*sample))
     except WebSocketDisconnect:
         pass
+    finally:
+        if session.detector.pool is not None:
+            session.detector.pool.shutdown(wait=False)
 
 
 # The interface files. Mounted last so the /api and /ws routes above take priority.

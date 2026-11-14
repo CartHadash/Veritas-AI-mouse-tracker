@@ -24,7 +24,7 @@ import torch
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT))
 from baselines.classical_filters import MovingAverageFilter, OneEuroFilter  # noqa: E402
-from evaluation.metrics import corrector_scores, run_filter  # noqa: E402
+from evaluation.metrics import CORRECTOR_SKIP, SIZE_CLASSES, corrector_scores, run_filter  # noqa: E402
 from models.corrector.live import GATE_SECONDS, gate_target, load_corrector  # noqa: E402
 from models.corrector.model import HISTORY  # noqa: E402
 from models.detector.features import compute_features  # noqa: E402
@@ -32,10 +32,11 @@ from models.detector.predict import MODEL_FILE, Detector  # noqa: E402
 
 DERIVED = ROOT / "data" / "derived"
 RESULTS = ROOT / "evaluation" / "results"
-SKIP = 256            # detector warm-up: score only after 2.56 s
+SKIP = CORRECTOR_SKIP  # detector warm-up: score only after 2.56 s
 WINDOW = 256
 
 # One Euro settings chosen on validation by evaluation/run_baselines.py (see baselines.md).
+# Copied by hand: if run_baselines.py is re-run and picks different settings, update this.
 ONE_EURO_TUNED = dict(min_cutoff=2.0, beta=0.03)
 
 
@@ -102,7 +103,7 @@ def main():
     start = shaky[:, :1]
 
     header = ["| Method | Distance while moving (px) | Distance while still (px) | Tremor removed "
-              "| Lag (ms) | Distance on steady-hand sequences (px) | Notes |",
+              "| Lag (ms) | Distance on sequences without marked tremor (px) | Notes |",
               "|---|---|---|---|---|---|---|"]
     rows = [
         row("No filter", shaky, clean, shaky, tremor),
@@ -139,7 +140,7 @@ def main():
              "Produced by `python evaluation/evaluate_corrector.py%s`. Test sequences: %d (%d with "
              "marked tremor, %d without). Scored after the first 2.56 s of each 5.12 s sequence "
              "(the detector's warm-up), the same samples for every method. Distances, tremor "
-             "removed and lag are on sequences with marked tremor; the steady-hand column is the "
+             "removed and lag are on sequences with marked tremor; the last column is the "
              "average distance on sequences without marked tremor." % (
                  "" if args.detector == "v1" else " --detector " + args.detector,
                  len(shaky), tremor.sum(), (~tremor).sum()), ""] + header + rows + [

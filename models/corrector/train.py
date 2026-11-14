@@ -15,6 +15,9 @@ Run from the repository folder:
     python models/corrector/train.py --version v3 --loss distance    # after step 12 (see below)
       (v3: learns to minimise the plain distance instead of the squared distance; squaring
        makes strong tremor's big errors dominate, so v1 helps medium tremor much less)
+    python models/corrector/train.py --version v4_s2 --loss distance --smooth 2
+      (v4: also penalises a jerky corrected cursor: the change in its velocity from one 10 ms
+       tick to the next, compared with the intended path's. The team leader saw v1 look jumpy.)
       (v2: each training sequence's tremor is randomly made 0.5x-2x as large, so the network
        sees the range of sizes different mouse settings (DPI) would produce)
 Also saves the loss-curve chart to evaluation/results/figures/corrector_v1_loss.png.
@@ -93,6 +96,8 @@ def main():
     parser.add_argument("--version", default="v1")
     parser.add_argument("--scale-augment", action="store_true")
     parser.add_argument("--loss", choices=["squared", "distance"], default="squared")
+    parser.add_argument("--smooth", type=float, default=0.0,
+                        help="weight of the jerkiness penalty on the corrected cursor (0 = off)")
     args = parser.parse_args()
     weights = WEIGHTS if args.version == "v1" else WEIGHTS.with_name(f"weights_{args.version}.pt")
     figure = FIGURE.with_name(f"corrector_{args.version}_loss.png")
@@ -108,13 +113,24 @@ def main():
     history_log, best, start_time = [], None, time.time()
     for step in range(1, STEPS + 1):
         seq = torch.tensor(rng.integers(0, n_seq, BATCH))
-        t = torch.tensor(rng.integers(HISTORY, length, BATCH))
+        t = torch.tensor(rng.integers(HISTORY + 2, length, BATCH))
         scale = None
         if args.scale_augment:      # log-uniform between 0.5 and 2: as often smaller as bigger
             scale = torch.tensor(np.exp(rng.uniform(np.log(0.5), np.log(2.0), BATCH)), dtype=torch.float32)
         h, target = gather(*train, seq, t, scale)
-        squared = ((model(h.to(device)) - target.to(device)) ** 2).sum(dim=1)
+        prediction = model(h.to(device))
+        squared = ((prediction - target.to(device)) ** 2).sum(dim=1)
         loss = squared.mean() if args.loss == "squared" else torch.sqrt(squared + 1e-6).mean()
+        if args.smooth > 0:
+            # Corrected cursor c = shaky + offset at ticks t-2, t-1, t; its jerk vs the clean path's.
+            h1, g1 = gather(*train, seq, t - 1, scale)
+            h2, g2 = gather(*train, seq, t - 2, scale)
+            p1, p2 = model(h1.to(device)), model(h2.to(device))
+            # offset error e = prediction - target = c - clean, so the jerk of (c - clean) is
+            # the jerk of the error: zero when the cursor is exactly as smooth as intended.
+            e0, e1, e2 = prediction - target.to(device), p1 - g1.to(device), p2 - g2.to(device)
+            jerk = torch.sqrt(((e0 - 2 * e1 + e2) ** 2).sum(dim=1) + 1e-6).mean()
+            loss = loss + args.smooth * jerk
         optimiser.zero_grad()
         loss.backward()
         optimiser.step()

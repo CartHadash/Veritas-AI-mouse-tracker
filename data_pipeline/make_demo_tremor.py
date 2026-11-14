@@ -14,9 +14,13 @@ differently by size (see evaluation/results/improvements.md):
 Source data: PADS and TremorDB (credited in docs/SOURCES.md; PADS is CC BY-NC-SA 4.0).
 
 Run from the repository folder:
-    python data_pipeline/make_demo_tremor.py
+    python data_pipeline/make_demo_tremor.py               # test people -> server/demo_tremor.npz (the app)
+    python data_pipeline/make_demo_tremor.py --people val  # validation people -> data/derived/
+      (the validation version is only for evaluation/compare_modes.py while developing, so
+       design choices never look at test people)
 """
 
+import argparse
 import json
 from pathlib import Path
 
@@ -53,9 +57,13 @@ def pick(lib, test_people, low, high):
 
 
 def main():
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--people", choices=["test", "val"], default="test")
+    args = parser.parse_args()
+    out = OUT if args.people == "test" else ROOT / "data" / "derived" / "demo_tremor_val.npz"
     lib = np.load(LIBRARY)
     with open(SPLIT, encoding="utf-8") as f:
-        test_people = set(json.load(f)["test"])
+        test_people = set(json.load(f)[args.people])
     chosen, levels = [], []
     for level, low, high in LEVELS:
         picked = pick(lib, test_people, low, high)
@@ -63,11 +71,11 @@ def main():
         levels += [level] * len(picked)
 
     np.savez_compressed(
-        OUT, xy=lib["xy"][chosen].astype(np.float32), subject=lib["subject"][chosen],
+        out, xy=lib["xy"][chosen].astype(np.float32), subject=lib["subject"][chosen],
         condition=lib["condition"][chosen], dataset=lib["dataset"][chosen],
         strength_px=lib["strength_px"][chosen], peak_hz=lib["peak_hz"][chosen], level=np.array(levels))
     print("Saved %d demo tremor segments (10.24 s each) -> %s (%.0f KB)" % (
-        len(chosen), OUT.relative_to(ROOT), OUT.stat().st_size / 1000))
+        len(chosen), out.relative_to(ROOT), out.stat().st_size / 1000))
     for i, level in zip(chosen, levels):
         print("  %-7s %-10s %-26s %5.1f px  %.1f Hz" % (level, lib["subject"][i], lib["condition"][i],
                                                        lib["strength_px"][i], lib["peak_hz"][i]))

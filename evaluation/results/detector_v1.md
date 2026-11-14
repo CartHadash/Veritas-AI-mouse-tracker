@@ -16,8 +16,8 @@ DECISION 4: cut-off chosen on validation so that missed cases are at most 20% th
 
 | Hand | Missed cases | False alarms |
 |---|---|---|
-| moving | 14.4% (17.0%) | 29.0% (58.9%) |
-| still | 14.0% (10.4%) | 22.8% (59.2%) |
+| moving | 13.7% (15.2%) | 28.9% (58.6%) |
+| still | 16.3% (13.6%) | 20.2% (60.3%) |
 
 ## Per group (judges check that it works equally well across groups)
 

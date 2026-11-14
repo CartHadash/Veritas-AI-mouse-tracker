@@ -15,12 +15,21 @@ CORRECTOR (turns shaky cursor positions into steadier ones):
   tremor removed               = how much of the 3-12 Hz shake left in the output is gone,
                                   compared with no filter (100% = all of it)
   lag                          = how many milliseconds the output trails the intended path
+  jerkiness                    = average size (px) of the change in cursor velocity from one
+                                  sample to the next. A smooth cursor is near 0. Added after the
+                                  team leader saw our corrector look jumpy although its distance
+                                  score was good: distance alone hid that problem.
 """
 
 import numpy as np
 from scipy.signal import butter, filtfilt
 
 RATE = 100
+# Corrector scoring ignores the first 2.56 s of every sequence (the detector needs that much
+# history before the gate can open), so every method is scored on the same samples.
+CORRECTOR_SKIP = 256
+# Tremor size classes used in every report (on-screen RMS size of the added tremor piece).
+SIZE_CLASSES = [("mild (under 3 px)", 0, 3), ("medium (3-10 px)", 3, 10), ("strong (over 10 px)", 10, 1e9)]
 MOVING_SPEED = 20.0      # px/s: above this (measured over 50 ms) the hand counts as moving
 
 
@@ -66,6 +75,13 @@ def choose_threshold(scores, labels, max_missed=None):
 _BAND_B, _BAND_A = butter(4, [3, 12], btype="bandpass", fs=RATE)
 
 
+def window_is_moving(clean):
+    """clean: (windows, samples, 2) intended movement. True for a window when the hand is
+    moving (faster than 20 px/s, as in moving_mask) for at least half of it. This is THE
+    definition of "hand moving" for every table in the project."""
+    return moving_mask(np.asarray(clean, dtype=np.float64)).mean(axis=1) >= 0.5
+
+
 def moving_mask(clean):
     """clean: (sequences, samples, 2). True where the intended movement is faster than 20 px/s."""
     step = np.zeros(clean.shape[:2])
@@ -93,6 +109,13 @@ def estimate_lag_ms(output, clean, mask, max_shift=40):
     return 1000.0 * int(np.argmin(errors)) / RATE
 
 
+def jerkiness(positions):
+    """positions: (sequences, samples, 2) or (samples, 2). Mean |p[t] - 2 p[t-1] + p[t-2]| in px."""
+    positions = np.asarray(positions)
+    second = positions[..., 2:, :] - 2 * positions[..., 1:-1, :] + positions[..., :-2, :]
+    return float(np.linalg.norm(second, axis=-1).mean())
+
+
 def corrector_scores(output, clean, shaky, skip=50):
     """
     output, clean, shaky: (sequences, samples, 2) in px. The first `skip` samples (0.5 s) are
@@ -107,7 +130,8 @@ def corrector_scores(output, clean, shaky, skip=50):
         distance_moving=float(distance[mask].mean()),
         distance_still=float(distance[~mask].mean()),
         tremor_removed=1.0 - shake_after / shake_before if shake_before > 0 else float("nan"),
-        lag_ms=estimate_lag_ms(output, clean, mask))
+        lag_ms=estimate_lag_ms(output, clean, mask),
+        jerkiness=jerkiness(output))
 
 
 def run_filter(make, shaky):

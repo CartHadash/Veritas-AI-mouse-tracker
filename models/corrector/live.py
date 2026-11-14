@@ -31,9 +31,10 @@ sys.path.insert(0, str(ROOT))
 from models.corrector.model import HISTORY, Corrector  # noqa: E402
 from models.resample import Resampler  # noqa: E402
 
-# The version the app uses: v3 (trained on plain distance; better than v1 at every tremor
-# size on validation, see evaluation/results/improvements.md). v1 is weights.pt.
-VERSION = "v3"
+# The version the app uses: v4 with smoothness penalty 0.5 (trained on plain distance like v3,
+# plus a penalty on a jumpy cursor; chosen on validation by evaluation/smoothness.py).
+# v1 is weights.pt, v3 is weights_v3.pt.
+VERSION = "v4_s0.5"
 WEIGHTS = ROOT / "models" / "corrector" / f"weights_{VERSION}.pt"
 RATE = 100
 GATE_LOW = 0.05          # detector score at which the gate starts opening
@@ -75,7 +76,7 @@ class LiveCorrector:
         self.resampler = Resampler()
         self.last_t = None
         self.gate = 0.0
-        self.offset = (0.0, 0.0)
+        self.offset = None        # latest correction (dx, dy) from the network
         self.score = None
         if self.detector is not None:
             self.detector.reset()
@@ -83,6 +84,9 @@ class LiveCorrector:
     def update(self, x, y, t):
         # 1) Resample to 100 per second (straight line between samples; models/resample.py).
         ticks = self.resampler.feed(x, y, t)
+        if self.resampler.restarted:          # first sample, or back after a pause: forget history
+            self.positions.clear()
+            self.offset = None
         self.positions.extend(ticks)
         new_tick = bool(ticks)
 
@@ -104,5 +108,11 @@ class LiveCorrector:
             with torch.inference_mode():
                 self.offset = tuple(self.model(steps)[0].tolist())
 
+        if self.offset is None:
+            return x, y
+        # The latest correction is added to the NEWEST raw position (gate 0: raw cursor, no delay).
+        # We also tried adding it to the position of the tick it was computed for: on validation
+        # people's demo tremor at browser-like 60 Hz that was both further from the path and
+        # jerkier, because that position can be up to 10 ms old.
         g = self.gate * self.strength
         return x + g * self.offset[0], y + g * self.offset[1]

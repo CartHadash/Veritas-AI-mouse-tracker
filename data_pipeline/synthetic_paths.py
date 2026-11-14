@@ -33,8 +33,8 @@ SCREEN_W, SCREEN_H = 1920, 1080
 MARGIN = 60                     # keep targets this far from the screen edge
 
 # What each sample is part of (saved alongside the path, used later to describe windows).
-STILL, REACH, CORRECTION, DRIFT, WIGGLE, CIRCLE, ZIGZAG = range(7)
-KIND_NAMES = ["still", "reach", "correction", "drift", "wiggle", "circle", "zigzag"]
+STILL, REACH, CORRECTION, DRIFT, WIGGLE, CIRCLE, ZIGZAG, GLIDE = range(8)
+KIND_NAMES = ["still", "reach", "correction", "drift", "wiggle", "circle", "zigzag", "glide"]
 LOOKALIKES = (WIGGLE, CIRCLE, ZIGZAG)
 
 FIGURES = Path(__file__).resolve().parents[1] / "evaluation" / "results" / "figures"
@@ -136,7 +136,7 @@ def glide(rng, here):
     heading = rng.uniform(0, 2 * np.pi) + rng.uniform(-1.5, 1.5) * np.sin(2 * np.pi * t / seconds)
     steps = speed / RATE * np.stack([np.cos(heading), np.sin(heading)], axis=1)
     path = here + np.cumsum(steps, axis=0)
-    return [(np.clip(path, MARGIN, [SCREEN_W - MARGIN, SCREEN_H - MARGIN]), DRIFT)]
+    return [(np.clip(path, MARGIN, [SCREEN_W - MARGIN, SCREEN_H - MARGIN]), GLIDE)]
 
 
 # How often each kind of event is chosen. Look-alikes are about a quarter of all events.

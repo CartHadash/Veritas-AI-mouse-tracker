@@ -4,7 +4,8 @@ Every agent adds to this file after each step it finishes: **what this part does
 chose it, and how we know it works**, in words a classmate would understand. This is how
 the team learns the project well enough to explain it to judges, which the rules require.
 
-Keep entries short. Newest sections go at the bottom, in the order the project is built.
+Keep entries short. Sections are grouped by topic (data, baselines, detector, corrector,
+improvements, failures, app), roughly in the order they were built.
 If something changes later, fix the old entry instead of adding a contradicting one.
 
 ## The idea
@@ -84,7 +85,8 @@ sensor is not a mouse.
 
 **The pixel factor (Decision 1, team chose A).** One factor per dataset, set so that the
 typical (median) tremor-marked Parkinson's piece moves the cursor about 6 px from its centre
-(root-mean-square). PADS: 594 px per radian of wrist rotation; TremorDB: 98.6 px per unit.
+(root-mean-square: the typical distance from the centre, found by squaring the distances,
+averaging them and taking the square root). PADS: 594 px per radian of wrist rotation; TremorDB: 98.6 px per unit.
 Because it is one factor, not one per person, strong tremor stays strong and weak stays weak:
 tremor-marked pieces range from 1.5 to 34.3 px (10th to 90th percentile). Later we redo the
 main results at half and double the factor to show the choice does not decide the outcome.
@@ -192,8 +194,8 @@ synthetic movement plus either:
 
 About a quarter of the windows are "tremor", so a model that always says "no tremor" gets
 about 75% accuracy while missing every case. That is why we report missed cases and false
-alarms separately, never accuracy alone. The hand is mostly moving in about two thirds of
-windows (11,367 / 2,313 / 2,519).
+alarms separately, never accuracy alone. The hand is mostly moving (intended movement faster
+than 20 px/s for at least half the window) in 12,954 / 2,652 / 2,897 windows.
 
 **Corrector examples** are 5.12-second sequences (512 samples): input = synthetic movement +
 a tremor piece (or nothing), target = the clean synthetic movement. Train 4,207 (962 with
@@ -230,7 +232,7 @@ cut-offs are chosen on **validation** people only; the numbers below are on **te
   - best balance: misses 47.2% of tremor windows, false alarms on 19.4% of the others;
   - forced to miss at most 10% on validation: misses 7.4% on test but false alarms jump
     to 72.9%.
-  - Hand still vs moving (balanced): misses 35.2% vs 53.1%. Deliberate movement hides
+  - Hand still vs moving (balanced): misses 36.7% vs 50.5%. Deliberate movement hides
     tremor from a simple frequency rule, as expected.
 
 The rule is far from perfect even when the hand is still, so the task is not too easy.
@@ -300,8 +302,8 @@ once, after everything was chosen on validation):
 | Frequency rule (cut-off chosen the same way) | 14.8% | 59.0% | 52.3% |
 | **Our detector v1** | **14.3%** | **27.0%** | **76.2%** |
 
-Same missed cases as the rule, less than half the false alarms. With the hand moving: 29.0%
-false alarms vs the rule's 58.9%; with the hand still: 22.8% vs 59.2%.
+Same missed cases as the rule, less than half the false alarms. With the hand moving: 28.9%
+false alarms vs the rule's 58.6%; with the hand still: 20.2% vs 60.3%.
 
 **Across groups** (full tables in `evaluation/results/detector_v1.md`): missed cases by age
 band 13.6% / 15.3% / 13.9% (under 60 / 60-69 / 70+), by sex 10.9% female / 16.8% male. False
@@ -347,7 +349,7 @@ correction at all, and the cursor never jumps. `models/corrector/live.py` does t
 marked tremor, 694 without; scored after the detector's 2.56 s warm-up, the same samples for
 every method):
 
-| Method | Off the path moving / still (px) | Tremor removed | Lag | Steady hand (px) |
+| Method | Off the path moving / still (px) | Tremor removed | Lag | No marked tremor (px) |
 |---|---|---|---|---|
 | No filter | 13.2 / 12.7 | 0% | 0 ms | 2.30 |
 | Lower sensitivity 1/2 (hand travels 2x) | 6.6 / 6.4 | 75% | 0 ms | 1.15 |
@@ -356,9 +358,10 @@ every method):
 | Our corrector, always on | 6.7 / 5.2 | 89% | 0 ms | 2.43 |
 | **Our corrector + detector gate** | **7.2 / 5.9** | **84%** | **0 ms** | **1.97** |
 
-Our system removes 84% of the tremor with no measurable lag, roughly halves the distance to
+Version 1 (later replaced by v3 and then v4, see below) removes 84% of the tremor with no
+measurable lag, roughly halves the distance to
 the intended path while moving (13.2 -> 7.2 px), and does not harm a steady hand (1.97 px vs
-2.30 with no filter). It beats One Euro, also when One Euro is switched by the same detector.
+2.30 with no filter, on sequences without marked tremor). It beats One Euro, also when One Euro is switched by the same detector.
 By tremor size it removes 1% of mild tremor (under 3 px), 49% of medium and 85% of strong.
 
 **Why can it have no lag when classical filters cannot?** A smoothing filter averages the
@@ -404,77 +407,122 @@ uses v2 (`models/detector/detector_v2.joblib`, 0.99 MB; full per-group report in
 `evaluation/results/detector_v2.md`). Its half/double pixel-factor check was not re-run; the
 v1 check is in the detector section.
 
-**Corrector v2: not kept.** Prompted by Godson's point that different mouse DPI settings move
-the cursor different distances, we trained a version on tremor randomly made 0.5x to 2x as
+**Corrector v2: not kept.** Prompted by a point from Godson (a team member) that different
+mouse DPI settings (how far the cursor moves for each centimetre the mouse moves) move the
+cursor different distances, we trained a version on tremor randomly made 0.5x to 2x as
 large. On validation it made no real difference (distance to the intended path 2.32 / 3.11 /
 4.54 px at tremor x0.5 / x1 / x2, vs 2.21 / 3.05 / 4.55 px for v1), so v1 stays. The useful
 finding: **v1 already copes with that range**, removing 80% / 90% / 94% of the tremor at
 x0.5 / x1 / x2 on validation.
 
-**Our final system** = corrector v1 gated by detector v2. On test (`python
-evaluation/evaluate_corrector.py --detector v2`): 84% of tremor removed, 0 ms lag, 7.15 / 5.93
-px from the intended path moving / still, 2.00 px on steady hands (no filter: 2.30).
+At this point the system was corrector v1 gated by detector v2 (on test, `python
+evaluation/evaluate_corrector.py --detector v2`: 84% of tremor removed, 0 ms lag). The
+corrector was replaced twice more after step 12; see the next two sections.
 
 **Live speed, made robust.** Detector v2 is bigger: one call usually takes about 3.6 ms but
 spiked to 17 ms when the computer was busy. So the live detector now runs on a background
-thread and the cursor never waits for it (it uses the latest finished result). Measured with
-`python models/corrector/time_live.py`: mean 0.5-0.75 ms, worst 4.4-4.8 ms per update.
+thread and the cursor never waits for it (it uses the latest finished result). With the final
+models and all fixes, `python models/corrector/time_live.py` gives mean 0.48 ms, worst 3.4 ms
+per update on the builder's Mac.
 
-### After step 12: why the demo looked weak, and corrector v3
+### After step 12: why the demo looked weak (corrector v3)
 
 The team leader tried the demo page and found "Our model" hard to tell apart from "No filter".
-`python evaluation/compare_modes.py` (-> `evaluation/results/demo_modes.md`) runs the server's
-own code in every mode and measures the shown cursor's distance from the intended path.
-It found three things:
+`python evaluation/compare_modes.py` runs the server's own code in every mode and measures the
+shown cursor's distance from the intended path. It pointed to three things:
 
-1. **A real bug.** Browsers send about 60 positions a second at uneven times. The live code
-   turned them into 100 per second by repeating the last position, which makes a staircase,
-   and the corrector read the stairs as shaking: on reaching movement it made the cursor
-   *worse* than no filter (7.12 vs 5.85 px). Now each 10 ms point is taken on a straight line
-   between the two latest samples (`models/resample.py`, still causal): 4.92 vs 5.85 px.
-2. **The gain depends strongly on tremor size.** The demo replayed medium tremor, where our
-   corrector removed far less than for strong tremor. That matches the test results by size;
+1. **A live bug.** Browsers send about 60 positions a second at uneven times. The live code
+   turned them into 100 per second by repeating the last position, which makes a staircase;
+   the corrector read the stairs as shaking and, on reaching movement, made the cursor worse
+   than no filter. Now each 10 ms point is taken on a straight line between the two latest
+   samples (`models/resample.py`; it still uses only past samples).
+2. **The gain depends strongly on tremor size.** The demo replayed medium tremor, where the
+   corrector removes far less than for strong tremor. That matches the test results by size;
    the big headline numbers come mostly from strong tremor.
-3. **The training goal favoured strong tremor.** v1 learned to minimise the *squared* distance,
-   so big errors from strong tremor dominated. **Corrector v3** learns the plain distance
-   instead. Same data and time (111 s). It is better at every size, on validation and on test
-   (`python evaluation/improvements.py --test`), so the app now uses v3:
+3. **The training goal favoured strong tremor.** v1 learned to minimise the *squared*
+   distance, so big errors from strong tremor dominated. **Corrector v3** learns the plain
+   distance instead (same data, 111 s). It was better at every size on validation and on test
+   (`python evaluation/improvements.py --test`):
 
 | Test, gated by detector v2 | v1 | v3 |
 |---|---|---|
 | All marked tremor: off the path moving / still | 7.15 / 5.93 px | 6.85 / 4.93 px |
 | Tremor removed: mild / medium / strong | 3% / 48% / 85% | 8% / 50% / 87% |
-| Steady hand (no filter: 2.30 px) | 2.00 px | 1.82 px |
+| Sequences without marked tremor (no filter: 2.30 px) | 2.00 px | 1.82 px |
 | Lag | 0 ms | 0 ms |
 
-**On the demo page now** (`compare_modes.py`, with the chosen replayed tremor), our model's cursor
-is closer to the intended path than with no filter by: strong tremor 46% (hand still) / 34%
-(reaching); medium 35% / 21%; mild 20% / -7% (slightly worse while reaching). **Honest
-weakness:** for a hand held perfectly still, One Euro is better at every strength (for
-example 1.44 vs 3.98 px with medium tremor), because without movement its lag costs nothing.
-Our model's advantage is during movement, where One Euro lags (11.8 px off on reaches, ours
-4.8 px).
+The page also got a "Correction: ON / partly / off" indicator (how far the detector's gate is
+open), a tip to switch demo tremor on, and a choice of replayed tremor: mild (1.5-3 px),
+medium (4-10 px) or strong (10-25 px), 4 recordings each from test people.
 
-**Changes to the page.** It shows "Correction: ON / partly / off" (how far the detector's gate
-is open), a tip to switch demo tremor on (a steady hand is deliberately left alone), and a
-choice of replayed tremor: mild (1.5-3 px), medium (4-10 px) or strong (10-25 px), 4
-recordings each, all from test people (`data_pipeline/make_demo_tremor.py`).
+### A smoother corrector (v4) and the bugs a code review found
+
+The leader then saw our cursor look **jumpy**, although its distance score was good: one
+number can hide a problem a person sees in two seconds. So we added **jerkiness** to every
+comparison: the average size of the change in the cursor's velocity from one 10 ms step to the
+next (a smooth cursor is near 0; `evaluation/metrics.py`).
+
+**Corrector v4** is v3 plus a training penalty on a jerky corrected cursor (compared with how
+jerky the intended path is). We trained three penalty strengths and chose with a rule fixed in
+advance: the weakest penalty whose jerkiness on validation is no worse than no filter's
+(`python evaluation/smoothness.py --test` -> `evaluation/results/smoothness.md`). Chosen: 0.5.
+On **test** people, gated by detector v2:
+
+| | No filter | One Euro | v3 | **v4 (app)** |
+|---|---|---|---|---|
+| Off the path moving / still (px) | 13.17 / 12.74 | 19.66 / 5.92 | 6.85 / 4.93 | **6.94 / 4.86** |
+| Tremor removed | 0% | 68% | 86% | **87%** |
+| Lag | 0 ms | 40 ms | 0 ms | **0 ms** |
+| Jerkiness (px) | 1.69 | 0.64 | 1.96 | **1.37** |
+| Sequences without marked tremor: off the path (px) | 2.30 | 12.95 | 1.82 | **1.85** |
+
+v4 is smoother than no filter and keeps v3's accuracy. One Euro is the smoothest of all but
+lags 40 ms and is far off the path when the hand moves.
+
+**A review of the whole code then found bugs in the live pipeline** (none of them affect the
+offline test scores above, which never go through it):
+- the 10 ms tick clock was built by adding 0.01 over and over; rounding made 60% of ticks land
+  a hair after their own sample, so the corrected cursor trailed by 10 ms;
+- the demo tremor replay rounded its position down, repeating or skipping about 7% of the
+  recorded samples, which put fake jerks into the replayed tremor in every mode;
+- after a pause, the models kept their old history and saw one huge jump (the cursor could fly
+  up to 700 px); moving the strength slider restarted the detector; "Lower sensitivity" could
+  not reach the far side of the practice area; and a few safety issues (other websites could
+  send samples to the local server). All fixed.
+
+**The demo page now** (`python evaluation/compare_modes.py --people test`, test people's
+recordings; while developing we used validation people's recordings, `--people val`). Our
+cursor compared with no filter, hand still / reaching, 100 Hz:
+
+| Replayed tremor | Closer to the intended path | Jerkiness: no filter -> ours (px), still / reaching |
+|---|---|---|
+| Strong | 69% / 53% | 1.82 -> 1.29 / 1.94 -> 1.56 |
+| Medium | 39% / 23% | 0.91 -> 0.71 / 1.10 -> 1.01 |
+| Mild | 53% / 6% | 0.30 -> 0.17 / 0.60 -> 0.59 |
+
+Our cursor is closer to the intended path and smoother than no filter in every case, also at
+browser-like 60 samples a second. **Honest weakness:** for a hand held perfectly still, One
+Euro is closer (medium tremor: 1.44 vs 3.70 px), because without movement its lag costs
+nothing. Our advantage is during movement, where One Euro lags (11.8 px off on reaches with
+medium tremor, ours 4.7 px).
 
 ## Where it fails
 
 Full write-up: `evaluation/results/failures/failures.md` (charts in the same folder, made by
-`python evaluation/find_failures.py` on test people). In short:
+`python evaluation/find_failures.py` on test people, with the final models). In short:
 
-- **Missed tremor is mostly tiny.** 37.0% of mild tremor (under 3 px) is missed, but only 3.4%
-  of strong tremor (over 10 px). The three most confident misses are 0.2-0.4 px: marked as
-  tremor by the wrist sensor, but too small to visibly shake a cursor.
+- **Missed tremor is mostly tiny or brief.** 34.2% of mild tremor (under 3 px) is missed, but
+  only 2.9% of strong tremor (over 10 px). Two of the three most confident misses are 0.4 and
+  1.0 px: marked as tremor by the wrist sensor, but too small to visibly shake a cursor. The
+  third is a window that is calm for 1.8 s and ends with a burst: each window takes the label of
+  its whole 10-second recording, even when the tremor comes and goes.
 - **Many "false alarms" are probably real tremor our labelling rule left unmarked.** They
-  cluster in action tasks (43.5% false alarms there, vs 19.0% for rest). For action tasks the
+  cluster in action tasks (41.7% false alarms there, vs 19.5% for rest). For action tasks the
   rule compares with healthy people moving on purpose, a very high bar, so real tremor during
   action can end up labelled "no tremor". The most confident false alarm is a strong, regular
   5 Hz shake that looks exactly like tremor. We do not change the rule after seeing results;
-  we report it. Deliberate look-alike movement also causes false alarms (33.4% when it fills
-  more than 30% of the window, vs 21.6% otherwise).
+  we report it. Deliberate look-alike movement also causes false alarms (34.4% when it fills
+  more than 30% of the window, vs 21.0% otherwise).
 - **Smooth continuous movement could trigger detector v1.** Found while testing the server
   (step 10): a slow, perfectly smooth circle with no pauses scored just over the cut-off,
   because our synthetic movement almost always has pauses. Fixed in step 12 (detector v2).
@@ -505,16 +553,17 @@ browser, so there is one copy of each model and the timing we measured is the ti
 Strength 0-1 blends between the raw and the filtered cursor.
 
 **Demo tremor.** None of us has a tremor, so a switch adds a real patient's recorded tremor on
-top of the user's own live movement. It replays 8 tremor recordings (4.7-14.2 px, 3.5-9.8 Hz)
-from **test** people only, saved in `server/demo_tremor.npz` (63 KB, made by
-`data_pipeline/make_demo_tremor.py`), so the demo never shows tremor the models trained on.
-The summary notes when demo mode was on.
+top of the user's own live movement. It replays 12 tremor recordings from **test** people
+only, 4 at each strength the page offers (mild 1.5-3 px, medium 4-10 px, strong 10-25 px),
+saved in `server/demo_tremor.npz` (91 KB, made by `data_pipeline/make_demo_tremor.py`), so the
+demo never shows tremor the models trained on. The summary notes when demo mode was on.
 
 **The session summary** (`GET /api/summary`, Contract 2): share of analysed time with
 tremor-like movement, typical frequency and size, a per-minute breakdown, distance moved,
 clicks and click accuracy, and a steadiness score (1 = no shaking, 0 = typical shaking of
-10 px or more). It includes the detector's real test error rates (missed 14.3%, false alarms
-27.0%), read from the file `evaluation/evaluate_detector.py` writes, never typed in by hand.
+10 px or more). It includes the detector's real test error rates (detector v2: missed 12.9%,
+false alarms 27.1%), read from the file `evaluation/evaluate_detector.py` writes
+(`models/detector/detector_v2_threshold.json`), never typed in by hand.
 
 **Optional parts from the team leader.** If the whole-laptop tracker or the assistant is
 missing or cannot load (the tracker is Mac-only), the server carries on and says so at
@@ -540,8 +589,9 @@ is in the footer.
 so they are easy to hit with a shaky hand. Plain JavaScript with no build tools (Decision 7).
 It uses the browser's "pointer events", which behave the same for a mouse and a trackpad.
 
-**How we know it works.** Tested in the app's built-in browser on the builder's Mac: with demo
-tremor on and a hand held nearly still, the meter showed "Tremor-like movement detected",
+**How we know it works.** Tested in the app's built-in browser on the builder's Mac (at the
+time: detector v1, corrector v1 and the first set of 8 demo recordings): with demo tremor on
+and a hand held nearly still, the meter showed "Tremor-like movement detected",
 score 0.79, and 3.9 Hz, the same frequency as the replayed recording (an essential tremor
 patient, 3.9 Hz). Clicks were tallied per mode and counted in the summary. The size estimate
 showed 5.4 px while that recording's average size is 14.2 px over 10 s, so the size readout
@@ -563,11 +613,6 @@ on for the first 40 s, then off) gave 1.25 active minutes; minute 0 had tremor-l
 43-55% of the time, minute 1 had 0%. Every number on the page matched `GET /api/summary`.
 This test found a bug: slow movement (under 0.5 px between samples) was not counted as active
 time; now any movement counts.
-
-**Something we noticed while testing:** a perfectly smooth, slow circular movement without
-any pauses scored 0.185, just over the cut-off (0.165), so the meter said "tremor". Our
-synthetic training movement almost always contains pauses, so the detector learned that
-uninterrupted movement is unusual. See "Where it fails".
 
 ## The pointer reader and the assistant
 

@@ -10,15 +10,15 @@ DETECTOR: v1 vs v2. v2 also learned from windows whose movement never pauses (gl
   a sign of tremor. Both get their cut-off the same way: at most 20% missed on the normal
   validation windows (DECISION 4). Measured on normal AND on pause-free validation windows.
 
-CORRECTOR v3 (second corrector attempt, after the leader found the demo gain small): trained to
-  minimise the plain distance instead of the squared distance. Compared with v1 per tremor size,
-  with the detector v2 gate as in the app.
-
 CORRECTOR: v1 vs v2. v2 is trained with every sequence's tremor randomly made 0.5x-2x as
   large (a response to "different mouse DPI settings move the cursor different distances").
-  Measured on validation sequences at tremor size x0.5, x1 and x2.
+  Measured on validation sequences at tremor size x0.5, x1 and x2. (Not kept.)
 
-Run from the repository folder (after training detector v2 and corrector v2):
+CORRECTOR v3 (second corrector attempt, after the leader found the demo gain small): trained to
+  minimise the plain distance instead of the squared distance. Compared with v1 per tremor size,
+  with the detector v2 gate as in the app. (Kept.)
+
+Run from the repository folder (after training detector v2 and correctors v2 and v3):
     python evaluation/improvements.py            # validation comparison only
     python evaluation/improvements.py --test     # also score the kept versions on test, once
 Writes evaluation/results/improvements.md.
@@ -35,7 +35,7 @@ import torch
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT))
 from evaluation.evaluate_corrector import SKIP, corrector_offsets, detector_gate  # noqa: E402
-from evaluation.metrics import choose_threshold, corrector_scores, detector_scores  # noqa: E402
+from evaluation.metrics import SIZE_CLASSES, choose_threshold, corrector_scores, detector_scores  # noqa: E402
 from models.corrector.live import load_corrector  # noqa: E402
 from models.detector.features import compute_features  # noqa: E402
 from models.detector.predict import Detector  # noqa: E402
@@ -78,7 +78,6 @@ def corrector_part(lines):
               "(no detector gate, to isolate the change), after the first 2.56 s.", "",
               "| Version | Tremor x0.5 | Tremor x1 | Tremor x2 | Tremor removed x0.5 / x1 / x2 |",
               "|---|---|---|---|---|"]
-    distances = {}
     for version, path in [("v1", "weights.pt"), ("v2", "weights_v2.pt")]:
         model = load_corrector(MODELS / "corrector" / path)
         cells, removed = [], []
@@ -89,14 +88,9 @@ def corrector_part(lines):
             t = d["tremor"].astype(bool)
             removed.append(corrector_scores(out[t], d["clean"][t], d["shaky"][t], skip=SKIP)["tremor_removed"])
             cells.append(dist)
-        distances[version] = cells
         lines.append("| %s | %.2f px | %.2f px | %.2f px | %s |" % (
             version, *cells, " / ".join("%.0f%%" % (100 * r) for r in removed)))
     lines.append("")
-    return distances
-
-
-SIZES = [("mild (under 3 px)", 0, 3), ("medium (3-10 px)", 3, 10), ("strong (over 10 px)", 10, 1e9)]
 
 
 def corrector_v3_part(lines, split="val"):
@@ -109,21 +103,19 @@ def corrector_v3_part(lines, split="val"):
     lines += ["## Corrector: v1 vs v3 (plain-distance training), %s, gated by detector v2" % title, "",
               "| Version | Sequences | Off the path moving / still (px) | Tremor removed | Lag (ms) |",
               "|---|---|---|---|---|"]
-    best = {}
     for version, path in [("v1", "weights.pt"), ("v3", "weights_v3.pt")]:
         out = shaky + gate * corrector_offsets(load_corrector(MODELS / "corrector" / path), shaky)
         steady = np.linalg.norm(out[~tremor][:, SKIP:] - clean[~tremor][:, SKIP:], axis=2).mean()
-        for name, lo, hi in [("all with marked tremor", 0, 1e9)] + SIZES:
+        for name, lo, hi in [("all with marked tremor", 0, 1e9)] + SIZE_CLASSES:
             m = tremor & (data["strength_px"] >= lo) & (data["strength_px"] < hi)
             s = corrector_scores(out[m], clean[m], shaky[m], skip=SKIP)
             lines.append("| %s | %s (%d) | %.2f / %.2f | %.0f%% | %.0f |" % (
                 version, name, m.sum(), s["distance_moving"], s["distance_still"],
                 100 * s["tremor_removed"], s["lag_ms"]))
-        lines.append("| %s | steady hand (%d without marked tremor) | %.2f overall | | |" % (
+        lines.append("| %s | without marked tremor (%d) | %.2f overall | | |" % (
             version, (~tremor).sum(), steady))
-        best[version] = steady
     none_steady = np.linalg.norm(shaky[~tremor][:, SKIP:] - clean[~tremor][:, SKIP:], axis=2).mean()
-    lines += ["", "No filter on the steady-hand sequences: %.2f px." % none_steady, ""]
+    lines += ["", "No filter on the sequences without marked tremor: %.2f px." % none_steady, ""]
 
 
 def main():
@@ -135,7 +127,7 @@ def main():
              "Produced by `python evaluation/improvements.py%s`. Settings and the keep/drop choice "
              "use validation people only." % (" --test" if args.test else ""), ""]
     sets, det = detector_part(lines, args.test)
-    distances = corrector_part(lines)
+    corrector_part(lines)
     corrector_v3_part(lines, "val")
     if args.test:
         corrector_v3_part(lines, "test")

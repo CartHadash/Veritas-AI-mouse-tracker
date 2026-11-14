@@ -30,14 +30,14 @@ Average distance to the intended path on validation sequences, corrector always 
 | v1 | mild (under 3 px) (50) | 1.99 / 1.05 | -53% | 0 |
 | v1 | medium (3-10 px) (57) | 3.84 / 2.99 | 34% | 0 |
 | v1 | strong (over 10 px) (58) | 14.86 / 13.27 | 85% | 10 |
-| v1 | steady hand (644 without marked tremor) | 1.85 overall | | |
+| v1 | without marked tremor (644) | 1.85 overall | | |
 | v3 | all with marked tremor (165) | 6.70 / 5.23 | 87% | 0 |
 | v3 | mild (under 3 px) (50) | 1.53 / 0.86 | 11% | 0 |
 | v3 | medium (3-10 px) (57) | 3.87 / 2.54 | 34% | 0 |
 | v3 | strong (over 10 px) (58) | 14.24 / 11.15 | 87% | 10 |
-| v3 | steady hand (644 without marked tremor) | 1.68 overall | | |
+| v3 | without marked tremor (644) | 1.68 overall | | |
 
-No filter on the steady-hand sequences: 1.96 px.
+No filter on the sequences without marked tremor: 1.96 px.
 
 ## Corrector: v1 vs v3 (plain-distance training), TEST (scored once), gated by detector v2
 
@@ -47,14 +47,14 @@ No filter on the steady-hand sequences: 1.96 px.
 | v1 | mild (under 3 px) (47) | 1.73 / 1.16 | 3% | 0 |
 | v1 | medium (3-10 px) (88) | 3.83 / 3.16 | 48% | 0 |
 | v1 | strong (over 10 px) (101) | 12.37 / 10.89 | 85% | 0 |
-| v1 | steady hand (694 without marked tremor) | 2.00 overall | | |
+| v1 | without marked tremor (694) | 2.00 overall | | |
 | v3 | all with marked tremor (236) | 6.85 / 4.93 | 86% | 0 |
 | v3 | mild (under 3 px) (47) | 1.58 / 0.98 | 8% | 0 |
 | v3 | medium (3-10 px) (88) | 3.86 / 2.53 | 50% | 0 |
 | v3 | strong (over 10 px) (101) | 11.71 / 9.13 | 87% | 0 |
-| v3 | steady hand (694 without marked tremor) | 1.82 overall | | |
+| v3 | without marked tremor (694) | 1.82 overall | | |
 
-No filter on the steady-hand sequences: 2.30 px.
+No filter on the sequences without marked tremor: 2.30 px.
 
 ## Kept versions on TEST people (scored once)
 
