@@ -10,7 +10,7 @@ Newest entries go at the top of each list. Use local time and say who you are.
 |---|---|---|---|
 | Builder | Steps 1-15 built (4, 9, 11, 14, 15 await human or Mac checks) + click freeze + calibration test + step 4 path check. Next: see "Builder's plan" below | main | - |
 | Team leader | B1 (tracker) and B2 (assistant) DONE and merged. Next: Part A checks; B3 only if the leader decides | - | - |
-| Writer | not started | - | - |
+| Writer | IN PROGRESS: drafting the write-up. Start from `docs/WRITER_BRIEF.md` (where everything is) | - | - |
 
 ### Builder's plan: what is left (written Sat 14 Nov 20:03 CET; tick or delete lines as they finish)
 
