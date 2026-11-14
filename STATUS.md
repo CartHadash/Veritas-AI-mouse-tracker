@@ -25,8 +25,11 @@ Time line: first full version by **Sun 15 Nov 22:00 CET**; no new features after
       minute when "New session" is pressed. About 45 min.
 
 **2. Waiting for people (builder is blocked until then):**
-- [ ] Everyone: the step 4 path check (`web/path_check.html`, 5 min), reports in the group chat.
-      Then the builder asks the two saved questions below (step 4 rework scope, step 9 additions).
+- [x] Round 1 of the step 4 path check (Timofey): realistic version 1 rated worse; version 2 built.
+- [ ] Everyone: round 2 of the path check (`git pull`, reload `path_check.html` with
+      Cmd+Shift+R, 5 min), reports in the group chat. If version 2 rates higher than the
+      original, the builder asks the saved step 4 question (stress test / retrain); the step 9
+      question can be answered any time.
 - [ ] Oleksandr: read `evaluation/results/failures/failures.md` (step 9) and `RESULTS.md` (step 14).
 - [ ] Timofey: trackpad check on the demo Mac (step 11). Partly done 21:35-21:50: model closer
       than One Euro but still jittery (request below); Pointer Lock works in Safari; Chrome
@@ -56,6 +59,12 @@ Time line: first full version by **Sun 15 Nov 22:00 CET**; no new features after
 - [ ] Step 16, the desktop window (cut first).
 
 ## Done (newest first)
+
+- Sat 14 Nov 20:49 CET, builder's agent: step 4 path check round 1 (Timofey's ratings,
+  `evaluation/results/path_check_ratings_1.md`): current generator 2.3 / 5, realistic
+  version 1 only 1.5 / 5 ("too straight" on all 6). Built realistic version 2 (curves, slow
+  sideways wobble, uneven speed, blended corrections, settling pauses, wandering drifts, fewer
+  look-alikes). Original generator unchanged. Round 2 paths (seed 2027) are on the check page.
 
 - Sat 14 Nov 20:15 CET, builder's agent: the leader's two requests. "Lower sensitivity" now uses Pointer Lock
   (the drawn cursor is the only cursor and reaches every edge; simulated check: 200 px of hand

@@ -280,6 +280,8 @@ so there is an opt-in realistic version (`realistic=True` + `device_view()`); th
 still trained on the original. The plausibility check is now a blind team test:
 `web/path_check.html` (see `docs/RUNNING.md`). Afterwards: decide whether to stress-test or
 retrain on the realistic version (question saved in `STATUS.md`).
+Changed: round 1 of the check rated realistic version 1 below the original ("too straight"),
+so version 2 adds natural curves, wobble, uneven speed and settling pauses; round 2 pending.
 
 **Done when:** teammates have done the path check (`web/path_check.html`) and posted their
 reports, and the paths they rate are plausible.

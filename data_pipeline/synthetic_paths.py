@@ -19,11 +19,15 @@ Every path comes from a numpy random generator, so a fixed seed gives the same p
 
 REALISTIC VERSION (opt-in: generate_path(..., realistic=True), then device_view). Added after
 the step 4 review found gaps; the models were trained WITHOUT it, and it is not used for
-training until the team's path check (web/path_check.html) and a stress test say so:
+training until the team's path check (web/path_check.html) and a stress test say so.
+Version 2, after the team's first blind check called version 1 "too straight":
   - a reach's duration follows Fitts's law (a well-known rule of pointing: small or far
-    targets take longer) and it slows down for longer than it speeds up, as real reaches do;
-  - a hand held still is perfectly still (no fake jitter; a real mouse then sends nothing);
-  - two everyday movements: selecting text (a steady sideways line) and dragging (a glide);
+    targets take longer); it peaks early and brakes for longer, curves, wobbles slowly
+    sideways, has slightly uneven speed, and blends into its small corrective movement;
+  - no fake jitter: a held hand settles by a pixel or so, sometimes with a tiny adjustment;
+  - drifts wander; fewer deliberate look-alikes (about 14% of events instead of 28%);
+  - two everyday movements: selecting text (an uneven sideways sweep, sometimes dropping to
+    the next line) and dragging (a glide);
   - device_view(): what the computer actually receives - whole pixels (half pixels on a
     Retina screen) at an uneven 60 or 125 samples per second - turned back into 100 per
     second by straight lines between samples, as the app does (models/resample.py).
@@ -57,14 +61,10 @@ def minimum_jerk(n):
     return 10 * s ** 3 - 15 * s ** 4 + 6 * s ** 5
 
 
-def move(start, end, seconds, curve=0.0, early_peak=False):
-    """Smooth movement from start to end. curve bends the path sideways (0 = straight).
-    early_peak: reach top speed earlier and brake for longer (realistic version)."""
+def move(start, end, seconds, curve=0.0):
+    """Smooth movement from start to end. curve bends the path sideways (0 = straight)."""
     n = max(2, int(round(seconds * RATE)))
-    if early_peak:
-        s = (10 * (u := np.linspace(0, 1, n) ** 0.8) ** 3 - 15 * u ** 4 + 6 * u ** 5)[:, None]
-    else:
-        s = minimum_jerk(n)[:, None]
+    s = minimum_jerk(n)[:, None]
     path = start + s * (end - start)
     direction = end - start
     sideways = np.array([-direction[1], direction[0]])        # perpendicular to the movement
@@ -98,28 +98,111 @@ def reach(rng, here):
     return parts
 
 
+# ---------------------------------------------------------------- realistic version
+# Version 1 (pixels, timing, Fitts's law) was rated LESS human than the original by the team's
+# blind check: "too straight" and "too smooth / robotic" (evaluation/results/path_check_ratings_1.md).
+# Version 2 adds the natural imperfection real hands have. Every wobble below is slower than
+# 2 per second, far below the 3-12 Hz tremor band, so it can never look like tremor.
+
+def smooth_noise(rng, n, max_hz=2.0):
+    """A slow random wobble of n samples: three slow waves (0.3 to max_hz per second) with
+    random phases, scaled to an average size of about 1."""
+    t = np.arange(n) / RATE
+    waves = [np.sin(2 * np.pi * rng.uniform(0.3, max_hz) * t + rng.uniform(0, 2 * np.pi)) for _ in range(3)]
+    return np.sum(waves, axis=0) / np.sqrt(1.5)
+
+
+def human_move(rng, start, end, seconds):
+    """Movement from start to end as a hand makes it: a slightly curved path with a slow
+    sideways wobble, top speed reached early with a longer braking phase, and speed that is
+    not perfectly even."""
+    n = max(2, int(round(seconds * RATE)))
+    u = np.linspace(0, 1, n)
+    # Uneven speed: bend time a little with a slow wobble (kept moving forward, never back).
+    warped = np.maximum.accumulate(np.clip(u + 0.04 * smooth_noise(rng, n) * np.sin(np.pi * u), 0, 1))
+    w = warped ** 0.85                                   # peak early, brake for longer
+    s = 10 * w ** 3 - 15 * w ** 4 + 6 * w ** 5
+    direction = end - start
+    distance = np.linalg.norm(direction) + 1e-9
+    sideways = np.array([-direction[1], direction[0]]) / distance
+    bend = rng.normal(0, 0.12) * distance * np.sin(np.pi * s)          # an overall curve
+    wobble = 0.015 * distance * smooth_noise(rng, n, 1.5) * np.sin(np.pi * u)
+    return start + s[:, None] * direction + (bend + wobble)[:, None] * sideways
+
+
 def reach_realistic(rng, here):
-    """Realistic version of reach(). Duration from Fitts's law, T = 0.1 + 0.15 * log2(D/W + 1)
-    seconds for a target W px wide at distance D (typical values from pointing studies, our
-    choice), and a speed profile that peaks early and brakes for longer."""
+    """A reach the way people make them. Duration from Fitts's law, T = 0.15 + 0.2 *
+    log2(D/W + 1) seconds for a target W px wide at distance D (typical size of the effect in
+    pointing studies; our choice of values). 60% of the time the first movement lands a little
+    off and a small second movement, starting BEFORE the first one has stopped, brings the
+    cursor onto the target, so the two blend instead of stopping in between."""
     target = random_target(rng, here)
     distance = np.linalg.norm(target - here)
     width = rng.uniform(10, 60)                          # target size, px
-    seconds = np.clip(0.1 + 0.15 * np.log2(distance / width + 1) + rng.normal(0, 0.05), 0.2, 1.5)
-    curve = rng.normal(0, 0.08)
-    miss = rng.random() < 0.6
-    landing = target + (rng.normal(0, 0.04 * distance, 2) if miss else 0)
-    parts = [(move(here, landing, seconds, curve, early_peak=True), REACH)]
-    if miss:
-        parts.append((move(landing, target, rng.uniform(0.15, 0.35), early_peak=True), CORRECTION))
-    return parts
+    seconds = np.clip(0.15 + 0.2 * np.log2(distance / width + 1) + rng.normal(0, 0.06), 0.3, 1.6)
+    if rng.random() >= 0.6:
+        return [(human_move(rng, here, target, seconds), REACH)]
+    landing = target + rng.normal(0, 0.04 * distance, 2)
+    first = human_move(rng, here, landing, seconds)
+    n2 = int(rng.uniform(0.2, 0.4) * RATE)
+    onset = int(len(first) * rng.uniform(0.7, 0.9))      # the second movement starts here
+    total = max(len(first), onset + n2)
+    path = np.vstack([first, np.repeat(first[-1:], total - len(first), axis=0)])
+    second = np.zeros(total)
+    second[onset:onset + n2] = minimum_jerk(n2)
+    second[onset + n2:] = 1.0
+    path = path + second[:, None] * (target - landing)
+    return [(path[:onset], REACH), (path[onset:], CORRECTION)]
+
+
+def pause_realistic(rng, here):
+    """Holding still the way a hand does: it settles by a pixel or so, and a quarter of the
+    time makes one tiny adjustment of 2-6 px."""
+    n = int(rng.uniform(0.2, 1.5) * RATE)
+    offset = minimum_jerk(n)[:, None] * rng.normal(0, 1.0, 2)
+    if rng.random() < 0.25 and n > 40:
+        m = int(rng.uniform(0.15, 0.3) * RATE)
+        at = rng.integers(0, n - m)
+        step = np.zeros(n)
+        step[at:at + m] = minimum_jerk(m)
+        step[at + m:] = 1.0
+        angle = rng.uniform(0, 2 * np.pi)
+        offset = offset + step[:, None] * rng.uniform(2, 6) * np.array([np.cos(angle), np.sin(angle)])
+    return [(here + offset, STILL)]
+
+
+def drift_realistic(rng, here):
+    """Slow movement, 5-40 px per second, whose direction wanders gently."""
+    seconds = rng.uniform(0.5, 2.0)
+    n = int(seconds * RATE)
+    speed = rng.uniform(5, 40)
+    heading = rng.uniform(0, 2 * np.pi) + 0.8 * smooth_noise(rng, n, 0.6)
+    ramp = np.sin(np.pi * np.linspace(0, 1, n)) ** 0.5   # start and end gently
+    steps = (speed * ramp / RATE)[:, None] * np.stack([np.cos(heading), np.sin(heading)], axis=1)
+    return [(np.clip(here + np.cumsum(steps, axis=0), MARGIN, [SCREEN_W - MARGIN, SCREEN_H - MARGIN]), DRIFT)]
 
 
 def select_text(rng, here):
-    """Selecting text: a steady sideways line, 100-400 px/s for 0.5-2 s."""
-    seconds, speed = rng.uniform(0.5, 2.0), rng.uniform(100, 400) * rng.choice([-1, 1])
-    t = np.arange(int(seconds * RATE)) / RATE
-    path = here + np.stack([speed * t, np.zeros_like(t)], axis=1)
+    """Selecting text: a sideways sweep at 100-400 px/s on average for 0.5-2 s, at an uneven
+    speed, wavering by a pixel or two, and 30% of the time dropping to the next line
+    (16-24 px down) part way."""
+    seconds = rng.uniform(0.5, 2.0)
+    n = int(seconds * RATE)
+    room = (SCREEN_W - MARGIN - here[0], here[0] - MARGIN)          # space to the right / left
+    direction = rng.choice([-1, 1]) if min(room) > 400 else (1 if room[0] > room[1] else -1)
+    length = direction * min(rng.uniform(100, 400) * seconds, max(room) - 10)
+    u = np.linspace(0, 1, n)
+    progress = np.maximum.accumulate(np.clip(u + 0.05 * smooth_noise(rng, n) * np.sin(np.pi * u), 0, 1))
+    x = length * (10 * progress ** 3 - 15 * progress ** 4 + 6 * progress ** 5)
+    y = 1.5 * smooth_noise(rng, n, 1.0) * np.sin(np.pi * u)
+    if rng.random() < 0.3 and n > 40:
+        m = int(0.15 * RATE)
+        at = rng.integers(n // 4, n - m)
+        drop = np.zeros(n)
+        drop[at:at + m] = minimum_jerk(m)
+        drop[at + m:] = 1.0
+        y = y + rng.uniform(16, 24) * drop
+    path = here + np.stack([x, y], axis=1)
     return [(np.clip(path, MARGIN, [SCREEN_W - MARGIN, SCREEN_H - MARGIN]), SELECT)]
 
 
@@ -185,9 +268,10 @@ EVENTS = [(reach, 0.40), (pause, 0.20), (drift, 0.12), (wiggle, 0.10), (circle, 
 # Step 12: movement that never pauses (reaches straight into glides and drifts).
 CONTINUOUS_EVENTS = [(reach, 0.40), (glide, 0.45), (drift, 0.15)]
 
-# Realistic version: realistic reaches, plus selecting text and dragging.
-REALISTIC_EVENTS = [(reach_realistic, 0.36), (pause, 0.18), (drift, 0.08), (select_text, 0.06),
-                    (glide, 0.06), (wiggle, 0.09), (circle, 0.08), (zigzag, 0.09)]
+# Realistic version: human-like reaches, pauses and drifts, plus selecting text and dragging.
+# Look-alikes are rarer here (about 14% of events, 28% in the original), closer to real use.
+REALISTIC_EVENTS = [(reach_realistic, 0.42), (pause_realistic, 0.22), (drift_realistic, 0.10),
+                    (select_text, 0.07), (glide, 0.05), (wiggle, 0.05), (circle, 0.04), (zigzag, 0.05)]
 
 
 def device_view(xy, rng, retina=None, rate=None):
