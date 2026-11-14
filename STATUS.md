@@ -28,9 +28,11 @@ Time line: first full version by **Sun 15 Nov 22:00 CET**; no new features after
 - [ ] Everyone: the step 4 path check (`web/path_check.html`, 5 min), reports in the group chat.
       Then the builder asks the two saved questions below (step 4 rework scope, step 9 additions).
 - [ ] Oleksandr: read `evaluation/results/failures/failures.md` (step 9) and `RESULTS.md` (step 14).
-- [ ] Timofey: trackpad check on the demo Mac (step 11). (Step 15 fresh-clone test on the demo
+- [ ] Timofey: trackpad check on the demo Mac (step 11). Partly done 21:35-21:50: model closer
+      than One Euro but still jittery (request below); Pointer Lock works in Safari; Chrome
+      hand check of the fresh copy done, results sent to the builder in the group chat. (Step 15 fresh-clone test on the demo
       Mac: DONE by the leader's agents, see "Results"; it found and fixed a RUNNING.md order bug.)
-- [ ] Timofey: answer the open question on rewriting the two pre-hackathon files.
+- [x] Timofey: answer the open question on rewriting the two pre-hackathon files (YES, 21:20).
 
 - [ ] Rewrite `scripts/download_data.py` and `baselines/classical_filters.py` from scratch
       (leader said YES, 21:20); re-run the baselines and check the numbers still match; update
