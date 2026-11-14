@@ -52,6 +52,19 @@
   margin-right: 8%;
 }
 
+/* Key details the assistant highlighted with **...**: bold on a soft warm marker. */
+.assistant-highlight {
+  font-weight: 700;
+  background: #ffe3c4;
+  border-radius: 4px;
+  padding: 0 3px;
+  box-decoration-break: clone;
+  -webkit-box-decoration-break: clone;
+}
+
+.assistant-tap-hint { margin: 4px 0 0; color: var(--muted, #6e5444); font-size: 16px; }
+.assistant button.assistant-back { border-style: dashed; font-weight: 500; }
+
 .assistant-label { display: block; margin: 10px 0 6px; color: var(--muted, #6e5444); }
 .assistant-row { display: flex; gap: 10px; }
 .assistant-row input {

@@ -3,7 +3,7 @@
     python -m assistant.run_test_prompts
 
 Uses docs/contracts/summary_example.json (invented numbers). Writes
-assistant/test_answers.md. Each answer is then read and judged by a person in
+assistant/test_answers.md (answer and follow-up buttons). Each answer is then read and judged by a person in
 assistant/test_prompts.md. Costs a few cents of API credit per run (about 13 questions).
 """
 
@@ -59,11 +59,15 @@ def main():
              "Judged by hand in `assistant/test_prompts.md`.", ""]
     for number, question, good, use_demo in TESTS:
         data = demo_summary(summary) if use_demo else summary
-        answer = "".join(core.stream_reply(data, [{"role": "user", "content": question}]))
-        print("\n[%d] %s\n%s" % (number, question, answer))
+        reply = "".join(core.stream_reply(data, [{"role": "user", "content": question}]))
+        # The reply ends with "SUGGESTIONS: a | b | c" (the follow-up buttons): record it apart.
+        answer, _, suggestions = reply.partition("SUGGESTIONS:")
+        answer, suggestions = answer.strip(), suggestions.strip()
+        print("\n[%d] %s\n%s\n  -> buttons: %s" % (number, question, answer, suggestions or "(none)"))
         lines += ["## %d. %s" % (number, question), "",
                   "*A good answer:* %s%s" % (good, " *(demo-mode summary)*" if use_demo else ""), "",
-                  "**Assistant:** " + answer.replace("\n", "  \n"), ""]
+                  "**Assistant:** " + answer.replace("\n", "  \n"), "",
+                  "**Follow-up buttons:** " + (suggestions or "(none)"), ""]
     OUT.write_text("\n".join(lines), encoding="utf-8")
     print("\nWrote", OUT)
 

@@ -14,6 +14,10 @@ Newest entries go at the top of each list. Use local time and say who you are.
 
 ## Done (newest first)
 
+- Sat 14 Nov 20:00 CET, team leader's agent: assistant v3 (leader's requests): key details
+  highlighted, simpler and shorter wording, and follow-up questions after every answer that
+  become the new one-tap buttons ("Main questions" goes back). Re-tested 13/13 safe.
+
 - Sat 14 Nov 19:20 CET, team leader's agent: step B2, the assistant (`assistant/`,
   `web/assistant/`). `claude-sonnet-5-5` at effort `low`, streamed; sees only the summary
   numbers; safety rules in `assistant/prompt.py`; a plain non-AI summary when there is no
@@ -126,6 +130,11 @@ Newest entries go at the top of each list. Use local time and say who you are.
   plan, dataset notes, two build guides, reused-code disclosure.
 
 ## Results so far (real numbers only; say which script produced them)
+
+- `python -m assistant.run_test_prompts`, assistant v3 prompt: 13/13 safe, numbers correct,
+  every answer highlights 1-2 key facts, 3-4 sentences (39-73 words), all 39 suggested
+  follow-up questions safe. A 4-turn chat following the first suggestion each time: none of
+  12 suggestions repeated an earlier question. Details in `assistant/test_prompts.md`.
 
 - `python -m assistant.run_test_prompts` (13 questions, example summary, `claude-sonnet-5-5`,
   effort `low`): version 1 prompt: 13/13 safe, all numbers correct, but only 2 of 13 within
@@ -280,6 +289,11 @@ Newest entries go at the top of each list. Use local time and say who you are.
 (Keep this list honest; the write-up needs a "what didn't work" section.)
 
 ## Requests to another lane
+
+- Team leader -> builder (Sat 14 Nov 20:00): **one line in `web/app.js`, please:** in
+  `loadAssistant()`, use `script.src = "assistant/assistant.js?v=" + Date.now();`. Browsers
+  kept an OLD cached copy of the assistant panel after an update (it then showed raw `**`
+  marks and a "SUGGESTIONS:" line). Until then, Cmd+Shift+R reloads the new panel.
 
 - Team leader -> builder (Sat 14 Nov 19:20): **the assistant router is live (Contract 3).**
   After `git pull`, `GET /api/status` shows `assistant: available` and the panel appears in

@@ -17,8 +17,20 @@ words); "Explain my summary" was 12 sentences instead of 2 or 3. Too long for ou
 **Fix:** a firmer, concrete length rule in `assistant/prompt.py` (one paragraph, at most 4
 sentences and about 70 words, at most three numbers, mention a note once).
 
-**Version 2** (`test_answers.md`, the current prompt): all 13 safe, all numbers correct,
-3 to 5 sentences and 33 to 71 words each.
+**Version 2** (`test_answers_v2.md`): all 13 safe, all numbers correct, 3 to 5 sentences
+and 33 to 71 words each. Table below.
+
+**Version 3** (`test_answers.md`, the current prompt, Sat 14 Nov evening). The team leader
+asked for: highlighted key details, simpler and shorter explanations (said in words, no word
+count), and changing follow-up buttons. Result: all 13 safe and numbers correct; every
+answer highlights 1 or 2 key facts (`**...**`); 3 or 4 sentences, 39 to 73 words; numbers
+said simply ("about a third of the time", "about 5 shakes a second"). Every answer ends
+with three follow-up questions, all 39 safe (none about diagnosis, disease or medication).
+One weakness found in an earlier v3 run: "What does steadiness mean?" was suggested after
+all 13 single questions, so the prompt now says to open something new and vary them. In a
+4-turn conversation (always tapping the first button: explain -> calmest -> steadiness ->
+smoothing filter), none of the 12 suggestions repeated a question already asked. Single
+questions with no history still get similar suggestions, which is expected.
 
 | # | Question | A good answer | Version 2: what it did | Verdict |
 |---|---|---|---|---|
