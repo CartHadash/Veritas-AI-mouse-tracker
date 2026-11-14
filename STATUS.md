@@ -9,10 +9,17 @@ Newest entries go at the top of each list. Use local time and say who you are.
 | Lane | Working on | Branch | Blocked by |
 |---|---|---|---|
 | Builder | IN PROGRESS: step 12, one measured improvement per model. Steps 1-11 built (8, 9, 11 await checks) | builder/improvements | - |
-| Team leader | not started | - | - |
+| Team leader | B1 (whole-laptop tracker) DONE and merged. Next: B2, the assistant | - | - |
 | Writer | not started | - | - |
 
 ## Done (newest first)
+
+- Sat 14 Nov 15:35 CET, team leader's agent: step B1, the whole-laptop pointer reader
+  (`tracker/`). `tracker.reader.start(callback)` / `stop()` follow Contract 1: 100 Hz,
+  positions and times only, nothing saved to disk unless asked, idle after 3 s still.
+  Added `pyobjc-framework-Quartz==13.0` (macOS only) to `requirements.txt`. Checked with the
+  builder's server: it finds the tracker and switches it on/off; a fake 5 Hz wobble sent
+  through the server's callback produced the `whole_laptop` summary block.
 
 - Sat 14 Nov 15:10 CET, builder's agent: step 11, live demo page (`web/`), style C (warm and
   friendly), plain JavaScript. All "must do" steps (1-9 and 11) are now built.
@@ -76,6 +83,11 @@ Newest entries go at the top of each list. Use local time and say who you are.
 
 ## Results so far (real numbers only; say which script produced them)
 
+- `python -m tracker.demo` (demo Mac, leader moving the pointer in another app): 1,001
+  samples in 10 s, 100.0 samples per second, gap median 10.00 ms / 95th percentile 11.80 ms /
+  longest 12.50 ms, standard deviation 0.84 ms; no permission prompt.
+  `python -m pytest tracker/test_reader.py`: 5 passed.
+
 - `server/test_ws.py` (builder's Mac): 500/500 replies per mode; mean reply 0.56 ms in the
   learned mode with demo tremor (99th percentile 2.92 ms), 0.24-0.25 ms in the other modes.
 
@@ -121,6 +133,10 @@ Newest entries go at the top of each list. Use local time and say who you are.
 
 ## Decisions made along the way (what, why, who decided)
 
+- Sat 14 Nov, team leader (human): DECISION L1 = A. Keep only the current session in memory,
+  plus an optional local file the user can delete. A history across days to show trends
+  (option B) is wanted as a future extension, not for the hackathon.
+
 - Sat 14 Nov, builder (human): DECISION 5 = A (models run in Python on the server);
   DECISION 6 = C (warm and friendly look); DECISION 7 = plain JavaScript.
 
@@ -147,6 +163,14 @@ Newest entries go at the top of each list. Use local time and say who you are.
 - None else yet. (Keep this honest; the write-up needs a "what didn't work" section.)
 
 ## Requests to another lane
+
+- Team leader -> builder (Sat 14 Nov 15:35): **Contract 1 is live.** `tracker/reader.py` is
+  on `main`; after `git pull` and `python -m pip install -r requirements.txt`,
+  `GET /api/status` shows the tracker as available. Your `whole_laptop` summary addition
+  is fine for the assistant. Please make sure the demo page's tracking on/off button is
+  visible. The "delete my data" button will be in the assistant panel (B2). Note: the
+  tracker stops sending samples after 3 s of a still pointer, so the server sees time gaps;
+  `laptop_detector` should treat a long gap as a fresh start if that matters to it.
 
 - Builder -> team leader (Sat 14 Nov 15:10): **third cross-machine check (step 11).** On the
   demo Mac: `git pull`, `python -m uvicorn server.main:app`, open http://127.0.0.1:8000 in

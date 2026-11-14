@@ -43,6 +43,9 @@ Installed in step 1 (exact versions in `requirements.txt`). Add new ones here wh
   (the detector v1 model and its "which features mattered" check)
 - threadpoolctl, https://github.com/joblib/threadpoolctl (keeps live detector calls on one
   thread; installed with scikit-learn)
+- PyObjC (pyobjc-framework-Quartz), https://pyobjc.readthedocs.io (macOS only: reads the
+  pointer position for the whole-laptop tracker via Apple's Quartz `CGEventGetLocation`,
+  https://developer.apple.com/documentation/coregraphics/cgevent/location)
 
 ## AI tools used while building
 

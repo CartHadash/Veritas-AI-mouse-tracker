@@ -36,6 +36,17 @@ python server/test_ws.py
 
 It sends 500 pointer samples in each filter mode and prints the reply time.
 
+### Check the whole-laptop tracker (team leader's lane, macOS only)
+
+```bash
+python -m tracker.demo                    # move the pointer in any app for 10 s
+python -m pytest tracker/test_reader.py   # 5 automatic checks, no mouse needed
+```
+
+The demo should print a "Rate while moving" near 100 samples per second. No permission
+prompt should appear. In the app, tracking stays off until it is switched on
+(`POST /api/settings {"tracking": true}`).
+
 ### Rebuild the data and re-score everything (optional)
 
 ```bash

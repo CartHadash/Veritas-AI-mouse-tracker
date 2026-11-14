@@ -157,6 +157,13 @@ python server/test_ws.py                  # with the server running: 500-sample 
 python -m pytest data_pipeline/test_split.py
 ```
 
+Leader lane (macOS only):
+
+```bash
+python -m tracker.demo                    # move the pointer in any app; expect ~100 per second
+python -m pytest tracker/test_reader.py
+```
+
 (Each lane adds its own commands here as they come into existence.)
 
 ## Things we learned the hard way
@@ -172,6 +179,8 @@ python -m pytest data_pipeline/test_split.py
 - When a script edits several `.md` files, check every edit succeeded before committing; twice
   a failed edit went unnoticed and a merge went out without its STATUS update.
 
+- A Claude Code worktree (`.claude/worktrees/...`) has no `.venv` of its own; `python` is
+  "command not found" there. Activate the main checkout's: `source ../../../.venv/bin/activate`.
 - PADS text files have 7 columns, not the 6 the official page describes; time is first.
 - TremorDB files are plain numbers, one per line; the `wfdb` library cannot read them.
 - On macOS, asking where the pointer is needs no permission; listening to mouse events or
