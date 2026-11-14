@@ -792,6 +792,16 @@ Checked in the app's browser pane with simulated movement: 200 px of hand moveme
 cursor 100 px, and pushing on reached the far edge (572 of 572 px) with no restart. The pane
 itself refuses Pointer Lock, which tested the fallback (normal pointer input, with a message);
 the real lock in Chrome and Safari still needs a check by hand.
+**The live "Shake" readout and strong demo tremor (Sat 14 Nov, after Oleksandr found the
+correction invisible by eye).** The demo page's own numbers (`python evaluation/compare_modes.py
+--people test` -> `demo_modes_test.md`) already said so: with medium tremor and browser-like
+timing, reaching, our cursor is 6.00 -> 5.22 px from the intended path (13% closer), too
+little to see; with strong tremor, reaching, 13.12 -> 6.66 px. So the model roughly halves
+strong shaking but barely changes medium shaking while moving. The demo now starts with strong tremor, and the meter shows "Shake (2 s): raw -> shown"
+so the difference can be read, not just guessed. The page cannot know the intended path, so it
+estimates it as the raw path averaged over 0.25 s (that irons out 3-12 Hz shaking); the readout
+is for display only.
+
 Later fix (after Oleksandr tried it): if the browser refused the lock once (Chrome refuses for
 about a second after Esc), the page used to give up for the whole session, so the grey dot
 (the real pointer) could leave the box before the cursor reached the edge. Now every click

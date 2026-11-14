@@ -100,7 +100,7 @@ def main():
              "Produced by `python evaluation/compare_modes.py --people %s`. Average distance (px) between "
              "the shown cursor and the intended path after a 3 s warm-up, over %d s so all 4 recordings "
              "of a strength level play once. Uses the server's own session code. First table: medium "
-             "replayed tremor (the page's default)." % (args.people, SECONDS), "",
+             "replayed tremor (the page's default until Sat 14 Nov; now strong)." % (args.people, SECONDS), "",
              "Jerkiness = average size of the change in the shown cursor's velocity from one 10 ms step "
              "to the next, on an even 100 Hz time grid (px).", "",
              "| Intended movement | Off the path: no filter / One Euro / our model (px) "
