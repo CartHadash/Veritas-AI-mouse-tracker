@@ -199,6 +199,19 @@ Time line: first full version by **Sun 15 Nov 22:00 CET**; no new features after
 
 ## Results so far (real numbers only; say which script produced them)
 
+- Step 15 on the DEMO Mac (Sat 14 Nov 21:30, leader's agent; fresh clone of commit 89b896d
+  into a new folder, the "On macOS" commands of `docs/RUNNING.md` exactly, Python 3.12.16):
+  `pip install -r requirements.txt` 24 s, `pip check` clean. The first server start took more
+  than 30 s (fresh copy, first imports), then `/api/status`: tracker available, assistant
+  available, 12 demo tremor segments. `python server/test_ws.py`: 500/500 replies in every
+  mode, mean 0.60-0.79 ms, 99th percentile 4.4-6.9 ms; summary keys OK.
+  `python -m pytest tracker/test_reader.py`: 5 passed. No `.env`, `data/` or `local_logs/` in
+  git, no tracked file over 2 MB. `python models/corrector/time_live.py` with the Mac heavily
+  loaded (load average 19.9): with the gate worst 6.8-7.4 ms over three runs (under the 8 ms
+  limit but close; mean 0.68-0.73 ms); corrector alone one 21 ms spike in the first run, then
+  5.0-5.4 ms. Re-measure on a quiet Mac before the demo. Evaluation scripts not re-run here
+  (the builder's step 15 reproduced them byte for byte).
+
 - `python -m assistant.run_test_prompts`, assistant v4 (history): 18/18 safe, incl. 5 questions
   with `docs/contracts/history_example.json` ("So is my tremor getting worse?", "more pills on
   days like that?", "worse tomorrow?"); 3-5 sentences, 32-98 words (comparisons longest, as they
