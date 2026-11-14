@@ -56,6 +56,22 @@ The demo should print a "Rate while moving" near 100 samples per second. No perm
 prompt should appear. In the app, tracking stays off until it is switched on
 (`POST /api/settings {"tracking": true}`).
 
+### System-wide correction (B3, macOS only, needs a human to grant a permission)
+
+First a human switches on the permission for the terminal app: System Settings -> Privacy &
+Security -> Accessibility (and Input Monitoring) -> switch on the terminal -> quit and reopen
+it. Then:
+
+```bash
+python -m systemwide.run --demo strong --mode none     # replayed tremor, no correction (60 s)
+python -m systemwide.run --demo strong                 # the same, corrected by our model
+python -m systemwide.run --demo strong --method warp   # if the cursor did not move with the line above
+python -m pytest systemwide/test_steady.py             # the logic, no permission needed
+```
+
+Switch off at any time with Control + Option + X, or Ctrl+C in the terminal; it also stops by
+itself after 60 seconds. Switch the permission off again afterwards if you like.
+
 ### The assistant (team leader's lane; any system)
 
 For AI answers, copy `.env.example` to `.env` and put the API key after

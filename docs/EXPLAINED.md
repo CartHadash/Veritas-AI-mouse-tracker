@@ -677,6 +677,35 @@ default (our model at full strength) was already almost as good as the best poss
 per person. Not run on test people, because the method was not kept. Nothing from the test is
 saved to disk, and it is worded as "settings for your device", never as a diagnosis.
 
+## Correcting the real cursor everywhere (B3, `systemwide/`, macOS only)
+
+**What it is.** A small program that makes the actual macOS cursor steadier in every app, not
+only on our demo page. `python -m systemwide.run` (options: `--demo strong` adds the replayed
+tremor so the effect is visible; `--mode none` shows the same tremor uncorrected).
+
+**How it works.** macOS lets a program with the Accessibility permission see every mouse event
+before apps do (an "event tap"). For each movement we work out where the hand is (we add up the
+device's movements ourselves), add the replayed tremor if asked, send that through the same
+detector and corrector as the demo page, and change the event so the cursor appears at the
+corrected spot. Clicks are moved to where the corrected cursor is shown. The logic lives in
+`systemwide/steady.py` (no macOS code, so it can be tested anywhere); `systemwide/run.py` only
+connects it to macOS.
+
+**Safety first.** It switches itself off after 60 seconds (at most 10 minutes);
+Control + Option + X switches it off at once from any app; Ctrl+C in the terminal stops it; if
+the filter fails, the cursor simply follows the hand; the cursor never leaves the screen.
+Without the permission it only checks (no dialog pops up), explains what a human must switch
+on, and stops without changing anything.
+
+**How we know it works (so far).** `python -m pytest systemwide/test_steady.py` (5 tests,
+imitating macOS): with strong replayed tremor and a still hand, our model keeps the cursor
+clearly closer to the hand than no correction; a steady glide is left alone (under 1 px off);
+movement adds up correctly; a failing filter falls back to the hand; the cursor stays on the
+screen. On the builder's Mac (no permission) it stopped with the explanation, as designed.
+**Not yet checked on a real cursor:** that needs the demo Mac with the permission switched on by
+the team leader. Some macOS details are uncertain (for example whether changing an event's
+position moves the visible cursor), so `--method warp` moves the cursor directly instead.
+
 ## Can someone else reproduce it? (step 15)
 
 Yes. A fresh copy of the repository from GitHub, set up with the commands in `docs/RUNNING.md`,
