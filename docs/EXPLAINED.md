@@ -265,7 +265,63 @@ fast reaches dominate that average. That is why the tuned settings smooth so lit
 
 ## The detector
 
-(To be written after step 7.)
+**What it does.** It looks at the last 2.56 seconds of cursor movement and says whether it
+contains tremor-like shaking (a score from 0 to 1), how big the shaking is in pixels, and at
+what frequency. It flags tremor-*like* movement; it does not diagnose anything.
+
+**How it works (version 1, Decision 3 option A).** `models/detector/features.py` describes
+each window with 19 numbers a person can explain: how much movement there is in each
+frequency band, where the strongest 3-12 Hz rhythm is and how sharp and regular it is, how big
+the 3-12 Hz shake is in pixels, speed, acceleration, direction reversals, and the share of
+time the cursor is nearly still. `models/detector/train.py` feeds these to **gradient
+boosting**: many small decision trees, each correcting the mistakes of the ones before, that
+vote together. A second model of the same kind estimates the shake's size. Trained on train
+people only (25 s on the builder's Mac); settings picked on validation people (average
+precision 0.676, where random guessing gives 0.191). Saved model: 0.51 MB.
+
+**Which measurements mattered** (shuffle one on validation and see how much worse the model
+gets): by far "share of time nearly still", then peak sharpness, power at 7-12 Hz, median
+speed and rhythm regularity. Honest caveat: our synthetic "still" hand is perfectly still
+apart from tiny jitter, so any shaking while still stands out. A real hand resting on a real
+mouse is probably less still, so real-world false alarms could be higher than measured here.
+
+**The alarm cut-off (Decision 4, team chose B).** The cut-off is set on validation so that at
+most 20% of tremor windows are missed (cut-off 0.165). The guide suggested 10%, but on
+validation that meant 46.5% false alarms: a healthy person would see "tremor" about half the
+time. At 20% the false alarms drop to about a quarter. The corrector's smoothing follows the
+0-1 score smoothly, not this yes/no line, so the line mainly affects what we tell the user.
+
+**Results on test people** (`python evaluation/evaluate_detector.py --missed-target 0.2`; used
+once, after everything was chosen on validation):
+
+| Detector | Missed cases | False alarms | Accuracy |
+|---|---|---|---|
+| Always "no tremor" | 100.0% | 0.0% | 74.5% |
+| Frequency rule (cut-off chosen the same way) | 14.8% | 59.0% | 52.3% |
+| **Our detector v1** | **14.3%** | **27.0%** | **76.2%** |
+
+Same missed cases as the rule, less than half the false alarms. With the hand moving: 29.0%
+false alarms vs the rule's 58.9%; with the hand still: 22.8% vs 59.2%.
+
+**Across groups** (full tables in `evaluation/results/detector_v1.md`): missed cases by age
+band 13.6% / 15.3% / 13.9% (under 60 / 60-69 / 70+), by sex 10.9% female / 16.8% male. False
+alarms by age 29.5% / 31.8% / 34.7%, by sex 30.0% / 33.9% (these exclude the synthetic-only
+windows, which have no person and only 8.4% false alarms, so they are higher than the 27.0%
+overall). Essential tremor, atypical Parkinsonism, MS and other movement disorders have under
+10 test people each, so their numbers are unreliable.
+
+**Where it is weaker.** Mild tremor (under 3 px) is missed 37.0% of the time (medium 12.6%,
+strong 3.4%). Windows from "moving on purpose" tasks get 43.5% false alarms (rest: 19.0%).
+Patient windows that the rule did not mark as tremor get 34.5% false alarms; some of them
+probably contain weaker tremor that the rule left unmarked.
+
+**Size estimate.** Median error 0.52 px for mild tremor (true median 1.77 px), 1.18 px for
+medium (5.39 px), 1.76 px for strong (20.04 px).
+
+**Does our pixel factor decide the result? No.** Everything was rebuilt and retrained with
+every tremor at half and at double size. Model missed / false alarms: 16.8% / 34.0% (half),
+14.3% / 27.0% (normal), 12.3% / 22.5% (double); the frequency rule's false alarms were 64.1%,
+59.0% and 50.8%. Bigger tremor is easier, as expected, and the model beats the rule at all three.
 
 ## The corrector
 

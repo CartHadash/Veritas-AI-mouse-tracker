@@ -8,11 +8,15 @@ Newest entries go at the top of each list. Use local time and say who you are.
 
 | Lane | Working on | Branch | Blocked by |
 |---|---|---|---|
-| Builder | IN PROGRESS: step 7, detector v1 (models/detector/). Steps 1-6 done | builder/detector-v1 | - |
+| Builder | Steps 1-7 done. Next: step 8, corrector v1 (on the builder's Mac) | main | - |
 | Team leader | not started | - | - |
 | Writer | not started | - | - |
 
 ## Done (newest first)
+
+- Sat 14 Nov 14:45 CET, builder's agent: step 7, detector v1 (`models/detector/`), scored once
+  on test with `evaluation/evaluate_detector.py --missed-target 0.2` ->
+  `evaluation/results/detector_v1.md`. Live use via `models/detector/predict.py`.
 
 - Sat 14 Nov 14:40 CET, builder's agent: step 6, `evaluation/metrics.py` (shared scoring) and
   `evaluation/run_baselines.py` -> `evaluation/results/baselines.md`.
@@ -57,6 +61,12 @@ Newest entries go at the top of each list. Use local time and say who you are.
 
 ## Results so far (real numbers only; say which script produced them)
 
+- `evaluation/evaluate_detector.py --missed-target 0.2` (test people): detector v1 missed
+  14.3%, false alarms 27.0%, accuracy 76.2%; frequency rule (same cut-off rule) missed 14.8%,
+  false alarms 59.0%. Hand moving: false alarms 29.0% vs 58.9%. Mild tremor (<3 px) missed
+  37.0%. Half / double pixel factor: model 16.8% / 34.0% and 12.3% / 22.5% (missed / false
+  alarms). Validation average precision 0.676 (`models/detector/train.py`).
+
 - `evaluation/run_baselines.py` (test people): detector "always no tremor" missed 100%,
   false alarms 0%, accuracy 74.5%. Frequency rule (balanced cut-off) missed 47.2%, false
   alarms 19.4%; at missed <= 10% on validation: missed 7.4%, false alarms 72.9%. Corrector,
@@ -82,6 +92,10 @@ Newest entries go at the top of each list. Use local time and say who you are.
 
 ## Decisions made along the way (what, why, who decided)
 
+- Sat 14 Nov, builder (human): DECISION 3 = A (gradient boosting on explainable features)
+  and train on the builder's Mac (8 GB was enough: about 0.5 GB used so far).
+- Sat 14 Nov, builder (human): DECISION 4 = B, cut-off at most 20% missed on validation
+  (10% would have meant 46.5% false alarms).
 - Sat 14 Nov, builder (human): DECISION 1 = A, one pixel factor per dataset with the median
   tremor-marked Parkinson's segment at 6 px; re-check at half and double later.
 - Sat 14 Nov, builder (human): DECISION 2 = A, all PADS task types, labelled rest /
@@ -98,6 +112,11 @@ Newest entries go at the top of each list. Use local time and say who you are.
 - None else yet. (Keep this honest; the write-up needs a "what didn't work" section.)
 
 ## Requests to another lane
+
+- Builder -> team leader (Sat 14 Nov 14:45): optional check on the demo Mac after pulling:
+  `python models/detector/predict.py` has no main; instead run
+  `python -c "from models.detector.predict import Detector; print('ok')"` to confirm the saved
+  detector loads (it needs the same scikit-learn version, which requirements.txt pins).
 
 - DONE (Sat 14 Nov, leader's Mac): builder's first cross-machine check. See "Done".
 

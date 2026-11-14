@@ -361,7 +361,7 @@ a fake sine-wave tremor and judges could call an untuned baseline unfair.
 well on still windows and worse on moving ones; if it scores near-perfect everywhere, the
 task is too easy: tell your human and add harder look-alikes in step 4 before going on.
 
-### - [ ] Step 7. Detector, version 1
+### - [x] Step 7. Detector, version 1
 
 **In plain words:** train the first model that decides "tremor or not" for a 2.56-second
 window of cursor movement, and estimates its strength.
@@ -391,6 +391,14 @@ next to both baselines; the same broken down by age band, sex, diagnosis (Parkin
 essential tremor), tremor size (mild / medium / strong), task type, and moving vs still;
 and the error of the strength estimate in pixels. Repeat the headline numbers at half and
 double the pixel factor from DECISION 1.
+
+Done (Sat 14 Nov): DECISION 3 = A (HistGradientBoosting on 19 features, plus a size
+regressor). DECISION 4 = at most 20% missed on validation (cut-off 0.165, saved in
+`models/detector/detector_v1_threshold.json`). Test scoring is a separate script,
+`evaluation/evaluate_detector.py`, so `train.py` never touches test people. Half/double:
+`build_dataset.py` and `train.py` with `--tremor-scale 0.5` / `2`.
+Changed: the cut-off target is 20% missed, not 10%, because 10% gave 46.5% false alarms on
+validation (the builder chose this).
 
 **Done when:** the report exists and the model beats the frequency rule on at least the
 moving windows. **If it does not beat the baseline, say so plainly** in `STATUS.md`; that
