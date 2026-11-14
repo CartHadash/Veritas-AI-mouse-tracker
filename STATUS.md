@@ -8,11 +8,15 @@ Newest entries go at the top of each list. Use local time and say who you are.
 
 | Lane | Working on | Branch | Blocked by |
 |---|---|---|---|
-| Builder | Steps 1-3 done (1-2 confirmed on the demo Mac). Next: step 4, synthetic mouse movement | main | - |
+| Builder | Steps 1-4 done (step 4 chart awaiting the builder's look). Next: step 5, train/validation/test sets | main | - |
 | Team leader | not started | - | - |
 | Writer | not started | - | - |
 
 ## Done (newest first)
+
+- Sat 14 Nov 14:25 CET, builder's agent: step 4, `data_pipeline/synthetic_paths.py` generates
+  clean mouse paths with reaches, corrections, pauses, drifts and tremor look-alikes
+  (wiggles, circles, zig-zags; about 28% of the time). Chart in `evaluation/results/figures/`.
 
 - Sat 14 Nov 14:20 CET, builder's agent: step 3, `data_pipeline/tremor_library.py` builds
   `data/derived/tremor_library.npz` (13,764 segments of 10.24 s) in about 30 s, peak memory
