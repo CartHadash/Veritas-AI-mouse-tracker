@@ -245,6 +245,10 @@ Newest entries go at the top of each list. Use local time and say who you are.
 - Sat 14 Nov, builder's agent: an earlier version of the demo comparison replayed test people's
   tremor while we were still making design choices; now development uses validation people's
   recordings and test people's only once for the final figure.
+- Sat 14 Nov 18:14, builder's agent: the click-freeze change was committed straight to `main`
+  instead of via `builder/click-freeze` (a failed check stopped one part of a command chain
+  but a later part still switched to `main`). The code was already tested and checked; no
+  history was rewritten. Commands are now chained so that nothing runs after a failure.
 (Keep this list honest; the write-up needs a "what didn't work" section.)
 
 ## Requests to another lane
