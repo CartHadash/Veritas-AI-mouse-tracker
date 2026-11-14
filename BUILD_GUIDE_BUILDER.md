@@ -468,6 +468,10 @@ Done (Sat 14 Nov): `evaluation/find_failures.py` writes the charts plus `failure
 (facts and failure counts per group); `failures.md` holds the explanations. Waiting for the
 builder to read it before ticking.
 
+Changed (Sat 14 Nov night): the leader's additions are in `evaluation/failure_extras.py` ->
+`failures/extras.md` (95% ranges by redrawing people, failures per person, corrector failures
+on real marked tremor, the still-hand weak spot), explained in `failures.md`.
+
 **Done when:** the files exist and your human has read `failures.md`.
 
 **Checkpoint (Saturday night):** update `STATUS.md` with the real numbers. This is the
@@ -635,7 +639,7 @@ file). Waiting for the builder and the leader to read it before ticking.
 **Done when:** your human and the team leader have read it and found nothing they cannot
 explain. If they cannot explain something, fix `docs/EXPLAINED.md` until they can.
 
-### - [ ] Step 15. Fresh-clone test
+### - [x] Step 15. Fresh-clone test
 
 **In plain words:** judges will open our link. Make sure someone starting from nothing can
 run it.

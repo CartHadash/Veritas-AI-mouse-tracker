@@ -1,31 +1,34 @@
-# ---------------------------------------------------------------------------
-# PRE-HACKATHON CODE - DISCLOSED.
-# This file was written by our team on 12-13 Nov 2026, before the hackathon
-# started, during a feasibility test. It is reused here unchanged except for
-# this notice. See docs/REUSED_CODE.md. Everything else in this repository was
-# written during the hackathon weekend (14-15 Nov 2026).
-# ---------------------------------------------------------------------------
 """
-classical_filters.py - standard (non-AI) smoothing filters, used as BASELINES.
+classical_filters.py - standard (non-AI) smoothing filters, used as BASELINES that our model
+must beat, and as the "One Euro" choice on the demo page.
 
-Every filter has the same two methods, so the rest of the code can swap them freely:
+Written from scratch during the hackathon (Sat 14 Nov 2026) from the published descriptions
+of each method, replacing the pre-hackathon file (team leader's decision; docs/REUSED_CODE.md).
 
-    filter.reset()                 -> forget all history (call when starting fresh)
-    filter.update(x, y, t)         -> give it the newest raw position (pixels) and the
-                                      time in seconds; it returns the smoothed (x, y)
+Every filter works the same way, one pointer sample at a time (so it could run live):
+    f = OneEuroFilter()
+    f.reset()                      -> forget everything (call when starting fresh)
+    x_out, y_out = f.update(x, y, t)   -> newest raw position (px) and its time (s);
+                                          returns the smoothed position
+Each filter only uses the current and earlier samples (rule 11: causal).
 
-All filters are "time aware": they use the real timestamp `t` instead of assuming a
-fixed sample rate, because mouse events arrive at irregular intervals.
+The three methods:
+  - MovingAverageFilter: the average of the positions in the last `window` seconds. Removes a
+    lot of shaking but trails behind a moving hand by about half the window.
+  - OneEuroFilter: Casiez, Roussel and Vogel (CHI 2012), "1 Euro Filter: A Simple Speed-based
+    Low-pass Filter for Noisy Input in Interactive Systems". It smooths strongly when the
+    pointer is slow and less when it is fast, so it lags less during quick movements.
+  - KalmanFilter: a constant-velocity Kalman filter (a standard textbook method) for each
+    axis: it keeps an estimate of position and speed, predicts the next position, and blends
+    the prediction with the new measurement according to how noisy each is believed to be.
 """
 
 import math
 from collections import deque
 
-import numpy as np
-
 
 class NoFilter:
-    """Does nothing. Used as the 'no filter' baseline."""
+    """Returns the input unchanged (the 'no filter' baseline)."""
 
     def reset(self):
         pass
@@ -35,179 +38,125 @@ class NoFilter:
 
 
 class MovingAverageFilter:
-    """
-    Simple moving average: the output is the mean of all positions seen in the
-    last `window` seconds.
-
-    Trick: if the window is exactly one tremor period (0.2 s for a 5 Hz tremor),
-    each full shake cancels itself out in the average. The cost is lag: the
-    output trails the hand by about half the window (~0.1 s).
-    """
-
     def __init__(self, window=0.2):
-        self.window = window
-        self.samples = deque()  # each entry is (t, x, y)
+        self.window = window                  # seconds of history to average
+        self.reset()
 
     def reset(self):
-        self.samples.clear()
+        self.samples = deque()                # (t, x, y), oldest first
 
     def update(self, x, y, t):
         self.samples.append((t, x, y))
-        # Drop samples that are older than the window.
-        while self.samples and t - self.samples[0][0] > self.window:
+        # Keep only samples from the last `window` seconds (the newest one always stays). The
+        # tiny tolerance stops decimal rounding (0.3 - 0.2 = 0.0999...) from keeping one extra.
+        while self.samples[0][0] <= t - self.window + 1e-9:
             self.samples.popleft()
         n = len(self.samples)
-        mean_x = sum(s[1] for s in self.samples) / n
-        mean_y = sum(s[2] for s in self.samples) / n
-        return mean_x, mean_y
+        return sum(s[1] for s in self.samples) / n, sum(s[2] for s in self.samples) / n
+
+
+def smoothing_factor(cutoff_hz, dt):
+    """How much of a new sample a simple low-pass filter takes in (0-1), for a cut-off
+    frequency and a time step: alpha = 1 / (1 + tau / dt), with tau = 1 / (2 pi cutoff)."""
+    tau = 1.0 / (2 * math.pi * cutoff_hz)
+    return 1.0 / (1.0 + tau / dt)
 
 
 class OneEuroFilter:
     """
-    One Euro filter (Casiez et al., 2012) - a low-pass filter whose strength adapts
-    to how fast you are moving:
-
-      * moving slowly (aiming at a target)  -> heavy smoothing, removes tremor
-      * moving fast (travelling to a target) -> light smoothing, so little lag
-
-    Parameters:
-      min_cutoff : smoothing strength at rest, in Hz. LOWER = smoother but laggier.
-                   It must sit well below the tremor frequency (4-6 Hz).
-      beta       : how quickly smoothing is relaxed as speed rises. HIGHER = less
-                   lag in fast movements, but if it is too high the tremor's own
-                   speed "opens" the filter and the shake leaks through.
-      d_cutoff   : smoothing applied to the speed estimate itself (Hz).
+    min_cutoff (Hz): smoothing when the pointer is still (lower = smoother, more lag).
+    beta: how quickly smoothing is reduced as the pointer speeds up (higher = less lag).
+    d_cutoff (Hz): smoothing of the speed estimate itself.
+    Each axis is filtered on its own, as in the paper's one-dimensional description. As in the
+    authors' reference code (github.com/casiez/OneEuroFilter), the speed is measured from the
+    previous SMOOTHED position, and the first speed estimate is taken as it is.
     """
 
     def __init__(self, min_cutoff=1.0, beta=0.004, d_cutoff=1.0):
-        self.min_cutoff = min_cutoff
-        self.beta = beta
-        self.d_cutoff = d_cutoff
+        self.min_cutoff, self.beta, self.d_cutoff = min_cutoff, beta, d_cutoff
         self.reset()
 
     def reset(self):
-        self.last_t = None
-        self.last_raw = None      # previous raw position (x, y)
-        self.velocity = (0.0, 0.0)  # smoothed velocity estimate (px/s)
-        self.smoothed = None      # previous output (x, y)
-
-    @staticmethod
-    def _alpha(cutoff, dt):
-        """Blend factor of a first-order low-pass filter (0 = frozen, 1 = no smoothing)."""
-        tau = 1.0 / (2.0 * math.pi * cutoff)
-        return 1.0 / (1.0 + tau / dt)
+        self.t_prev = None
+        self.value = None                     # last smoothed position [x, y]
+        self.speed = None                     # last smoothed speed per axis (px/s)
 
     def update(self, x, y, t):
-        if self.last_t is None:  # first sample: nothing to smooth yet
-            self.last_t, self.last_raw, self.smoothed = t, (x, y), (x, y)
+        if self.value is None:
+            self.t_prev, self.value = t, [x, y]
             return x, y
-
-        dt = max(t - self.last_t, 1e-4)  # avoid dividing by zero
-
-        # 1) Estimate how fast the hand is moving, and smooth that estimate.
-        raw_vx = (x - self.last_raw[0]) / dt
-        raw_vy = (y - self.last_raw[1]) / dt
-        a_d = self._alpha(self.d_cutoff, dt)
-        vx = self.velocity[0] + a_d * (raw_vx - self.velocity[0])
-        vy = self.velocity[1] + a_d * (raw_vy - self.velocity[1])
-        speed = math.hypot(vx, vy)
-
-        # 2) Faster movement -> higher cutoff -> less smoothing (less lag).
-        cutoff = self.min_cutoff + self.beta * speed
-
-        # 3) Low-pass the position with that cutoff.
-        a = self._alpha(cutoff, dt)
-        sx = self.smoothed[0] + a * (x - self.smoothed[0])
-        sy = self.smoothed[1] + a * (y - self.smoothed[1])
-
-        self.last_t, self.last_raw = t, (x, y)
-        self.velocity, self.smoothed = (vx, vy), (sx, sy)
-        return sx, sy
+        dt = t - self.t_prev
+        if dt <= 0:                           # same timestamp again: nothing new to do
+            return self.value[0], self.value[1]
+        self.t_prev = t
+        for axis, raw in enumerate((x, y)):
+            # 1. speed, estimated from the change since the last smoothed value, then smoothed
+            raw_speed = (raw - self.value[axis]) / dt
+            if self.speed is None:            # first speed estimate: taken as it is
+                self.speed = [None, None]
+            if self.speed[axis] is None:
+                self.speed[axis] = raw_speed
+            else:
+                a = smoothing_factor(self.d_cutoff, dt)
+                self.speed[axis] = a * raw_speed + (1 - a) * self.speed[axis]
+            # 2. the faster the pointer, the higher the cut-off (less smoothing, less lag)
+            cutoff = self.min_cutoff + self.beta * abs(self.speed[axis])
+            a = smoothing_factor(cutoff, dt)
+            self.value[axis] = a * raw + (1 - a) * self.value[axis]
+        return self.value[0], self.value[1]
 
 
-class _Kalman1D:
-    """
-    Kalman filter for ONE axis with a 'constant velocity' model.
-
-    It keeps a belief about two hidden numbers: [position, velocity].
-    Each step it (a) predicts where the cursor should be if it kept moving at
-    the same velocity, then (b) corrects that prediction part-way towards the
-    new measurement. How far it moves towards the measurement depends on how
-    much it trusts the model versus the measurement.
-    """
+class KalmanAxis:
+    """Constant-velocity Kalman filter for one axis. State: position p (px) and velocity v
+    (px/s), with uncertainty P (a 2x2 table, kept as four numbers so no library is needed)."""
 
     def __init__(self, accel_std, measurement_std):
-        self.accel_std = accel_std              # how violently intended motion can change (px/s^2)
-        self.R = measurement_std ** 2           # measurement noise variance (the tremor)
-        self.H = np.array([[1.0, 0.0]])         # we only measure position, not velocity
-        self.state = None                       # [position, velocity]
-        self.P = None                           # uncertainty of the state (2x2)
+        self.q = accel_std ** 2               # how much the velocity may change (random acceleration)
+        self.r = measurement_std ** 2         # how noisy each measured position is
+        self.reset()
 
     def reset(self):
-        self.state = None
+        self.p = None
 
     def update(self, z, dt):
-        if self.state is None:
-            self.state = np.array([z, 0.0])
-            self.P = np.eye(2) * 100.0
+        if self.p is None:                    # first sample: start at the measurement, at rest
+            self.p, self.v = z, 0.0
+            self.P00, self.P01, self.P11 = self.r, 0.0, self.r
             return z
-
-        # --- Predict ---
-        F = np.array([[1.0, dt], [0.0, 1.0]])   # position += velocity * dt
-        q = self.accel_std ** 2
-        Q = q * np.array([[dt ** 4 / 4, dt ** 3 / 2],
-                          [dt ** 3 / 2, dt ** 2]])  # uncertainty added by unknown acceleration
-        self.state = F @ self.state
-        self.P = F @ self.P @ F.T + Q
-
-        # --- Correct with the measurement z ---
-        innovation = z - (self.H @ self.state)[0]       # how wrong the prediction was
-        S = (self.H @ self.P @ self.H.T)[0, 0] + self.R
-        K = (self.P @ self.H.T)[:, 0] / S               # Kalman gain: how much to trust z
-        self.state = self.state + K * innovation
-        self.P = (np.eye(2) - np.outer(K, self.H[0])) @ self.P
-        return float(self.state[0])
+        # Predict: move on at the current velocity; uncertainty grows (random acceleration).
+        self.p += self.v * dt
+        P00 = self.P00 + 2 * dt * self.P01 + dt * dt * self.P11 + self.q * dt ** 4 / 4
+        P01 = self.P01 + dt * self.P11 + self.q * dt ** 3 / 2
+        P11 = self.P11 + self.q * dt ** 2
+        # Correct: blend in the measurement, weighted by how uncertain the prediction is.
+        k0, k1 = P00 / (P00 + self.r), P01 / (P00 + self.r)
+        error = z - self.p
+        self.p += k0 * error
+        self.v += k1 * error
+        self.P00, self.P01, self.P11 = (1 - k0) * P00, (1 - k0) * P01, P11 - k1 * P01
+        return self.p
 
 
 class KalmanFilter:
-    """
-    2D Kalman filter = two independent 1D filters (one for x, one for y).
-
-    Parameters:
-      accel_std       : expected size of *intended* acceleration (px/s^2).
-                        HIGHER = follows the hand more eagerly (less lag, more shake).
-      measurement_std : expected size of the tremor/noise (px).
-                        HIGHER = trusts measurements less (smoother, more lag).
-    """
-
     def __init__(self, accel_std=1500.0, measurement_std=12.0):
-        self.kx = _Kalman1D(accel_std, measurement_std)
-        self.ky = _Kalman1D(accel_std, measurement_std)
-        self.last_t = None
+        self.kx = KalmanAxis(accel_std, measurement_std)
+        self.ky = KalmanAxis(accel_std, measurement_std)
+        self.reset()
 
     def reset(self):
         self.kx.reset()
         self.ky.reset()
-        self.last_t = None
+        self.t_prev = None
 
     def update(self, x, y, t):
-        dt = 1.0 / 120.0 if self.last_t is None else max(t - self.last_t, 1e-4)
-        self.last_t = t
+        dt = 0.0 if self.t_prev is None else max(t - self.t_prev, 0.0)
+        self.t_prev = t
         return self.kx.update(x, dt), self.ky.update(y, dt)
 
 
-# Names used everywhere (CSV files, command line, charts).
 FILTER_NAMES = ["moving_average", "one_euro", "kalman"]
 
 
 def make_filter(name):
-    """Create a fresh filter by name, with the default (tuned) parameters."""
-    if name == "none":
-        return NoFilter()
-    if name == "moving_average":
-        return MovingAverageFilter()
-    if name == "one_euro":
-        return OneEuroFilter()
-    if name == "kalman":
-        return KalmanFilter()
-    raise ValueError("Unknown filter: %r (choose from none, %s)" % (name, ", ".join(FILTER_NAMES)))
+    """A new filter by name (one of FILTER_NAMES), with its default settings."""
+    return {"moving_average": MovingAverageFilter, "one_euro": OneEuroFilter, "kalman": KalmanFilter}[name]()

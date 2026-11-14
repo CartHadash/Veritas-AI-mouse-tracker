@@ -5,20 +5,29 @@ cannot be extended. On 12–13 Nov 2026 our team ran a short feasibility test an
 datasets. This file records exactly what from that period is in this repository, so the
 write-up can disclose it honestly.
 
-**The team leader decided to reuse the three items below and to disclose them.** This is a
-judgement call under rule 2, not something the organisers have confirmed. If in doubt,
-email contact@veritasai.com; if they say no, delete the two code files and have the agent
-rewrite them (about 30 minutes of work each).
+**Update (Sat 14 Nov, 21:20, team leader's decision): no pre-hackathon code is left.** The two
+code files below were first reused and disclosed, then rewritten from scratch by the builder's
+agent during the hackathon to remove any rule-2 risk. Only the dataset research is reused.
 
 ## Reused
 
 | Item | Where | What it is | Why we think it is acceptable |
 |---|---|---|---|
-| Dataset download script | `scripts/download_data.py` | Downloads the two public datasets and checks their checksums | It only fetches public data; the rules allow browsing datasets beforehand |
-| Classical filters | `baselines/classical_filters.py` | Moving average, One Euro and Kalman filters | Standard published algorithms, used only as the **baselines** our model must beat. They are not the project's AI |
 | Dataset research | `docs/DATASETS.md` | Formats, sampling rates, licences, citations, known problems | Research, which the rules explicitly allow before kickoff |
 
-Both code files carry a notice at the top saying they predate the hackathon.
+## Rewritten during the hackathon (Sat 14 Nov)
+
+| File | What it does now | How we checked it |
+|---|---|---|
+| `scripts/download_data.py` | Fetches both datasets from PhysioNet's public mirror and checks every file's SHA-256 fingerprint; `--check` verifies what is on disk | `--check` on the builder's data: all 12,689 PADS and 123 TremorDB files correct; a fresh TremorDB download into an empty folder gave the same files |
+| `baselines/classical_filters.py` | Moving average, One Euro and Kalman filters, written from their published descriptions | Re-ran every evaluation that uses them (see below) |
+
+**What the rewrite changed in the results.** The Kalman filter gives exactly the same numbers.
+The moving average differs slightly (a 0.2 s window now holds 20 samples, not 21). **The One
+Euro filter differs noticeably**: the new version follows the authors' reference code
+(github.com/casiez/OneEuroFilter: speed is measured from the previous *smoothed* position);
+the old file did not, and made One Euro look smoother and laggier than the published filter
+is. Every result that uses these filters was re-run, and `RESULTS.md` uses the new numbers.
 
 ## Not reused (deliberately left behind)
 
@@ -31,13 +40,11 @@ copied in.** Anything similar must be written fresh during the weekend.
 
 - Do not copy any other file from the old repository (`mouse-tracking-model`) or from
   anyone's local copy of it.
-- Do not edit the two reused files except to fix a real bug; if you do, note it here.
 - Keep the "Sources" section of the write-up consistent with this file. Suggested wording:
 
-  > Before the hackathon we researched datasets and ran a short feasibility test. Two small
-  > files from that test are reused and marked in the code: the dataset download script and
-  > three standard smoothing filters that serve as baselines. Everything else, including
-  > all models, evaluation and the app, was built during the weekend.
+  > Before the hackathon we researched datasets and ran a short feasibility test. No code from
+  > that test is in the project: everything, including the data download, the baseline
+  > filters, all models, evaluation and the app, was written during the weekend.
 
 ## Lessons from the feasibility test (knowledge, not code)
 

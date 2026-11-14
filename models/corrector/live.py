@@ -31,10 +31,11 @@ sys.path.insert(0, str(ROOT))
 from models.corrector.model import HISTORY, Corrector  # noqa: E402
 from models.resample import Resampler  # noqa: E402
 
-# The version the app uses: v4 with smoothness penalty 0.5 (trained on plain distance like v3,
-# plus a penalty on a jumpy cursor; chosen on validation by evaluation/smoothness.py).
-# v1 is weights.pt, v3 is weights_v3.pt.
-VERSION = "v4_s0.5"
+# The version the app uses: v4 with smoothness penalty 2 (trained on plain distance like v3,
+# plus a penalty on a jumpy cursor). Penalty 0.5 was chosen first (evaluation/smoothness.py);
+# after the leader found it still jittery, evaluation/smoother_output.py chose penalty 2 on
+# validation (Sat 14 Nov 23:00). v1 is weights.pt, v3 is weights_v3.pt.
+VERSION = "v4_s2"
 WEIGHTS = ROOT / "models" / "corrector" / f"weights_{VERSION}.pt"
 RATE = 100
 GATE_LOW = 0.05          # detector score at which the gate starts opening

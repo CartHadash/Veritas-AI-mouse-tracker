@@ -45,10 +45,10 @@ Distances, tremor removed and lag are measured on the sequences with marked trem
 | No filter | 12.51 | 12.75 | 0% | 0 | 2.36 |  |
 | Lower sensitivity x0.5 | 6.23 | 6.38 | 75% | 0 | 1.18 | hand must travel 2x as far |
 | Lower sensitivity x0.25 | 3.03 | 3.25 | 94% | 0 | 0.59 | hand must travel 4x as far |
-| Moving average | 21.93 | 8.14 | 54% | 50 | 12.75 | settings chosen on validation: {'window': 0.1} |
-| Moving average (pre-hackathon default settings) | 34.77 | 3.38 | 91% | 100 | 23.12 |  |
-| One Euro | 13.20 | 10.37 | 15% | 10 | 4.89 | settings chosen on validation: {'min_cutoff': 2.0, 'beta': 0.03} |
-| One Euro (pre-hackathon default settings) | 19.68 | 5.91 | 68% | 40 | 12.47 |  |
+| Moving average | 21.46 | 8.43 | 51% | 40 | 12.32 | settings chosen on validation: {'window': 0.1} |
+| Moving average (pre-hackathon default settings) | 34.06 | 3.38 | 91% | 90 | 22.65 |  |
+| One Euro | 13.03 | 10.97 | 10% | 10 | 4.31 | settings chosen on validation: {'min_cutoff': 2.0, 'beta': 0.03} |
+| One Euro (pre-hackathon default settings) | 15.02 | 6.92 | 50% | 20 | 8.04 |  |
 | Kalman | 15.04 | 14.78 | -36% | 0 | 3.85 | settings chosen on validation: {'measurement_std': 3.0, 'accel_std': 4000.0} |
 | Kalman (pre-hackathon default settings) | 17.75 | 9.11 | 66% | 20 | 11.25 |  |
 

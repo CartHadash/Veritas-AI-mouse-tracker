@@ -13,7 +13,7 @@ The 22 px target is the demo page's; the 10 px target (about a small checkbox) w
 | medium | One Euro | 95 | 100% / 100% | 100% / 100% |
 | medium | Our model | 95 | 100% / 100% | 93% / 95% |
 | strong | No filter | 95 | 76% / 79% | 24% / 39% |
-| strong | One Euro | 95 | 100% / 100% | 93% / 96% |
-| strong | Our model | 95 | 100% / 100% | 92% / 94% |
+| strong | One Euro | 95 | 100% / 100% | 88% / 92% |
+| strong | Our model | 95 | 100% / 100% | 89% / 92% |
 
 This project is a prototype and is not medical advice.

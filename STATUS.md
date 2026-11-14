@@ -37,16 +37,16 @@ Time line: first full version by **Sun 15 Nov 22:00 CET**; no new features after
       Mac: DONE by the leader's agents, see "Results"; it found and fixed a RUNNING.md order bug.)
 - [x] Timofey: answer the open question on rewriting the two pre-hackathon files (YES, 21:20).
 
-- [ ] Rewrite `scripts/download_data.py` and `baselines/classical_filters.py` from scratch
+- [x] Rewrite `scripts/download_data.py` and `baselines/classical_filters.py` from scratch
       (leader said YES, 21:20); re-run the baselines and check the numbers still match; update
       `docs/REUSED_CODE.md`. About 30-45 min.
-- [ ] Step 9 additions picked by the leader (21:20): per-person uncertainty ranges; failures
+- [x] Step 9 additions picked by the leader (21:20): per-person uncertainty ranges; failures
       per person and a corrector failure on real marked tremor; the live still-hand weak
       spot. About 1 h.
 
 **3. After the answers (only if time allows; cut from the bottom up):**
-- [ ] Step 4: stress test the models on the realistic movement (about 1 h); retrain only if
-      they clearly drop (2-3 h more).
+- [x] Step 4: stress test the models on the realistic movement: no clear drop, no retraining.
+- [x] Leader's "still jittery" request: corrector v4 penalty 2 chosen on validation (smoother, no lag).
 - [ ] Timofey's idea 3, sticky targets (about 1 h). **UI: taken by the team leader (Sat 22:00).**
 - [ ] **UI: taken by the team leader (Sat 22:00).** Accessibility (Oleksandr's idea): a "Read aloud" button for the summary numbers (the
       browser's built-in speech, no new library), a font toggle that is easier to read with
@@ -61,6 +61,22 @@ Time line: first full version by **Sun 15 Nov 22:00 CET**; no new features after
 - [ ] Step 16, the desktop window (cut first).
 
 ## Done (newest first)
+
+- Sat 14 Nov 21:59 CET, builder's agent: the leader's list (Sat 20:59).
+  (1) `scripts/download_data.py` and `baselines/classical_filters.py` rewritten from scratch;
+  no pre-hackathon code is left. The download script checked all 12,689 PADS + 123 TremorDB
+  files on disk and fetched TremorDB into an empty folder correctly. Kalman reproduces
+  exactly; the old One Euro did not follow the authors' reference code, so One Euro now looks
+  less smooth and less laggy (test: 49% removed, 20 ms; was 68%, 40 ms). Every evaluation
+  using the filters was re-run and `RESULTS.md` updated.
+  (2) Step 9 additions (`evaluation/failure_extras.py` -> `failures/extras.md`, explained in
+  `failures.md`): 95% ranges by redrawing people, failures per person, corrector failures on
+  real marked tremor, the still-hand weak spot.
+  (3) "Still jittery": `evaluation/smoother_output.py` chose corrector v4 with penalty 2 on
+  validation (rule fixed in advance); on test jerkiness 1.37 -> 1.12 px, no lag, 5% more
+  distance while moving. The app now uses it (`models/corrector/live.py`).
+  (4) Step 4 stress test (`evaluation/realism_stress.py`): on realistic movement the models do
+  not drop, so no retraining.
 
 - Sat 14 Nov 20:49 CET, builder's agent: step 4 path check round 1 (Timofey's ratings,
   `evaluation/results/path_check_ratings_1.md`): current generator 2.3 / 5, realistic
@@ -213,6 +229,18 @@ Time line: first full version by **Sun 15 Nov 22:00 CET**; no new features after
 
 ## Results so far (real numbers only; say which script produced them)
 
+- `evaluation/smoother_output.py --test` (test, after choosing on validation): corrector v4
+  penalty 2 (the app now) off the path moving / still 7.30 / 5.17 px, 86% removed, 0 ms lag,
+  jerkiness 1.12 px (penalty 0.5: 6.94 / 4.86, 87%, 1.37; One Euro 15.32 / 6.98, 49%, 20 ms, 0.98).
+- `evaluation/failure_extras.py` (test): missed 12.9% (95% range 9.7-18.4%), false alarms
+  27.1% (24.7-29.5%), tremor removed 86% (75-90%); 19 of 236 marked-tremor sequences worse
+  than no filter (7 mild, 10 medium, 2 strong).
+- `evaluation/realism_stress.py` (validation, realistic movement v2 + device view): missed 18.0%
+  (original 20.0%), false alarms 25.6% (27.3%); corrector advantage while moving 5.45 px
+  (5.08 px). No retraining.
+- `evaluation/run_baselines.py` with the rewritten filters (test): One Euro original settings
+  15.02 / 6.92 px, 50% removed, 20 ms lag (old file: 19.68 / 5.91, 68%, 40 ms); Kalman identical.
+
 - Step 15 on the DEMO Mac (Sat 14 Nov 21:30, leader's agent; fresh clone of commit 89b896d
   into a new folder, the "On macOS" commands of `docs/RUNNING.md` exactly, Python 3.12.16):
   `pip install -r requirements.txt` 24 s, `pip check` clean. The first server start took more
@@ -339,6 +367,10 @@ Time line: first full version by **Sun 15 Nov 22:00 CET**; no new features after
   4.30 Hz, 99% of power in 3-12 Hz. TremorDB rofh/s6rof.let: peak 4.88 Hz, 98% in 3-12 Hz.
 
 ## Decisions made along the way (what, why, who decided)
+
+- Sat 14 Nov 21:59 CET, builder's agent (chosen on validation by rules fixed in advance): the app's corrector
+  is now v4 with penalty 2 (`smoother_output.md`); no retraining on realistic movement
+  (`realism_stress.md`). One Euro numbers everywhere now come from the rewritten filter.
 
 - Sat 14 Nov 22:10, team leader (human): README shows no team names or schools (round 1 is
   reviewed blind); the "Team:" line reads "Names on the submission form". Recorded in

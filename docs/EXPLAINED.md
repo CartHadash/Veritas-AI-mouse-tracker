@@ -200,6 +200,16 @@ sometimes drops to the next line; look-alikes are rarer (12.5% of the time inste
 cannot be mistaken for tremor. The original generator is still unchanged (identical paths).
 Round 2 of the blind check (seed 2027) compares version 2 with the original: results not in yet.
 
+**Stress test: do the models still work on realistic movement?** `python
+evaluation/realism_stress.py` rebuilds the validation people's examples with version 2 and
+the device view (whole pixels, uneven timing), keeping the same people and tremor recordings,
+and scores the app's models on both. The rule, fixed before running it: retrain only if missed
+cases or false alarms rise by more than 5 points, or the corrector's advantage over no filter
+shrinks by more than a third. Result: missed 18.0% (original movement 20.0%), false alarms
+25.6% (27.3%); the corrector's advantage while moving 5.45 px (5.08 px). Nothing dropped, so
+no retraining (`evaluation/results/realism_stress.md`). Caveat: version 2 is still waiting for
+the team's round 2 rating, so "realistic" is our claim until then.
+
 ### Training, validation and test sets (step 5)
 
 **What it does.** `data_pipeline/build_dataset.py` puts every person into exactly one of
@@ -261,6 +271,13 @@ minutes) and writes `evaluation/results/baselines.md`. All scoring code is in
 `evaluation/metrics.py`, shared with our models so the comparison is fair. Settings and
 cut-offs are chosen on **validation** people only; the numbers below are on **test** people.
 
+**The filters were rewritten (Sat 14 Nov, night).** The three classical filters first came
+from our pre-hackathon test; the team leader decided to rewrite them from scratch (rule 2).
+Written again from the published descriptions, the Kalman filter gave exactly the same
+numbers, but One Euro did not: the old file measured the pointer's speed differently from the
+authors' reference code, which made One Euro look smoother and laggier than it really is. All
+numbers in this file and in `RESULTS.md` now come from the rewritten filters.
+
 ### Detector baselines (test: 3,708 windows, 944 with tremor)
 
 - **Always "no tremor"**: 74.5% accuracy, yet it misses 100% of tremor. This is why
@@ -281,23 +298,24 @@ The rule is far from perfect even when the hand is still, so the task is not too
 | No filter | 12.5 / 12.8 | 0% | 0 ms |
 | Lower sensitivity 1/2 (hand travels 2x) | 6.2 / 6.4 | 75% | 0 ms |
 | Lower sensitivity 1/4 (hand travels 4x) | 3.0 / 3.3 | 94% | 0 ms |
-| Moving average, original setting (0.2 s) | 34.8 / 3.4 | 91% | 100 ms |
-| One Euro, original settings | 19.7 / 5.9 | 68% | 40 ms |
+| Moving average, original setting (0.2 s) | 34.1 / 3.4 | 91% | 90 ms |
+| One Euro, original settings | 15.0 / 6.9 | 50% | 20 ms |
 | Kalman, original settings | 17.8 / 9.1 | 66% | 20 ms |
-| Moving average, tuned on validation | 21.9 / 8.1 | 54% | 50 ms |
-| One Euro, tuned on validation | 13.2 / 10.4 | 15% | 10 ms |
+| Moving average, tuned on validation | 21.5 / 8.4 | 51% | 40 ms |
+| One Euro, tuned on validation | 13.0 / 11.0 | 10% | 10 ms |
 | Kalman, tuned on validation | 15.0 / 14.8 | -36% | 0 ms |
 
 **What this shows.** Classical filters face a trade-off they cannot escape. Heavy smoothing
 removes most tremor while the hand is still (good for clicking) but makes the cursor trail
-behind fast reaches by 20-100 ms, which puts it 20-35 px off. Tuned to stay close to the
-path overall, they barely smooth at all (One Euro removes 15%), and Kalman even overshoots
+behind fast reaches by 20-90 ms, which puts it 15-34 px off. Tuned to stay close to the
+path overall, they barely smooth at all (One Euro removes 10%), and Kalman even overshoots
 and *adds* shake. Our idea: the detector switches smoothing on only when tremor is present,
 and the learned corrector should remove tremor with less lag. Lower sensitivity looks
 strong on paper, but the hand must travel 2-4 times as far, which is tiring.
 
-**How we know the scoring works.** The lag measurement gives 50 ms for a 0.1 s moving
-average and 100 ms for a 0.2 s one: exactly half the window, as theory says.
+**How we know the scoring works.** The lag measurement gives 40 ms for a 0.1 s moving
+average and 90 ms for a 0.2 s one. Theory says about half the window: a 0.2 s window holds
+the last 20 samples, whose middle is 95 ms back, and lag is measured in whole 10 ms steps.
 
 Note: the filters were tuned for the lowest average distance over the whole sequence, and
 fast reaches dominate that average. That is why the tuned settings smooth so little.
@@ -390,8 +408,8 @@ every method):
 |---|---|---|---|---|
 | No filter | 13.2 / 12.7 | 0% | 0 ms | 2.30 |
 | Lower sensitivity 1/2 (hand travels 2x) | 6.6 / 6.4 | 75% | 0 ms | 1.15 |
-| One Euro, original settings | 19.7 / 5.9 | 68% | 40 ms | 12.95 |
-| One Euro + our detector gate | 17.3 / 6.4 | 65% | 30 ms | 5.89 |
+| One Euro, original settings | 15.3 / 7.0 | 49% | 20 ms | 8.28 |
+| One Euro + our detector gate | 14.1 / 7.4 | 48% | 20 ms | 4.10 |
 | Our corrector, always on | 6.7 / 5.2 | 89% | 0 ms | 2.43 |
 | **Our corrector + detector gate** | **7.2 / 5.9** | **84%** | **0 ms** | **1.97** |
 
@@ -505,16 +523,25 @@ advance: the weakest penalty whose jerkiness on validation is no worse than no f
 (`python evaluation/smoothness.py --test` -> `evaluation/results/smoothness.md`). Chosen: 0.5.
 On **test** people, gated by detector v2:
 
-| | No filter | One Euro | v3 | **v4 (app)** |
-|---|---|---|---|---|
-| Off the path moving / still (px) | 13.17 / 12.74 | 19.66 / 5.92 | 6.85 / 4.93 | **6.94 / 4.86** |
-| Tremor removed | 0% | 68% | 86% | **87%** |
-| Lag | 0 ms | 40 ms | 0 ms | **0 ms** |
-| Jerkiness (px) | 1.69 | 0.64 | 1.96 | **1.37** |
-| Sequences without marked tremor: off the path (px) | 2.30 | 12.95 | 1.82 | **1.85** |
+| | No filter | One Euro | v3 | v4, penalty 0.5 | **v4, penalty 2 (app)** |
+|---|---|---|---|---|---|
+| Off the path moving / still (px) | 13.17 / 12.74 | 15.32 / 6.98 | 6.85 / 4.93 | 6.94 / 4.86 | **7.30 / 5.17** |
+| Tremor removed | 0% | 49% | 86% | 87% | **86%** |
+| Lag | 0 ms | 20 ms | 0 ms | 0 ms | **0 ms** |
+| Jerkiness (px) | 1.69 | 0.98 | 1.96 | 1.37 | **1.12** |
+| Sequences without marked tremor: off the path (px) | 2.30 | 8.28 | 1.82 | 1.85 | **1.91** |
 
-v4 is smoother than no filter and keeps v3's accuracy. One Euro is the smoothest of all but
-lags 40 ms and is far off the path when the hand moves.
+v4 is smoother than no filter and keeps v3's accuracy. One Euro is the smoothest but lags
+20 ms and is far off the path when the hand moves.
+
+**Still jittery by hand, so penalty 2 (Sat 14 Nov, 23:00).** On the demo Mac the team leader
+found penalty 0.5 closer to the movement than One Euro but still jittery. With a new rule fixed
+before looking (`python evaluation/smoother_output.py` -> `smoother_output.md`: the least jerky
+option with at most 20 ms lag and at most 10% further from the path while moving), validation
+picked **penalty 2** from: extra One Euro smoothing of our output (2-16 Hz), a 30 or 50 ms
+average of our output, and penalties 2 and 8. The extra smoothing layers were much smoother
+but 14-58% further from the path while moving, outside the limit. On test, penalty 2 is 18%
+less jerky than 0.5 (1.12 vs 1.37 px) with no lag, at 5% more distance while moving.
 
 **A review of the whole code then found bugs in the live pipeline** (none of them affect the
 offline test scores above, which never go through it):
@@ -565,7 +592,24 @@ Full write-up: `evaluation/results/failures/failures.md` (charts in the same fol
   because our synthetic movement almost always has pauses. Fixed in step 12 (detector v2).
 - **The corrector loses to One Euro on irregular shaking.** When the shaking is not a steady
   rhythm, the detector keeps the gate closed, so our system leaves it alone; One Euro smooths
-  everything (and pays with 40 ms of lag everywhere else).
+  everything (and pays with 20 ms of lag everywhere else).
+
+**Step 9 additions (team leader's picks), `python evaluation/failure_extras.py`.**
+- *How sure are we?* We have only 72 test people; other people would give somewhat different
+  numbers. A **bootstrap** estimates how much: draw 72 people at random from our 72 with
+  repeats allowed, recompute, do it 1000 times, and keep the middle 95% of the results. We draw
+  people, not windows, because one person's windows are alike. Missed cases 12.9% (9.7% to
+  18.4%), false alarms 27.1% (24.7% to 29.5%), tremor removed 86% (75% to 90%). The missed-cases
+  range is wide because only 35 test people have tremor windows.
+- *Who causes the failures?* Misses are concentrated (8 of 35 people cause half), false alarms
+  spread out (25 of 72 people cause half). Misses depend on the person; false alarms on movement
+  everyone makes.
+- *The corrector on real tremor:* 19 of 236 marked-tremor sequences end up worse than no
+  filter, mostly with mild or medium tremor: a fast deliberate movement partly "removed" as if
+  it were tremor. Not tried yet: capping the correction at a few times the measured tremor size.
+- *The still hand on the demo page:* One Euro is best there (1.62 vs our 4.07 px, medium
+  tremor); smoothing has nothing to lag behind when the hand does not move.
+Details and charts: `evaluation/results/failures/failures.md` and `extras.md`.
 
 ## The results package (step 14)
 

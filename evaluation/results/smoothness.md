@@ -7,7 +7,7 @@ Produced by `python evaluation/smoothness.py --test`. Sequences with marked trem
 | Method (gated by detector v2) | Off the path moving / still (px) | Tremor removed | Lag (ms) | Jerkiness (px) | No marked tremor: off the path / jerkiness (px) |
 |---|---|---|---|---|---|
 | No filter | 12.25 / 13.95 | 0% | 0 | 1.65 | 1.96 / 0.74 |
-| One Euro (original) | 20.40 / 7.04 | 67% | 40 | 0.69 | 12.93 / 0.24 |
+| One Euro (original) | 15.85 / 8.27 | 48% | 20 | 1.07 | 8.17 / 0.31 |
 | v1 | 7.04 / 6.22 | 84% | 0 | 2.00 | 1.85 / 1.00 |
 | v3 | 6.70 / 5.23 | 87% | 0 | 1.83 | 1.68 / 0.85 |
 | v4, S=0.5 | 6.84 / 5.14 | 87% | 0 | 1.28 | 1.70 / 0.74 |
@@ -23,7 +23,7 @@ Sequences with marked tremor: 236; without marked tremor: 694; intended path jer
 | Method (gated by detector v2) | Off the path moving / still (px) | Tremor removed | Lag (ms) | Jerkiness (px) | No marked tremor: off the path / jerkiness (px) |
 |---|---|---|---|---|---|
 | No filter | 13.17 / 12.74 | 0% | 0 | 1.69 | 2.30 / 0.80 |
-| One Euro (original) | 19.66 / 5.92 | 68% | 40 | 0.64 | 12.95 / 0.25 |
+| One Euro (original) | 15.32 / 6.98 | 49% | 20 | 0.98 | 8.28 / 0.33 |
 | v1 | 7.15 / 5.93 | 84% | 0 | 2.09 | 2.00 / 1.06 |
 | v3 | 6.85 / 4.93 | 86% | 0 | 1.96 | 1.82 / 0.91 |
 | v4, S=0.5 | 6.94 / 4.86 | 87% | 0 | 1.37 | 1.85 / 0.78 |

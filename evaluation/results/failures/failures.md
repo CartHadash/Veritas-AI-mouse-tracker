@@ -1,8 +1,9 @@
 # Where our models fail (step 9, updated for the final models)
 
 All examples and counts come from `python evaluation/find_failures.py` on **test** people, with
-the models the app uses: detector v2 (cut-off 0.155) and corrector v4 (smoothness penalty 0.5)
-gated by detector v2. Exact figures are in `failure_facts.md`, charts in this folder. The
+the models the app uses: detector v2 (cut-off 0.155) and corrector v4 (smoothness penalty 2,
+the app's corrector since Sat 14 Nov 23:00) gated by detector v2. One Euro is our rewritten
+filter, which follows the authors' reference code (`docs/REUSED_CODE.md`). Exact figures are in `failure_facts.md`, charts in this folder. The
 explanations are our interpretation after looking at each chart; they are labelled as such.
 
 (The first version of this analysis, on detector v1 and corrector v1, found the same patterns.)
@@ -65,20 +66,58 @@ the others.
 ## Corrector: sequences where it does worse
 
 Our system is further from the intended path than the *better* of no filter and One Euro in
-381 of 930 test sequences, and in 33 of the 236 with marked tremor. This is a strict
+415 of 930 test sequences, and in 43 of the 236 with marked tremor. This is a strict
 comparison, because it takes whichever of the two was best for each sequence; on sequences
 without marked tremor the gate is mostly closed, so our output is close to the raw cursor.
 
 **Examples** (`corrector_worse_1.png`, `_2.png`): a Parkinson's patient's and a healthy
 person's action-task segment, neither marked as tremor, carrying 17 and 12.5 px of irregular
-3-12 Hz movement. Average distance to the intended path: ours 12.9 / 10.4 px, no filter
-13.0 / 10.7 px, One Euro 4.6 / 4.6 px.
+3-12 Hz movement. Average distance to the intended path: ours 12.92 / 10.40 px, no filter
+13.02 / 10.70 px, One Euro 5.47 / 4.80 px.
 
 **Our explanation.** This movement is not a steady rhythm, so the detector keeps the gate
 almost closed (average gate 0.02 and 0.04) and our system leaves the cursor almost untouched.
 That is the design: a steady hand should not be smoothed. One Euro smooths everything, so it
-wins on irregular shaking like this, at the cost of lag everywhere else (40 ms; and on the
-sequences without marked tremor it is far further from the path than ours: 12.95 vs 1.85 px).
+wins on irregular shaking like this, at the cost of lag everywhere else (20 ms; and on the
+sequences without marked tremor it is far further from the path than ours: 8.28 vs 1.91 px).
+
+## Corrector on REAL marked tremor: when it makes things worse (step 9 addition)
+
+From `extras.md` (`python evaluation/failure_extras.py`): 19 of 236 test sequences with marked
+tremor end up further from the intended path with our system than with no filter: 7 of 47 with
+mild tremor, 10 of 88 medium, 2 of 101 strong.
+
+**Examples** (`corrector_worse_tremor_1.png`, `_2.png`): Parkinson's patients at rest, marked
+tremor of only 1.3 and 1.2 px, the detector's gate open (mean 0.83 and 0.88). Ours 4.45 / 4.19
+px from the path, no filter 1.18 / 1.16 px.
+
+**Our explanation (after looking at the charts).** The tremor is real but tiny, so the gate is
+rightly open. The error spikes (up to about 35 px) come during a fast, deliberate back-and-forth
+movement in the same window: the corrector mistakes part of that movement for tremor and
+subtracts it. It happens mostly with mild and medium tremor (2 of 101 strong-tremor sequences).
+A possible fix, not tried: cap the correction at a few times the tremor size the detector
+measures.
+
+## How sure are the numbers, and who causes the failures? (step 9 additions)
+
+**Uncertainty.** Redrawing the 72 test people with repeats 1000 times (`extras.md`): missed
+tremor windows 12.9% (95% range 9.7% to 18.4%), false alarms 27.1% (24.7% to 29.5%), tremor
+removed 86% (75% to 90%). The missed-cases range is the widest because only 35 test people
+have tremor windows; another set of people could give a noticeably different number.
+
+**Failures per person** (`failures_per_person.png`). Missed windows are concentrated: 8 of the
+35 people with tremor windows cause half of them, and the 5 worst cause 37%. False alarms are
+spread out: it takes 25 of 72 people to cause half, and every person has at least one. Our
+reading: misses depend on the person (some people's tremor is small or comes and goes), while
+false alarms come from movement that occurs for everyone (purposeful tasks, look-alikes).
+
+## The demo page's weak spot: a hand held still
+
+`demo_still_hand.png` (medium replayed tremor of test people, server code): no filter 6.08 px
+from the hold point, One Euro 1.62 px, our model 4.07 px, with our correction more than half on
+92% of the time. When the hand is still, a smoothing filter has nothing to lag behind, so it is
+the best tool there; our corrector predicts and subtracts the tremor, which leaves a few pixels
+of error. Our advantage is during movement, where smoothing lags (`RESULTS.md`).
 
 ## The patterns in one paragraph
 

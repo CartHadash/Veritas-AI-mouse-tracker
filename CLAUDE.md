@@ -198,3 +198,8 @@ python -m assistant.run_test_prompts      # 13 test questions; needs the key; a 
   moving the real cursor needs the Accessibility permission for the app that launched Python.
 - PhysioNet's own zip download was very slow; the download script uses PhysioNet's public
   Amazon mirror instead.
+- macOS's shell is zsh: `for c in "a.py --x"; do python $c; done` passes ONE word, so the
+  option is lost and the script fails. Loop over commands with `bash -c '...'` or write them out.
+- Python from python.org on macOS has no trusted certificates, so secure downloads fail
+  ("CERTIFICATE_VERIFY_FAILED"). `scripts/download_data.py` uses the `certifi` package (in
+  `requirements.txt`); never switch certificate checking off.
