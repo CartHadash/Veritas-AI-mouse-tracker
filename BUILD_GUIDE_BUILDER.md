@@ -468,7 +468,7 @@ official "baseline and first model work" milestone. Then sleep.
 
 ## Phase 4: the app (target: Sunday 13:00 CET for the live demo, 18:00 for the rest)
 
-### - [ ] Step 10. The server
+### - [x] Step 10. The server
 
 **In plain words:** a small Python program that runs on the user's computer, keeps the two models
 loaded, and talks to the interface in the browser.
@@ -502,6 +502,11 @@ loaded, and talks to the interface in the browser.
 with each sample making a round trip over the WebSocket; on one laptop this adds about a
 millisecond and keeps one copy of the model. Option B: convert the model to run inside the
 browser (ONNX); no round trip, but an extra conversion step that can eat hours.
+
+Done (Sat 14 Nov): DECISION 5 = A. Also `POST /api/reset` (new session) and
+`GET /api/status`. Demo tremor is replayed by the server from `server/demo_tremor.npz`
+(test people only), so the app needs no dataset download. When the leader's tracker has
+data, `/api/summary` adds an optional `whole_laptop` block.
 
 **Done when:** a small test script can connect to `/ws/cursor`, send 500 samples and get
 500 replies, and the average reply time is printed and noted in `STATUS.md`.

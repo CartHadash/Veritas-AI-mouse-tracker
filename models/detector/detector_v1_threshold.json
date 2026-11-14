@@ -1,4 +1,6 @@
 {
  "threshold": 0.16495864782547026,
- "missed_target_on_validation": 0.2
+ "missed_target_on_validation": 0.2,
+ "test_missed_cases_rate": 0.143,
+ "test_false_alarm_rate": 0.2703
 }

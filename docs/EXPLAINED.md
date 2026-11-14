@@ -393,13 +393,56 @@ Full write-up: `evaluation/results/failures/failures.md` (charts in the same fol
   5 Hz shake that looks exactly like tremor. We do not change the rule after seeing results;
   we report it. Deliberate look-alike movement also causes false alarms (33.4% when it fills
   more than 30% of the window, vs 21.6% otherwise).
+- **Smooth continuous movement can trigger the detector.** Found while testing the server
+  (step 10): a slow, perfectly smooth circle with no pauses scored just over the cut-off.
+  The strongest feature is "share of time nearly still", and our synthetic movement almost
+  always has pauses, so uninterrupted movement looks unusual to the model.
 - **The corrector loses to One Euro on irregular shaking.** When the shaking is not a steady
   rhythm, the detector keeps the gate closed, so our system leaves it alone; One Euro smooths
   everything (and pays with 40 ms of lag everywhere else).
 
 ## The app
 
-(To be written after steps 10-13.)
+### The server (step 10)
+
+**What it does.** `server/main.py` is a small Python program that runs on the user's own
+laptop, keeps both models loaded, and talks to the web page. Start it with
+`python -m uvicorn server.main:app` and open http://127.0.0.1:8000. It only listens on this
+computer, never on the network.
+
+**How the page and the server talk.** Through a **WebSocket**: a connection that stays open so
+messages flow both ways quickly. The page sends every pointer position; the server replies
+with the corrected position, the detector's tremor score, the estimated tremor size and
+frequency. Measured with `python server/test_ws.py` on the builder's Mac: 500 samples in,
+500 replies out in every filter mode; average reply time 0.56 ms with our model and demo
+tremor on (99th percentile 2.92 ms). Far below what a person can notice.
+
+**Decision 5 (team chose A):** the models run in Python on the server, not inside the
+browser, so there is one copy of each model and the timing we measured is the timing users get.
+
+**Filter modes:** none / lower sensitivity (cursor moves half as far) / One Euro / our model.
+Strength 0-1 blends between the raw and the filtered cursor.
+
+**Demo tremor.** None of us has a tremor, so a switch adds a real patient's recorded tremor on
+top of the user's own live movement. It replays 8 tremor recordings (4.7-14.2 px, 3.5-9.8 Hz)
+from **test** people only, saved in `server/demo_tremor.npz` (63 KB, made by
+`data_pipeline/make_demo_tremor.py`), so the demo never shows tremor the models trained on.
+The summary notes when demo mode was on.
+
+**The session summary** (`GET /api/summary`, Contract 2): share of analysed time with
+tremor-like movement, typical frequency and size, a per-minute breakdown, distance moved,
+clicks and click accuracy, and a steadiness score (1 = no shaking, 0 = typical shaking of
+10 px or more). It includes the detector's real test error rates (missed 14.3%, false alarms
+27.0%), read from the file `evaluation/evaluate_detector.py` writes, never typed in by hand.
+
+**Optional parts from the team leader.** If the whole-laptop tracker or the assistant is
+missing or cannot load (the tracker is Mac-only), the server carries on and says so at
+`GET /api/status`. The tracker only starts when the user switches tracking on.
+
+**Something we noticed while testing:** a perfectly smooth, slow circular movement without
+any pauses scored 0.185, just over the cut-off (0.165), so the meter said "tremor". Our
+synthetic training movement almost always contains pauses, so the detector learned that
+uninterrupted movement is unusual. See "Where it fails".
 
 ## The pointer reader and the assistant
 
