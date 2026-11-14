@@ -345,7 +345,7 @@ async function loadAssistant() {
     const check = await fetch("assistant/assistant.js", { method: "HEAD" });
     if (!check.ok) return;
     const script = document.createElement("script");
-    script.src = "assistant/assistant.js";
+    script.src = "assistant/assistant.js?v=" + Date.now();   // never an old cached copy (leader's request)
     document.body.appendChild(script);
   } catch (error) { /* no assistant: fine */ }
 }

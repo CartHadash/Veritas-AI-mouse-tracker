@@ -354,7 +354,7 @@ Newest entries go at the top of each list. Use local time and say who you are.
   (about 5 min): `git pull`, run the app, open http://127.0.0.1:8000/path_check.html, rate the
   12 paths, and paste the report at the end into the group chat.
 
-- Team leader -> builder (Sat 14 Nov 20:00): **one line in `web/app.js`, please:** in
+- DONE (Sat 14 Nov, builder) Team leader -> builder (Sat 14 Nov 20:00): **one line in `web/app.js`, please:** in
   `loadAssistant()`, use `script.src = "assistant/assistant.js?v=" + Date.now();`. Browsers
   kept an OLD cached copy of the assistant panel after an update (it then showed raw `**`
   marks and a "SUGGESTIONS:" line). Until then, Cmd+Shift+R reloads the new panel.
