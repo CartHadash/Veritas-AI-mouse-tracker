@@ -12,7 +12,7 @@ from pathlib import Path
 import anthropic
 from dotenv import load_dotenv
 
-from assistant.prompt import DISCLAIMER, SYSTEM_PROMPT, summary_block
+from assistant.prompt import DISCLAIMER, SYSTEM_PROMPT, past_block, summary_block
 
 MODEL = "claude-sonnet-5-5"      # DECISION L2 (team leader): Sonnet 5.5
 EFFORT = "low"                   # recommended start for chat on this model: quick, cheap
@@ -47,8 +47,10 @@ def clean_messages(messages):
     return cleaned
 
 
-def stream_reply(summary, messages):
-    """Yield the assistant's reply piece by piece. Never raises: problems become friendly text."""
+def stream_reply(summary, messages, past=None):
+    """Yield the assistant's reply piece by piece. Never raises: problems become friendly text.
+
+    past: short versions of earlier sessions saved on this laptop (assistant/history.py)."""
     messages = clean_messages(messages)
     if not messages:
         yield "Please type a question, or tap one of the buttons."
@@ -70,7 +72,8 @@ def stream_reply(summary, messages):
             model=MODEL,
             max_tokens=MAX_TOKENS,
             system=[{"type": "text", "text": SYSTEM_PROMPT},
-                    {"type": "text", "text": summary_block(summary)}],
+                    {"type": "text", "text": summary_block(summary)},
+                    {"type": "text", "text": past_block(past or [])}],
             messages=messages,
             output_config={"effort": EFFORT},
             betas=["server-side-fallback-2026-07-01"],

@@ -14,6 +14,12 @@ Newest entries go at the top of each list. Use local time and say who you are.
 
 ## Done (newest first)
 
+- Sat 14 Nov 21:00 CET, team leader's agent: session history (DECISION L1 now B). Each
+  session's summary numbers are saved every minute to `local_logs/sessions/` (never raw
+  movement); the assistant compares with the last 7 sessions (pointer numbers only, never
+  health trends); "How does today compare with before?" button when history exists;
+  `GET /api/assistant/history` for the summary page; "delete my data" also empties it.
+
 - Sat 14 Nov 20:00 CET, team leader's agent: assistant v3 (leader's requests): key details
   highlighted, simpler and shorter wording, and follow-up questions after every answer that
   become the new one-tap buttons ("Main questions" goes back). Re-tested 13/13 safe.
@@ -139,6 +145,12 @@ Newest entries go at the top of each list. Use local time and say who you are.
 
 ## Results so far (real numbers only; say which script produced them)
 
+- `python -m assistant.run_test_prompts`, assistant v4 (history): 18/18 safe, incl. 5 questions
+  with `docs/contracts/history_example.json` ("So is my tremor getting worse?", "more pills on
+  days like that?", "worse tomorrow?"); 3-5 sentences, 32-98 words (comparisons longest, as they
+  name the reasons numbers can differ); none of 54 suggested buttons mention medical topics.
+  `python -m pytest assistant/test_history.py`: 5 passed.
+
 - `python -m assistant.run_test_prompts`, assistant v3 prompt: 13/13 safe, numbers correct,
   every answer highlights 1-2 key facts, 3-4 sentences (39-73 words), all 39 suggested
   follow-up questions safe. A 4-turn chat following the first suggestion each time: none of
@@ -230,6 +242,10 @@ Newest entries go at the top of each list. Use local time and say who you are.
 
 ## Decisions made along the way (what, why, who decided)
 
+- Sat 14 Nov evening, team leader (human): DECISION L1 changed from A to B. Keep a history of
+  session SUMMARIES (numbers only) on the laptop so the assistant can compare sessions; it may
+  describe pointer differences but never judge health trends.
+
 - Sat 14 Nov, team leader (human): DECISION L2 = `claude-sonnet-5-5` (neither suggested
   option: cheaper than Opus, stronger than Haiku). Effort `low`, the recommended start for chat.
 - Sat 14 Nov, team leader (human): the assistant stays one instructed AI call, not an agent
@@ -303,6 +319,18 @@ Newest entries go at the top of each list. Use local time and say who you are.
 (Keep this list honest; the write-up needs a "what didn't work" section.)
 
 ## Requests to another lane
+
+- Team leader -> builder (Sat 14 Nov 21:00): **please show the session history on the summary
+  page.** `GET /api/assistant/history` returns `{"current_started": ..., "sessions": [...]}`, the
+  earlier sessions saved on this laptop, newest first (fields: `day`, `minutes_active`,
+  `detected_share`, `typical_frequency_hz`, `typical_strength_px`, `steadiness_score`,
+  `click_accuracy`, `filter`, `demo_tremor_was_on`). Example to build against:
+  `docs/contracts/history_example.json`. Suggestion: a small table or chart of share flagged
+  and steadiness per session, marking sessions with demo tremor or a different filter, a line
+  "Differences between sessions can come from settings, tasks or time of day; this is not a
+  health trend", and the disclaimer. Optional, one line in `reset_summary()` before
+  `demo_stats = SessionStats()`: `from assistant import history; history.save(get_summary())`,
+  so the last minute before "New session" is not lost (autosave runs every 60 s).
 
 - Team leader -> builder (Sat 14 Nov 20:30): **bug: "Lower sensitivity" is offset.** Seen by
   the leader on the demo Mac: after bringing the pointer into the practice area, the drawn

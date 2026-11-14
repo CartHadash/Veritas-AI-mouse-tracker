@@ -19,6 +19,7 @@
   // The first one-tap questions (typing is hard with a tremor). After each answer the
   // assistant's own follow-up suggestions replace them.
   const STARTERS = ["Explain my summary", "When was my tremor strongest?", "What settings do you suggest?"];
+  const COMPARE = "How does today compare with before?";   // added when earlier sessions exist
   const MARKER = "SUGGESTIONS:";
 
   panel.classList.add("panel", "assistant");
@@ -180,6 +181,11 @@
       modeLine.textContent = status.ai
         ? "AI assistant on. It explains your numbers in plain words."
         : "AI assistant off (no API key on this laptop): answers are a plain summary made by ordinary code.";
+      if (status.ai && status.past_sessions > 0 && !STARTERS.includes(COMPARE)) {
+        STARTERS.push(COMPARE);
+        modeLine.textContent += ` It can also compare with ${status.past_sessions} earlier session(s) saved on this laptop.`;
+        if (!history.length) showQuestions(STARTERS);
+      }
     } catch (error) {
       modeLine.textContent = "The assistant is not available right now.";
     }

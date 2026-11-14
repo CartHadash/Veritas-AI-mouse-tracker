@@ -62,7 +62,8 @@ B1 and B2 are merged.
 
 Done Sat 14 Nov (branch `leader/tracker`): `tracker/reader.py`, `tracker/log.py`,
 `tracker/demo.py`, `tracker/test_reader.py`. Measured 100.0 samples per second on the demo
-Mac. DECISION L1 = A.
+Mac. DECISION L1 = A at first; changed to B by the team leader on Sat 14 Nov evening
+(session summaries saved in `local_logs/sessions/`, see `assistant/history.py`).
 Changed: `start(callback, save_log=False)` takes an optional flag for the local file, so
 the server's `start(callback)` writes nothing to disk. Idle cut-off is 3 s.
 Changed: the "delete my data" button and the tracking switch's place in the interface are
@@ -122,6 +123,10 @@ Changed: the refusal fallback (`fallbacks="default"`, beta endpoint) is switched
 Changed (v3, leader's request): highlighted key details (`**...**`), simpler wording, and
 follow-up questions after every answer (a hidden `SUGGESTIONS:` line) that replace the
 one-tap buttons. Re-tested: 13/13 safe (`assistant/test_prompts.md`).
+Changed (v4, L1 = B): session history. `assistant/history.py` saves each session's summary
+numbers (never raw movement) every minute; the assistant sees the last 7 in short form and may
+describe pointer differences between days, never health trends. `GET /api/assistant/history`
+for the summary page. 18/18 test questions safe, incl. 5 comparison questions.
 
 **In plain words:** a chat helper inside the app. It reads the session summary (the numbers
 the builder's models produce) and (1) explains them in two or three plain sentences,

@@ -36,12 +36,15 @@ class SampleLog:
 
 
 def delete_all_logs():
-    """Delete every file in local_logs/. Returns how many files were deleted."""
+    """Delete every file in local_logs/, including subfolders such as sessions/ (the saved
+    session summaries). Returns how many files were deleted."""
     if not LOG_DIR.exists():
         return 0
     deleted = 0
-    for path in LOG_DIR.iterdir():
+    for path in sorted(LOG_DIR.rglob("*"), reverse=True):    # files before their folders
         if path.is_file():
             path.unlink()
             deleted += 1
+        elif path.is_dir():
+            path.rmdir()                                       # already empty by now
     return deleted
