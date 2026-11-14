@@ -8,7 +8,7 @@ Newest entries go at the top of each list. Use local time and say who you are.
 
 | Lane | Working on | Branch | Blocked by |
 |---|---|---|---|
-| Builder | Steps 1-6 done. Next: step 7, detector v1 (waiting on DECISION 3 and Mac-vs-PC) | main | Builder's answers |
+| Builder | IN PROGRESS: step 7, detector v1 (models/detector/). Steps 1-6 done | builder/detector-v1 | - |
 | Team leader | not started | - | - |
 | Writer | not started | - | - |
 
