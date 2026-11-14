@@ -322,7 +322,7 @@ write-up must say that.
 A **baseline** is the simplest possible way to do the job. Judges want our model's score
 shown next to it, so they can see how much the AI adds.
 
-### - [ ] Step 6. Measure the baselines
+### - [x] Step 6. Measure the baselines
 
 **Do:** write `evaluation/metrics.py` (shared scoring functions) and
 `evaluation/run_baselines.py`. Results go to `evaluation/results/baselines.md`.
@@ -349,6 +349,13 @@ that order.
 For each, report: average distance between the output and the intended path (while moving
 and while still, separately), how much of the 3–12 Hz shake is removed, and **lag** (how
 many milliseconds the output trails the intended movement).
+
+Done (Sat 14 Nov): the frequency rule uses the window's velocity spectrum. It is reported
+at two cut-offs (best balance; missed <= 10% on validation). Each classical filter is shown
+with its pre-hackathon settings and with settings chosen on validation (lowest average
+distance).
+Changed: filters are also tuned on validation, because their old settings were chosen on
+a fake sine-wave tremor and judges could call an untuned baseline unfair.
 
 **Done when:** both tables exist, produced by one command. The frequency rule should do
 well on still windows and worse on moving ones; if it scores near-perfect everywhere, the
