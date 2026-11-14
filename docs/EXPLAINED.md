@@ -161,6 +161,59 @@ and we say so: real people move in more varied ways than these six kinds of even
 paths and one speed curve: reaches are bell-shaped in speed, look-alikes are fast and jumpy.
 A fixed random seed means the same paths come out every time.
 
+### Training, validation and test sets (step 5)
+
+**What it does.** `data_pipeline/build_dataset.py` puts every person into exactly one of
+three groups, then builds labelled examples from their recordings.
+
+**Split by person, not by recording.** If one patient's recordings were in both the
+learning and the testing groups, the model could recognise *the person* instead of *the
+tremor*, and the score would be fake. So people are split 70% train (learn from), 15%
+validation (tune settings), 15% test (locked away for the final score), separately inside
+each diagnosis group so every group appears in all three. Fixed random seed (42); the lists
+are in `data_pipeline/split.json`. `data_pipeline/test_split.py` fails if anyone appears in
+two groups or if an example uses a person from the wrong group (4 checks, all pass).
+
+People: 484 = 469 PADS + 15 TremorDB (TremorDB's description lists 16, but subject v3 has
+no recordings in the dataset). Train 340, validation 72, test 72.
+
+**Detector examples** are 2.56-second windows (256 samples), each a freshly generated
+synthetic movement plus either:
+- a piece of a tremor-marked patient segment → label "tremor";
+- a piece of a patient segment *not* marked as tremor → "no tremor";
+- a piece of a healthy person's segment (their tiny natural tremor) → "no tremor";
+- nothing (synthetic movement alone) → "no tremor".
+
+| Split | Windows | Tremor | No tremor: patient / healthy / synthetic only |
+|---|---|---|---|
+| Train | 16,771 | 3,848 | 7,146 / 2,982 / 2,795 |
+| Validation | 3,452 | 660 | 1,557 / 660 / 575 |
+| Test | 3,708 | 944 | 1,486 / 660 / 618 |
+
+About a quarter of the windows are "tremor", so a model that always says "no tremor" gets
+about 75% accuracy while missing every case. That is why we report missed cases and false
+alarms separately, never accuracy alone. The hand is mostly moving in about two thirds of
+windows (11,367 / 2,313 / 2,519).
+
+**Corrector examples** are 5.12-second sequences (512 samples): input = synthetic movement +
+a tremor piece (or nothing), target = the clean synthetic movement. Train 4,207 (962 with
+marked tremor), validation 809 (165), test 930 (236). The rest have small or no tremor,
+because the corrector must also leave a steady hand alone.
+
+**Small groups in the test set (be honest about this).** Test people: Parkinson's 43,
+healthy 12, other movement disorders 9, essential tremor 4, atypical Parkinsonism 2,
+multiple sclerosis 2; TremorDB 2. Age: 19 under 60, 24 aged 60-69, 29 aged 70+. Sex: 28
+female, 44 male. Groups under about 10 people (essential tremor, atypical Parkinsonism, MS,
+other movement disorders, TremorDB) give unreliable results; the write-up must say so.
+Validation has no atypical-Parkinsonism tremor windows and test has no MS tremor windows.
+
+Also: the 61 healthy segments that pass the tremor rule are left out entirely, so no
+"no tremor" example contains rule-passing tremor. Each window's label comes from its whole
+10.24-second segment; a short window from a segment with on-and-off tremor may contain
+little tremor (a known source of noisy labels).
+
+Numbers from `python data_pipeline/build_dataset.py` (17 s, about 0.45 GB memory).
+
 ## The baselines
 
 (To be written after step 6.)
