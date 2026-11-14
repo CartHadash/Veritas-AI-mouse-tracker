@@ -122,6 +122,49 @@ async function load() {
     `Detector version ${info.detector_version}. On people it had never seen, it missed ${percent(info.missed_cases_rate)} ` +
     `of tremor windows and raised a false alarm on ${percent(info.false_alarm_rate)} of windows without tremor ` +
     `(tested on recordings from a public dataset, not on mouse use). Filter now: ${s.filter.mode}, strength ${s.filter.strength}.`;
+  loadHistory(s);
+}
+
+// ------------------------------------------------------------ earlier sessions (leader's history)
+
+const MODE_NAMES = { none: "No filter", low_sensitivity: "Lower sensitivity", one_euro: "One Euro", learned: "Our model" };
+
+function historyRow(cells) {
+  const tr = document.createElement("tr");
+  for (const text of cells) {
+    const td = document.createElement("td");
+    td.textContent = text;                 // text only: saved values are never treated as HTML
+    tr.appendChild(td);
+  }
+  return tr;
+}
+
+async function loadHistory(current) {
+  // GET /api/assistant/history belongs to the leader's assistant; without it, no panel.
+  let history;
+  try {
+    const response = await fetch("/api/assistant/history");
+    if (!response.ok) return;
+    history = await response.json();
+  } catch (error) { return; }
+  document.getElementById("history").hidden = false;
+  const body = document.querySelector("#history-table tbody");
+  body.innerHTML = "";
+  const filterText = (f) => f ? `${MODE_NAMES[f.mode] ?? f.mode}${f.strength < 1 ? ` (${f.strength})` : ""}` : "-";
+  const demoNow = current.notes.some((n) => n.startsWith("Tremor replay"));
+  const now = historyRow(["This session", `${number(current.session.minutes_active)} min`,
+    percent(current.tremor.detected_share), number(current.usage.steadiness_score, 2),
+    percent(current.usage.click_accuracy), filterText(current.filter), demoNow ? "demo tremor was on" : ""]);
+  now.className = "current";
+  body.appendChild(now);
+  for (const s of history.sessions) {
+    const notes = [];
+    if (s.demo_tremor_was_on) notes.push("demo tremor was on");
+    if (s.filter && s.filter.mode !== current.filter.mode) notes.push("different filter");
+    body.appendChild(historyRow([s.day, `${number(s.minutes_active)} min`, percent(s.detected_share),
+      number(s.steadiness_score, 2), percent(s.click_accuracy), filterText(s.filter), notes.join(", ")]));
+  }
+  document.getElementById("history-empty").hidden = history.sessions.length > 0;
 }
 
 async function loadAssistant() {
@@ -129,7 +172,7 @@ async function loadAssistant() {
     const check = await fetch("assistant/assistant.js", { method: "HEAD" });
     if (!check.ok) return;
     const script = document.createElement("script");
-    script.src = "assistant/assistant.js";
+    script.src = "assistant/assistant.js?v=" + Date.now();   // never an old cached copy
     document.body.appendChild(script);
   } catch (error) { /* no assistant: fine */ }
 }

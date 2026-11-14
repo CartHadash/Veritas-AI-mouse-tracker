@@ -21,3 +21,7 @@
 
 #notes .banner { margin-bottom: 10px; }
 section.panel { margin-bottom: 16px; }
+
+#history-table tr.current td { font-weight: 700; }
+#history-table { margin-top: 8px; }
+#history { overflow-x: auto; }

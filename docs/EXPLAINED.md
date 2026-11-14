@@ -693,6 +693,18 @@ patient, 3.9 Hz). Clicks were tallied per mode and counted in the summary. The s
 showed 5.4 px while that recording's average size is 14.2 px over 10 s, so the size readout
 can underestimate.
 
+**"Lower sensitivity" and Pointer Lock (fixed after the leader's bug report).** In that mode
+the drawn cursor moves half as far as the hand, but the real (hidden) pointer moves the full
+distance. So the two drifted apart, and the real pointer left the practice area before the
+drawn cursor could reach the far side, which restarted the filter. Now the first click in the
+area turns on the browser's Pointer Lock: the real pointer is held in place and the page only
+receives how far the hand moved, which it adds up and sends as before. The drawn cursor is
+the only cursor and can reach every edge; Esc (or choosing another filter) releases it.
+Checked in the app's browser pane with simulated movement: 200 px of hand movement moved the
+cursor 100 px, and pushing on reached the far edge (572 of 572 px) with no restart. The pane
+itself refuses Pointer Lock, which tested the fallback (normal pointer input, with a message);
+the real lock in Chrome and Safari still needs a check by hand.
+
 ### The summary page (step 13)
 
 **What it does.** `web/summary.html` (with `summary.js`, `summary.css`) turns the session into
@@ -709,6 +721,15 @@ on for the first 40 s, then off) gave 1.25 active minutes; minute 0 had tremor-l
 43-55% of the time, minute 1 had 0%. Every number on the page matched `GET /api/summary`.
 This test found a bug: slow movement (under 0.5 px between samples) was not counted as active
 time; now any movement counts.
+
+**Earlier sessions (the leader's session history).** Below the chart, a table lists this
+session and the earlier ones saved on this laptop (from `GET /api/assistant/history`): active
+time, share of tremor-like movement, steadiness, clicks that hit, the filter, and a note when
+demo tremor was on or the filter differed from now, because those change the numbers. It says
+plainly that differences between sessions are not a health trend. If the assistant is not
+installed, the table does not appear. "New session" now saves the session first, so its last
+minute is not lost. Checked with the leader's example file (`docs/contracts/history_example.json`)
+and, for saving, with history pointed at a scratch folder.
 
 ## The pointer reader and the assistant
 

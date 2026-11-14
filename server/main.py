@@ -487,6 +487,11 @@ def get_summary():
 def reset_summary():
     """Start a new session summary (the demo page's 'new session' button)."""
     global demo_stats
+    try:                       # keep the last minute before "New session" (leader's history)
+        from assistant import history
+        history.save(get_summary())
+    except Exception:          # no assistant, or saving failed: never block a new session
+        pass
     demo_stats = SessionStats()
     return {"ok": True}
 
