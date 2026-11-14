@@ -21,6 +21,7 @@ from pathlib import Path
 
 import joblib
 import numpy as np
+from threadpoolctl import ThreadpoolController
 
 ROOT = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(ROOT))
@@ -42,12 +43,16 @@ class Detector:
             with open(threshold_file, encoding="utf-8") as f:
                 self.threshold = json.load(f)["threshold"]
         self.peak_column = FEATURE_NAMES.index("peak frequency in 3-12 Hz")
+        # For ONE window, scikit-learn's parallel worker threads cost far more than they save
+        # (about 20 ms instead of 2 ms on the builder's Mac), so live calls use one thread.
+        self.threads = ThreadpoolController()
 
     def predict(self, window):
         features = compute_features(np.asarray(window, dtype=np.float32)[None])
-        score = float(self.classifier.predict_proba(features)[0, 1])
-        return {"score": score, "tremor": score >= self.threshold,
-                "size_px": float(np.expm1(self.size_regressor.predict(features)[0])),
+        with self.threads.limit(limits=1, user_api="openmp"):
+            score = float(self.classifier.predict_proba(features)[0, 1])
+            size = float(np.expm1(self.size_regressor.predict(features)[0]))
+        return {"score": score, "tremor": score >= self.threshold, "size_px": size,
                 "frequency_hz": float(features[0, self.peak_column])}
 
 

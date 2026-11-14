@@ -325,7 +325,58 @@ every tremor at half and at double size. Model missed / false alarms: 16.8% / 34
 
 ## The corrector
 
-(To be written after step 8.)
+**What it does.** It takes shaky cursor movement and outputs where the cursor was *meant* to
+be, live, sample by sample.
+
+**How it works (version 1).** A small neural network (`models/corrector/model.py`, 10,722
+weights, a 0.046 MB file). It sees the last 64 movement steps (0.64 s) and outputs an offset
+that moves the raw cursor back onto the intended path. It uses three "1-D convolution"
+layers: each looks at a few neighbouring time steps, with gaps that double from layer to
+layer (1, 2, 4), so the last layer covers a wide stretch of the past. It is **causal**: it
+only ever sees past and current samples. Trained to minimise the squared distance to the
+clean path (`models/corrector/train.py`): 6,000 steps in 119 s on the builder's Mac (Apple
+graphics chip, about 0.5 GB of memory). Validation people picked the best version (average
+distance 3.02 px). Loss curve: `evaluation/results/figures/corrector_v1_loss.png`.
+
+**The two models together ("gating").** The detector's 0-1 score becomes a gate: closed (raw
+cursor, no correction) when the score is under 0.05, fully open at the Decision 4 cut-off,
+blending in between, and changing smoothly over about 0.3 s. So a steady hand gets no
+correction at all, and the cursor never jumps. `models/corrector/live.py` does this live.
+
+**Results on test people** (`python evaluation/evaluate_corrector.py`; 236 test sequences with
+marked tremor, 694 without; scored after the detector's 2.56 s warm-up, the same samples for
+every method):
+
+| Method | Off the path moving / still (px) | Tremor removed | Lag | Steady hand (px) |
+|---|---|---|---|---|
+| No filter | 13.2 / 12.7 | 0% | 0 ms | 2.30 |
+| Lower sensitivity 1/2 (hand travels 2x) | 6.6 / 6.4 | 75% | 0 ms | 1.15 |
+| One Euro, original settings | 19.7 / 5.9 | 68% | 40 ms | 12.95 |
+| One Euro + our detector gate | 17.3 / 6.4 | 65% | 30 ms | 5.89 |
+| Our corrector, always on | 6.7 / 5.2 | 89% | 0 ms | 2.43 |
+| **Our corrector + detector gate** | **7.2 / 5.9** | **84%** | **0 ms** | **1.97** |
+
+Our system removes 84% of the tremor with no measurable lag, roughly halves the distance to
+the intended path while moving (13.2 -> 7.2 px), and does not harm a steady hand (1.97 px vs
+2.30 with no filter). It beats One Euro, also when One Euro is switched by the same detector.
+By tremor size it removes 1% of mild tremor (under 3 px), 49% of medium and 85% of strong.
+
+**Why can it have no lag when classical filters cannot?** A smoothing filter averages the
+past, so it always trails behind. Our network instead *predicts* the tremor: tremor is a
+steady rhythm, so from the last 0.64 s it can estimate where the shake is right now and
+subtract it.
+
+**The honest limit.** The "intended" movement is synthetic and follows a smooth textbook
+shape, which makes it easier to predict than real human movement. Real-world results will
+probably be weaker. We cannot measure that without recording people, which the rules forbid.
+
+**Speed.** `python models/corrector/time_live.py` on the builder's Mac: corrector alone 0.18
+ms per update; with the detector gate mean 0.40 ms, worst 2.9 ms (the detector runs every
+10th sample). Well under the 8 ms limit. A first measurement showed 21 ms spikes: scikit-learn
+was starting parallel worker threads for every single window, so live calls now use one thread.
+
+**How we know the scoring matches the live code.** Feeding test sequences through
+`live.py` sample by sample gives the same positions as the offline scoring, to within 0.09 px.
 
 ## Where it fails
 
