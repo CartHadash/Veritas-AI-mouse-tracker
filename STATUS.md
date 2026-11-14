@@ -18,10 +18,10 @@ Time line: first full version by **Sun 15 Nov 22:00 CET**; no new features after
 20:00 CET; hard deadline Mon 16 Nov 05:59 CET.
 
 **1. Builder can do now (no one else needed), in this order:**
-- [ ] Bug: "Lower sensitivity" cursor offset (leader's request 20:30). Plan: Pointer Lock in
+- [x] Bug: "Lower sensitivity" cursor offset (leader's request 20:30). Plan: Pointer Lock in
       that mode (click the area to lock, Esc to leave), so the drawn cursor is the only one and
       cannot leave the area. About 45 min.
-- [ ] Session history on the summary page (leader's request 21:00), plus saving the last
+- [x] Session history on the summary page (leader's request 21:00), plus saving the last
       minute when "New session" is pressed. About 45 min.
 
 **2. Waiting for people (builder is blocked until then):**
@@ -44,6 +44,13 @@ Time line: first full version by **Sun 15 Nov 22:00 CET**; no new features after
 - [ ] Step 16, the desktop window (cut first).
 
 ## Done (newest first)
+
+- Sat 14 Nov 20:15 CET, builder's agent: the leader's two requests. "Lower sensitivity" now uses Pointer Lock
+  (the drawn cursor is the only cursor and reaches every edge; simulated check: 200 px of hand
+  movement -> 100 px of cursor, far edge reached). The summary page shows earlier sessions
+  (`GET /api/assistant/history`) with demo/filter notes and the "not a health trend" line;
+  "New session" saves the session first. Also fixed: the "Replayed tremor" row showed while
+  demo tremor was off (a CSS rule overrode `hidden`).
 
 - Sat 14 Nov 21:00 CET, team leader's agent: session history (DECISION L1 now B). Each
   session's summary numbers are saved every minute to `local_logs/sessions/` (never raw
@@ -358,7 +365,7 @@ Time line: first full version by **Sun 15 Nov 22:00 CET**; no new features after
 
 ## Requests to another lane
 
-- Team leader -> builder (Sat 14 Nov 21:00): **please show the session history on the summary
+- DONE (Sat 14 Nov 20:15 CET, builder: table on the summary page; "New session" saves first) Team leader -> builder (Sat 14 Nov 21:00): **please show the session history on the summary
   page.** `GET /api/assistant/history` returns `{"current_started": ..., "sessions": [...]}`, the
   earlier sessions saved on this laptop, newest first (fields: `day`, `minutes_active`,
   `detected_share`, `typical_frequency_hz`, `typical_strength_px`, `steadiness_score`,
@@ -370,7 +377,7 @@ Time line: first full version by **Sun 15 Nov 22:00 CET**; no new features after
   `demo_stats = SessionStats()`: `from assistant import history; history.save(get_summary())`,
   so the last minute before "New session" is not lost (autosave runs every 60 s).
 
-- Team leader -> builder (Sat 14 Nov 20:30): **bug: "Lower sensitivity" is offset.** Seen by
+- DONE (Sat 14 Nov 20:15 CET, builder: Pointer Lock in that mode, as suggested; click the area to start, Esc to stop. Please check by hand in Chrome and Safari on the demo Mac. After `git pull`, reload with Cmd+Shift+R once: the old stylesheet can stay cached) Team leader -> builder (Sat 14 Nov 20:30): **bug: "Lower sensitivity" is offset.** Seen by
   the leader on the demo Mac: after bringing the pointer into the practice area, the drawn
   cursor sits off to one side of the real pointer. Likely cause (from reading
   `LowSensitivity` in `server/main.py`, not tested): the drawn cursor moves 0.5x the hand's

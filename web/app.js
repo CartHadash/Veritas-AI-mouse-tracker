@@ -28,6 +28,12 @@ const TARGET_RADIUS = 22;           // px; small on purpose, so a shaky cursor f
 let socket = null;
 let latest = null;                  // last reply from the server
 let inside = false;                 // is the pointer inside the practice area?
+// "Lower sensitivity" uses Pointer Lock: the browser holds the real pointer still and reports
+// only how far the hand moved, so the drawn cursor (half the hand's movement) is the only
+// cursor and can reach every part of the area. Esc or another filter releases it.
+let locked = false;
+let lockFailed = false;             // the browser refused: fall back to normal pointer input
+let hand = null;                    // while locked: the hand's position, added up from its movement
 let settings = { mode: "learned", strength: 1, demo_tremor: false, tracking: false };
 let threshold = 0.165;
 let target = null;                  // {x, y, shownAt}
@@ -102,10 +108,19 @@ function areaPosition(event) {
 
 area.addEventListener("pointermove", (event) => {
   inside = true;
-  // Browsers may bundle several movements into one event; send each of them.
-  const events = event.getCoalescedEvents ? event.getCoalescedEvents() : [event];
-  for (const e of (events.length ? events : [event])) {
-    const p = areaPosition(e);
+  let samples;
+  if (locked) {
+    // Pointer Lock: the real pointer does not move; add up the hand's movement instead.
+    hand.x += event.movementX;
+    hand.y += event.movementY;
+    samples = [{ p: { x: hand.x, y: hand.y }, timeStamp: event.timeStamp }];
+  } else {
+    // Browsers may bundle several movements into one event; send each of them.
+    const events = event.getCoalescedEvents ? event.getCoalescedEvents() : [event];
+    samples = (events.length ? events : [event]).map((e) => ({ p: areaPosition(e), timeStamp: e.timeStamp }));
+  }
+  for (const e of samples) {
+    const p = e.p;
     const message = { t: e.timeStamp / 1000, x: p.x, y: p.y };
     if (calib && calib.phase === "waiting") {
       const dot = calibrationDot(0);
@@ -135,10 +150,25 @@ area.addEventListener("pointerleave", () => {
 // cursor never jumps across from where the pointer left.
 area.addEventListener("pointerenter", () => send({ type: "reset" }));
 
+document.addEventListener("pointerlockchange", () => {
+  locked = document.pointerLockElement === area;
+  inside = locked;
+  send({ type: "reset" });                // start the filter afresh where the pointer is
+});
+document.addEventListener("pointerlockerror", () => {
+  lockFailed = true;
+  setStatus("This browser would not lock the pointer; Lower sensitivity uses the normal pointer.");
+});
+
 // The server needs the practice area's size so "Lower sensitivity" stays inside it.
 function sendArea() { send({ type: "area", width: area.clientWidth, height: area.clientHeight }); }
 
 area.addEventListener("pointerdown", (event) => {
+  if (settings.mode === "low_sensitivity" && !locked && !lockFailed && area.requestPointerLock) {
+    hand = areaPosition(event);           // start where the pointer is now
+    area.requestPointerLock();            // this click only starts the mode; it is not a target click
+    return;
+  }
   if (!latest || !target || calib) return;
   try { area.setPointerCapture(event.pointerId); } catch (error) { /* not essential */ }  // see the release even off the area
   press = { x: latest.x, y: latest.y, at: performance.now(), downInside: onTarget(latest) };
@@ -217,6 +247,7 @@ function updateMeter() {
 }
 
 function showSettings() {
+  if (locked && settings.mode !== "low_sensitivity") document.exitPointerLock();
   for (const button of document.querySelectorAll("#modes button")) {
     button.classList.toggle("on", button.dataset.mode === settings.mode);
   }
@@ -324,9 +355,16 @@ function draw() {
     circle(target.x, target.y, TARGET_RADIUS, "#d9661a");
     circle(target.x, target.y, 5, "#fffdf9");
   }
+  if (settings.mode === "low_sensitivity" && !locked && !lockFailed) {
+    ctx.fillStyle = "#6e5444";
+    ctx.font = "17px system-ui, sans-serif";
+    ctx.textAlign = "center";
+    ctx.fillText("Lower sensitivity: click here to start (Esc to stop)", area.clientWidth / 2, 28);
+  }
   if (inside && latest) {
     const shown = shownPosition();
-    circle(latest.raw_x, latest.raw_y, 9, "rgba(110, 110, 110, 0.45)");   // raw: faint grey
+    // Raw: faint grey. Hidden under Pointer Lock, where the hand's position can be off the area.
+    if (!locked) circle(latest.raw_x, latest.raw_y, 9, "rgba(110, 110, 110, 0.45)");
     circle(shown.x, shown.y, 8, "#3b2314");                                // corrected: solid
     circle(shown.x, shown.y, 3, "#fffdf9");
   } else {

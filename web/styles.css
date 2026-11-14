@@ -69,6 +69,8 @@ main { display: flex; gap: 20px; align-items: flex-start; flex-wrap: wrap; }
 }
 
 .buttons { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 10px; }
+/* Anything marked hidden stays hidden, even rows styled as flex (the demo-levels row showed). */
+[hidden] { display: none !important; }
 button, .button-link {
   font: inherit;
   font-weight: 600;
