@@ -53,7 +53,7 @@ Time line: first full version by **Sun 15 Nov 22:00 CET**; no new features after
       dyslexia, colour-blind-safe colours for the two cursors, targets and charts, and larger
       text. About 1-1.5 h for all. Reading the assistant's answers aloud touches
       `web/assistant/` (leader's lane): needs the leader's OK, or the leader adds it.
-- [ ] B3, correcting the real cursor everywhere (`systemwide/`), moved to the builder by the
+- [x] (built; real-cursor check by the leader pending) B3, correcting the real cursor everywhere (`systemwide/`), moved to the builder by the
       leader (21:20). **Leader (Sat 22:00): wanted, not optional.** Time box 2 h, finished
       before Sun 15:00 CET (start by about 13:00); if not visibly steadier by then, stop and
       document it. Steps in `BUILD_GUIDE_LEADER.md` "Step B3". Mac-only and needs the
@@ -61,6 +61,11 @@ Time line: first full version by **Sun 15 Nov 22:00 CET**; no new features after
 - [ ] Step 16, the desktop window (cut first).
 
 ## Done (newest first)
+
+- Sat 14 Nov 22:02 CET, builder's agent: B3 built (`systemwide/`): safety first (auto-off after 60 s,
+  Control + Option + X, Ctrl+C, filter failure -> cursor follows the hand, stays on screen,
+  permission only checked, never requested). Logic tests pass (`systemwide/test_steady.py`, 5);
+  on the builder's Mac (no permission) it stops with instructions. Real-cursor check: leader.
 
 - Sat 14 Nov 21:59 CET, builder's agent: the leader's list (Sat 20:59).
   (1) `scripts/download_data.py` and `baselines/classical_filters.py` rewritten from scratch;
@@ -460,6 +465,15 @@ Time line: first full version by **Sun 15 Nov 22:00 CET**; no new features after
 (Keep this list honest; the write-up needs a "what didn't work" section.)
 
 ## Requests to another lane
+
+- Sat 14 Nov 22:02 CET, builder -> team leader: **B3 is ready for your check on the demo Mac** (it needs
+  the Accessibility permission, which only you may switch on). `git pull`, then follow
+  `docs/RUNNING.md` "System-wide correction": first `--demo strong --mode none` (the real
+  cursor shakes in every app), then `--demo strong` (our model). Please write here: does the
+  cursor move at all (if not, try `--method warp`), is it visibly steadier with our model, does
+  Control + Option + X switch it off every time, and do clicks land where the cursor is shown.
+  If it works, a 30-second screen recording of both runs is for the video. Time box: decide
+  by Sun 15:00.
 
 - Team leader -> builder (Sat 14 Nov 22:00): (1) **B3 is wanted**: please do it (2 h time
   box, done before Sun 15:00 CET; safety off-switch first; the leader runs the check on the

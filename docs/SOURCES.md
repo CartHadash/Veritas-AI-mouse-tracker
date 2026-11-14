@@ -80,6 +80,9 @@ Installed in step 1 (exact versions in `requirements.txt`). Add new ones here wh
 - Bootstrap (redrawing people with repeats to get uncertainty ranges): Efron, B. (1979),
   "Bootstrap Methods: Another Look at the Jackknife", Annals of Statistics 7(1). Used in
   `evaluation/failure_extras.py` (step 9).
+- Apple Quartz Event Services (event taps, `CGEventTapCreate`, `CGEventSetLocation`,
+  `CGWarpMouseCursorPosition`), used through pyobjc for B3 (`systemwide/run.py`):
+  https://developer.apple.com/documentation/coregraphics/quartz_event_services
 - Pointer Lock (browser feature used by "Lower sensitivity"): W3C Pointer Lock specification,
   https://www.w3.org/TR/pointerlock-2/
 - Minimum-jerk model of human reaching: Flash, T. & Hogan, N. (1985), "The coordination of arm
