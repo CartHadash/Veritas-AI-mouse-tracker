@@ -179,9 +179,36 @@ Newest entries go at the top of each list. Use local time and say who you are.
   beat v1 on validation; dropped. Detector v2's half/double pixel-factor check was not re-run.
 - Sat 14 Nov, builder's agent: the server's active-time rule missed slow movement (under
   0.5 px between samples); found by the step 13 session test and fixed.
+- Sat 14 Nov, leader's agent: corrector v1 scores well on distance to the intended path
+  but looks jumpy live (see the leader's request to the builder, below). Lesson for the
+  write-up: one metric can hide a problem a person sees in two seconds; try the demo by hand.
 - None else yet. (Keep this honest; the write-up needs a "what didn't work" section.)
 
 ## Requests to another lane
+
+- Team leader -> builder (Sat 14 Nov, leader tried the demo by hand): **"Our model" looks
+  jumpy and ugly; One Euro looks smooth.** The leader saw "random corrections" with Demo
+  tremor on. The leader's agent confirmed it with ad-hoc scripts (not in the repo), sending
+  a slow back-and-forth reach with the recorded demo tremor at 60 samples/s (browser rate)
+  through `/ws/cursor`, and measuring jerkiness = mean size of the frame-to-frame change in
+  cursor velocity (px):
+  no filter 3.21 (biggest single jump 20.8 px); One Euro 0.62 (7.6 px); our model 9.90
+  (28.3 px). At 100 samples/s: 1.41 / 0.24 / 3.70. So the model is closer to the path on
+  average but about 3x jerkier than no filter at all. Chart:
+  leader's laptop `~/Desktop/screenshots/veritas-prototype/modes_cursor_y_60hz.png`.
+  Likely causes: (a) `train.py` loss is only squared position error, so nothing rewards a
+  smooth output, and the offset is re-predicted from scratch every 10 ms; (b) at 60 Hz,
+  `live.py` resamples by holding the last position, so the network sees zero steps
+  followed by double steps that it never saw in training.
+  Offline test (subclass of `LiveCorrector`, no repo file changed; 60 Hz; off-path px /
+  jerkiness): as now 5.51 / 10.11; linear interpolation when resampling 5.00 / 5.33;
+  smoothing the offset over 30 ms 4.69 / 3.89; both 5.54 / 3.29; no filter 6.16 / 2.79.
+  So interpolation plus a little smoothing removes most of the jumps but also most of the
+  gain over no filter. Suggested: (1) add a jerkiness metric to `evaluation/metrics.py`
+  and report it next to distance for every filter (distance alone hid this problem);
+  (2) interpolate instead of holding in `live.py`; (3) retrain with a smoothness term in
+  the loss (penalise the change in predicted offset between neighbouring ticks), and judge
+  it on validation by distance AND jerkiness. Builder decides; please report the numbers.
 
 - Team leader -> builder (Sat 14 Nov, after trying the demo page on the demo Mac):
   **"Our model" looked the same as "No filter" to the leader.** The leader's agent sent one
