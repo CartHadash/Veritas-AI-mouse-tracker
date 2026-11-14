@@ -13,5 +13,6 @@ uvicorn[standard]==0.54.0
 anthropic==2.8.0
 python-dotenv==1.2.4
 pytest==9.2.0
+certifi==2026.10.23           # trusted certificates for scripts/download_data.py (python.org Python on macOS has none)
 # Leader's whole-laptop pointer reader (tracker/), macOS only; skipped on Windows.
 pyobjc-framework-Quartz==13.0; sys_platform == "darwin"

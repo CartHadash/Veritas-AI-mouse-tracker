@@ -6,10 +6,10 @@ Produced by `python evaluation/evaluate_corrector.py --detector v2`. Test sequen
 |---|---|---|---|---|---|---|
 | No filter | 13.17 | 12.74 | 0% | 0 | 2.30 |  |
 | Lower sensitivity x0.5 | 6.59 | 6.40 | 75% | 0 | 1.15 | hand must travel 2x as far |
-| Moving average 0.2 s (original) | 32.86 | 3.27 | 92% | 100 | 23.89 |  |
-| One Euro (original settings) | 19.66 | 5.92 | 68% | 40 | 12.95 |  |
-| One Euro (tuned on validation) | 13.78 | 10.43 | 15% | 10 | 4.96 |  |
-| One Euro (original) + detector gate | 17.21 | 6.41 | 65% | 30 | 5.85 | classical filter switched by our detector |
+| Moving average 0.2 s (original) | 32.44 | 3.29 | 91% | 90 | 23.55 |  |
+| One Euro (original settings) | 15.32 | 6.98 | 49% | 20 | 8.28 |  |
+| One Euro (tuned on validation) | 13.62 | 11.03 | 10% | 10 | 4.35 |  |
+| One Euro (original) + detector gate | 13.99 | 7.43 | 48% | 20 | 4.10 | classical filter switched by our detector |
 | Corrector v1, always on | 6.72 | 5.18 | 89% | 0 | 2.43 | our network alone |
 | **Corrector v1 + detector gate** | 7.15 | 5.93 | 84% | 0 | 2.00 | **our system: both models together** |
 
@@ -17,8 +17,8 @@ Produced by `python evaluation/evaluate_corrector.py --detector v2`. Test sequen
 
 | Tremor size | Sequences | Still: no filter | Still: One Euro (orig.) + gate | Still: our system | Removed: One Euro (orig.) + gate | Removed: our system |
 |---|---|---|---|---|---|---|
-| mild (under 3 px) | 47 | 1.53 | 1.44 | 1.16 | -205% | 3% |
-| medium (3-10 px) | 88 | 4.62 | 2.40 | 3.16 | 37% | 48% |
-| strong (over 10 px) | 101 | 25.81 | 12.57 | 10.89 | 66% | 85% |
+| mild (under 3 px) | 47 | 1.53 | 0.94 | 1.16 | -193% | 3% |
+| medium (3-10 px) | 88 | 4.62 | 2.09 | 3.16 | 32% | 48% |
+| strong (over 10 px) | 101 | 25.81 | 15.55 | 10.89 | 48% | 85% |
 
 This project is a prototype and is not medical advice.

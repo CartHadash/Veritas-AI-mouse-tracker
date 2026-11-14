@@ -38,6 +38,8 @@ Installed in step 1 (exact versions in `requirements.txt`). Add new ones here wh
 - Uvicorn, https://www.uvicorn.org (runs the FastAPI server)
 - Anthropic Python SDK, https://github.com/anthropics/anthropic-sdk-python (Claude API)
 - python-dotenv, https://github.com/theskumar/python-dotenv (reads the API key from `.env`)
+- certifi, https://github.com/certifi/python-certifi (trusted certificates for secure downloads
+  in `scripts/download_data.py`; python.org Python on macOS has none of its own)
 - pytest, https://pytest.org (automatic tests)
 - websockets, https://websockets.readthedocs.io (used by `server/test_ws.py`; installed with
   uvicorn[standard])
@@ -60,7 +62,9 @@ Installed in step 1 (exact versions in `requirements.txt`). Add new ones here wh
 ## Papers and algorithms
 
 - One Euro filter: Casiez, Roussel, Vogel (2012), "1€ Filter: A Simple Speed-based Low-pass
-  Filter for Noisy Input in Interactive Systems", CHI 2012. Used as a baseline.
+  Filter for Noisy Input in Interactive Systems", CHI 2012. Used as a baseline. Our version
+  (`baselines/classical_filters.py`, rewritten Sat 14 Nov) follows the authors' reference code,
+  https://github.com/casiez/OneEuroFilter (read, not copied: speed from the previous smoothed value).
 - Kalman filter: Kalman, R. E. (1960), "A New Approach to Linear Filtering and Prediction
   Problems", Journal of Basic Engineering 82(1). Used as a baseline.
 - Gradient boosting: Friedman, J. H. (2001), "Greedy function approximation: a gradient
@@ -69,6 +73,15 @@ Installed in step 1 (exact versions in `requirements.txt`). Add new ones here wh
   Machine Learning 45. The idea of shuffling one feature to see how much worse a model gets.
 - Adam optimiser: Kingma, D. P. & Ba, J. (2014), "Adam: A Method for Stochastic Optimization",
   arXiv:1412.6980. Used to train the corrector.
+- Fitts's law (pointing time grows with distance / target size): Fitts, P. M. (1954), "The
+  information capacity of the human motor system in controlling the amplitude of movement",
+  Journal of Experimental Psychology 47(6). Used for the realistic synthetic reaches (step 4);
+  the constants are our choice.
+- Bootstrap (redrawing people with repeats to get uncertainty ranges): Efron, B. (1979),
+  "Bootstrap Methods: Another Look at the Jackknife", Annals of Statistics 7(1). Used in
+  `evaluation/failure_extras.py` (step 9).
+- Pointer Lock (browser feature used by "Lower sensitivity"): W3C Pointer Lock specification,
+  https://www.w3.org/TR/pointerlock-2/
 - Minimum-jerk model of human reaching: Flash, T. & Hogan, N. (1985), "The coordination of arm
   movements: an experimentally confirmed mathematical model", Journal of Neuroscience 5(7).
   Used for the synthetic reaches (step 4).
@@ -86,7 +99,7 @@ Installed in step 1 (exact versions in `requirements.txt`). Add new ones here wh
 
 ## Our own pre-hackathon work
 
-- See `REUSED_CODE.md`.
+- Dataset research only (`DATASETS.md`); no pre-hackathon code is left (see `REUSED_CODE.md`).
 
 ## Tutorials and other code
 
