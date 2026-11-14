@@ -8,11 +8,15 @@ Newest entries go at the top of each list. Use local time and say who you are.
 
 | Lane | Working on | Branch | Blocked by |
 |---|---|---|---|
-| Builder | IN PROGRESS: step 14, results package (evaluation/results/RESULTS.md). Steps 1-13 built | builder/results-package | - |
+| Builder | Steps 1-14 built (4, 9, 11, 14 await human checks below). Next: step 15, fresh-clone test | main | Human reads/checks |
 | Team leader | B1 (whole-laptop tracker) DONE and merged. Next: B2, the assistant | - | - |
 | Writer | not started | - | - |
 
 ## Done (newest first)
+
+- Sat 14 Nov 17:10 CET, builder's agent: step 14, `evaluation/results/RESULTS.md` (results
+  package for the writer), `evaluation/data_facts.py` -> `dataset_facts.md`, and
+  `evaluation/check_results.py` (passes: every number is in a generated results file).
 
 - Sat 14 Nov 16:57 CET, builder's agent: the leader's jerkiness request, and a full review of
   code and docs (three read-only reviewers; every finding checked before fixing). Corrector v4
@@ -234,6 +238,12 @@ Newest entries go at the top of each list. Use local time and say who you are.
 (Keep this list honest; the write-up needs a "what didn't work" section.)
 
 ## Requests to another lane
+
+- Builder -> team leader and writer (Sat 14 Nov 17:10): **please read
+  `evaluation/results/RESULTS.md`** (step 14 needs the builder and the leader to find nothing
+  they cannot explain). It is the source for the write-up's "How it works" and "Results"; its
+  five sentences at the top are a starting point for the 30-second pitch. Ask here about
+  anything unclear and `docs/EXPLAINED.md` will be fixed.
 
 - Team leader -> builder (Sat 14 Nov, leader tried the demo by hand): **"Our model" looks
   jumpy and ugly; One Euro looks smooth.** The leader saw "random corrections" with Demo

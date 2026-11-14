@@ -619,6 +619,10 @@ Checked with a 75 s simulated session through the server; numbers match `/api/su
 - A "what did not work" list.
 - Five plain sentences a judge could be told in 30 seconds.
 
+Done (Sat 14 Nov): `evaluation/results/RESULTS.md`, with `evaluation/data_facts.py` (dataset
+counts) and `evaluation/check_results.py` (fails if a number is not in a generated results
+file). Waiting for the builder and the leader to read it before ticking.
+
 **Done when:** your human and the team leader have read it and found nothing they cannot
 explain. If they cannot explain something, fix `docs/EXPLAINED.md` until they can.
 
