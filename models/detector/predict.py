@@ -90,7 +90,13 @@ class LiveDetector:
             self.result = self.pending.result()
             self.pending = None
         # Resample to exactly 100 per second (straight line between samples; models/resample.py).
-        for tick in self.resampler.feed(x, y, t):
+        ticks = self.resampler.feed(x, y, t)
+        if self.resampler.restarted:          # back after a pause: start a fresh 2.56 s window
+            self.samples.clear()
+            self.count = 0
+            self.result = None
+            self.pending = None
+        for tick in ticks:
             self.samples.append(tick)
             self.count += 1
         if len(self.samples) == WINDOW and self.count >= self.every:

@@ -8,17 +8,27 @@ Newest entries go at the top of each list. Use local time and say who you are.
 
 | Lane | Working on | Branch | Blocked by |
 |---|---|---|---|
-| Builder | IN PROGRESS: leader request, jerkiness metric and smoother corrector (v4). Steps 1-13 built | builder/smooth-corrector | - |
+| Builder | Steps 1-13 built (4, 9, 11 await human checks below) + full code review fixed. App = detector v2 + corrector v4. Next: step 14, results package | main | - |
 | Team leader | B1 (whole-laptop tracker) DONE and merged. Next: B2, the assistant | - | - |
 | Writer | not started | - | - |
 
 ## Done (newest first)
 
+- Sat 14 Nov 16:57 CET, builder's agent: the leader's jerkiness request, and a full review of
+  code and docs (three read-only reviewers; every finding checked before fixing). Corrector v4
+  (smoothness penalty 0.5) kept and used by the app. Live bugs fixed: tick-clock rounding drift
+  (corrected cursor trailed 10 ms), demo replay repeating/skipping 7% of samples, jumps after a
+  pause, settings changes restarting the detector, "Lower sensitivity" range, tracking button
+  hidden, other websites able to reach the server, broken messages closing the connection.
+  Evaluation: one definition of "hand moving", failure analysis pinned to the final models,
+  demo comparisons developed on validation people's tremor, jerkiness metric. All affected
+  results re-run; the datasets were rebuilt and verified identical (only the moving labels changed).
+
 - Sat 14 Nov 16:02 CET, builder's agent: the leader's demo-gain request. Resampling bug fixed,
   corrector v3 kept (app = detector v2 + corrector v3), demo strength levels, correction
-  indicator, `evaluation/compare_modes.py` -> `evaluation/results/demo_modes.md`.
+  indicator, `evaluation/compare_modes.py` (now writes `evaluation/results/demo_modes_val.md` / `_test.md`).
 
-- Sat 14 Nov 15:36 CET, builder's agent: step 13, summary page (`web/summary.html`); server
+- Sat 14 Nov 15:37 CET, builder's agent: step 13, summary page (`web/summary.html`); server
   now counts any movement as active time (slow movement was missed before).
 
 - Sat 14 Nov 15:35 CET, team leader's agent: step B1, the whole-laptop pointer reader
@@ -39,30 +49,30 @@ Newest entries go at the top of each list. Use local time and say who you are.
   `server/test_ws.py`, `docs/RUNNING.md` (macOS and Windows sections). The app runs from a
   fresh clone without downloading data.
 
-- Sat 14 Nov 15:05 CET, builder's agent: step 9, `evaluation/find_failures.py` ->
+- Sat 14 Nov 14:52 CET, builder's agent: step 9, `evaluation/find_failures.py` ->
   `evaluation/results/failures/` (charts, `failure_facts.md`, `failures.md`). Saturday-night
   checkpoint reached early: baselines, both models and failures all done with real numbers.
 
-- Sat 14 Nov 15:00 CET, builder's agent: step 8, corrector v1 (`models/corrector/`), trained in
+- Sat 14 Nov 14:49 CET, builder's agent: step 8, corrector v1 (`models/corrector/`), trained in
   119 s on the builder's Mac; scored once on test with `evaluation/evaluate_corrector.py` ->
   `evaluation/results/corrector_v1.md`. Detector live calls now use one thread (20 ms -> 2 ms).
 
-- Sat 14 Nov 14:45 CET, builder's agent: step 7, detector v1 (`models/detector/`), scored once
+- Sat 14 Nov 14:42 CET, builder's agent: step 7, detector v1 (`models/detector/`), scored once
   on test with `evaluation/evaluate_detector.py --missed-target 0.2` ->
   `evaluation/results/detector_v1.md`. Live use via `models/detector/predict.py`.
 
-- Sat 14 Nov 14:40 CET, builder's agent: step 6, `evaluation/metrics.py` (shared scoring) and
+- Sat 14 Nov 14:29 CET, builder's agent: step 6, `evaluation/metrics.py` (shared scoring) and
   `evaluation/run_baselines.py` -> `evaluation/results/baselines.md`.
 
-- Sat 14 Nov 14:30 CET, builder's agent: step 5, `data_pipeline/build_dataset.py` splits 484
+- Sat 14 Nov 14:23 CET, builder's agent: step 5, `data_pipeline/build_dataset.py` splits 484
   people by person (340 / 72 / 72, seed 42, `data_pipeline/split.json`) and builds detector
   windows and corrector sequences; `python -m pytest data_pipeline/test_split.py` passes (4).
 
-- Sat 14 Nov 14:25 CET, builder's agent: step 4, `data_pipeline/synthetic_paths.py` generates
+- Sat 14 Nov 14:20 CET, builder's agent: step 4, `data_pipeline/synthetic_paths.py` generates
   clean mouse paths with reaches, corrections, pauses, drifts and tremor look-alikes
   (wiggles, circles, zig-zags; about 28% of the time). Chart in `evaluation/results/figures/`.
 
-- Sat 14 Nov 14:20 CET, builder's agent: step 3, `data_pipeline/tremor_library.py` builds
+- Sat 14 Nov 14:18 CET, builder's agent: step 3, `data_pipeline/tremor_library.py` builds
   `data/derived/tremor_library.npz` (13,764 segments of 10.24 s) in about 30 s, peak memory
   about 0.5 GB on the builder's 8 GB Mac. Step 1 ticked in the guide after the leader's check.
 
@@ -74,15 +84,15 @@ Newest entries go at the top of each list. Use local time and say who you are.
   `data_pipeline/look_at_data.py` prints the same counts and peaks as on the builder's Mac
   (469 subjects; 4.30 Hz and 4.88 Hz).
 
-- Sat 14 Nov 14:10 CET, builder's agent: data downloaded on the builder's Mac ("PADS: done,
+- Sat 14 Nov 14:08 CET, builder's agent: data downloaded on the builder's Mac ("PADS: done,
   all files OK."). Step 2: `data_pipeline/look_at_data.py` counts subjects and plots two
   recordings; all numbers match `docs/DATASETS.md`.
 
-- Sat 14 Nov 14:05 CET, builder's agent: step 1. `requirements.txt` (pinned versions) and
+- Sat 14 Nov 14:06 CET, builder's agent: step 1. `requirements.txt` (pinned versions) and
   `models/device.py` added. Import check passes on the builder's Mac (Python 3.12.10,
   Apple M3); `python models/device.py` prints `mps`.
 
-- Sat 14 Nov 14:00 CET, builder's agent: the builder now works on a MacBook (Apple
+- Sat 14 Nov 14:06 CET, builder's agent: the builder now works on a MacBook (Apple
   Silicon), not a Windows PC. Builder guide setup/commands, `CLAUDE.md` commands and the
   plan's "Who does what" updated. Code must still run on macOS and Windows. The demo is
   still the leader's Mac, so the cross-machine checks stay.
@@ -93,6 +103,19 @@ Newest entries go at the top of each list. Use local time and say who you are.
   plan, dataset notes, two build guides, reused-code disclosure.
 
 ## Results so far (real numbers only; say which script produced them)
+
+- `evaluation/smoothness.py --test` (test, gated by detector v2): corrector v4 (app) off the
+  path moving / still 6.94 / 4.86 px, 87% tremor removed, 0 ms lag, jerkiness 1.37 px (no
+  filter 1.69, v3 1.96, One Euro 0.64 but 40 ms lag); no marked tremor 1.85 px (no filter 2.30).
+- `evaluation/compare_modes.py --people test` (demo page, final): our model vs no filter, hand
+  still / reaching: strong 69% / 53% closer, medium 39% / 23%, mild 53% / 6%; smoother than no
+  filter in every case. One Euro is closer for a perfectly still hand (medium 1.44 vs 3.70 px).
+- `evaluation/find_failures.py` (final models, test): detector v2 misses 34.2% of mild tremor
+  vs 2.9% of strong; false alarms 41.7% on action-task segments vs 19.5% rest.
+- `models/corrector/time_live.py` (builder's Mac, final): mean 0.48 ms, worst 3.4 ms per update.
+- Note: "hand moving" now means intended movement faster than 20 px/s for at least half the
+  window everywhere; the moving/still splits in the entries below were re-run with it
+  (`evaluation/results/*.md` hold the current values).
 
 - `evaluation/improvements.py --test` (corrector, gated by detector v2): v3 vs v1 off the path
   moving / still 6.85 / 4.93 vs 7.15 / 5.93 px; tremor removed mild / medium / strong 8% / 50%
@@ -129,7 +152,7 @@ Newest entries go at the top of each list. Use local time and say who you are.
 
 - `evaluation/evaluate_detector.py --missed-target 0.2` (test people): detector v1 missed
   14.3%, false alarms 27.0%, accuracy 76.2%; frequency rule (same cut-off rule) missed 14.8%,
-  false alarms 59.0%. Hand moving: false alarms 29.0% vs 58.9%. Mild tremor (<3 px) missed
+  false alarms 59.0%. Hand moving: false alarms 28.9% vs 58.6%. Mild tremor (<3 px) missed
   37.0%. Half / double pixel factor: model 16.8% / 34.0% and 12.3% / 22.5% (missed / false
   alarms). Validation average precision 0.676 (`models/detector/train.py`).
 
@@ -161,8 +184,12 @@ Newest entries go at the top of each list. Use local time and say who you are.
 - Sat 14 Nov, team leader (human): DECISION L1 = A. Keep only the current session in memory,
   plus an optional local file the user can delete. A history across days to show trends
   (option B) is wanted as a future extension, not for the hackathon.
+- Sat 14 Nov 16:57, builder's agent (chosen on validation by a rule fixed in advance): keep
+  corrector v4 with smoothness penalty 0.5; the app uses detector v2 + corrector v4.
+- Sat 14 Nov 16:02, builder's agent (chosen on validation): keep corrector v3 over v1.
 - Sat 14 Nov, builder's agent (step 12, chosen on validation): keep detector v2, keep
-  corrector v1. The app uses detector v2 + corrector v1.
+  corrector v1. The app used detector v2 + corrector v1 (superseded: corrector v3 at 16:02,
+  then v4 at 16:57).
 - Sat 14 Nov, builder (human): DECISION 5 = A (models run in Python on the server);
   DECISION 6 = C (warm and friendly look); DECISION 7 = plain JavaScript.
 
@@ -197,7 +224,14 @@ Newest entries go at the top of each list. Use local time and say who you are.
   corrector worse than no filter at browser-like 60 Hz; found by the leader's demo test, fixed.
 - Sat 14 Nov, builder's agent: for a perfectly still hand One Euro beats our model at every
   tremor strength on the demo page. Not fixed; reported.
-- None else yet. (Keep this honest; the write-up needs a "what didn't work" section.)
+- Sat 14 Nov, builder's agent: a code review found live-pipeline bugs that the offline test
+  scores could not see (they never go through the live code): tick-clock rounding drift, the
+  demo replay repeating/skipping samples, jumps after a pause. Lesson: test the live path
+  itself (`evaluation/compare_modes.py`), not only the models.
+- Sat 14 Nov, builder's agent: an earlier version of the demo comparison replayed test people's
+  tremor while we were still making design choices; now development uses validation people's
+  recordings and test people's only once for the final figure.
+(Keep this list honest; the write-up needs a "what didn't work" section.)
 
 ## Requests to another lane
 
@@ -224,6 +258,13 @@ Newest entries go at the top of each list. Use local time and say who you are.
   (2) interpolate instead of holding in `live.py`; (3) retrain with a smoothness term in
   the loss (penalise the change in predicted offset between neighbouring ticks), and judge
   it on validation by distance AND jerkiness. Builder decides; please report the numbers.
+  ANSWERED (Sat 14 Nov 16:57, builder; the numbers above were measured with corrector v1 and the
+  old hold-last-position resampling): (1) jerkiness is in `evaluation/metrics.py` and every
+  corrector table; (2) interpolation is in `models/resample.py`; (3) corrector v4 adds a penalty
+  on the corrected cursor's jerk, chosen on validation: on test it is smoother than no filter
+  (1.37 vs 1.69 px) with 87% tremor removed and 0 ms lag. Two live bugs also caused jumps
+  (tick-clock drift, demo replay skipping samples); fixed. On the demo page our cursor is now
+  smoother than no filter in every case (`evaluation/compare_modes.py --people test`).
 
 - Team leader -> builder (Sat 14 Nov, after trying the demo page on the demo Mac):
   **"Our model" looked the same as "No filter" to the leader.** The leader's agent sent one
@@ -238,16 +279,16 @@ Newest entries go at the top of each list. Use local time and say who you are.
   - Demo tremor ON: no filter 6.20 px, One Euro 8.79 px, our model 4.53 px (gate above
     0.5 for 83% of the time). The model helps, but only about 27% closer to the path, much
     less than the test-set figures in `evaluation/results/corrector_v1.md`; hard to see by eye.
-  ANSWERED (Sat 14 Nov 16:02, builder): (1) the page now shows "Correction: ON / partly /
-  off" and a tip to switch demo tremor on; (2) causes: a resampling bug at browser rates
-  (fixed), the demo's medium tremor (gain depends on size; now a mild/medium/strong choice),
-  and v1's squared-error training (corrector v3 fixes part of it); (3)
-  `python evaluation/compare_modes.py` reproduces the numbers. Details in `docs/EXPLAINED.md`.
   Requests: (1) on the page, show when the model is correcting (for example the gate value
   or a "correcting" label) and tell the user to switch Demo tremor on first; (2) find out why
   the demo-tremor gain is smaller than on the test set (bigger demo segments? path speed?);
   (3) add a small mode-comparison script like this to the repo so the numbers can be
   reproduced.
+  ANSWERED (Sat 14 Nov 16:02, builder): (1) the page now shows "Correction: ON / partly /
+  off" and a tip to switch demo tremor on; (2) causes: a resampling bug at browser rates
+  (fixed), the demo's medium tremor (gain depends on size; now a mild/medium/strong choice),
+  and v1's squared-error training (corrector v3 fixes part of it); (3)
+  `python evaluation/compare_modes.py` reproduces the numbers. Details in `docs/EXPLAINED.md`.
 
 - DONE (Sat 14 Nov 15:40, builder): tracker gaps over 1 s now restart the laptop detector;
   the tracking button shows whenever `/api/status` says the tracker is available.
@@ -260,14 +301,16 @@ Newest entries go at the top of each list. Use local time and say who you are.
   tracker stops sending samples after 3 s of a still pointer, so the server sees time gaps;
   `laptop_detector` should treat a long gap as a fresh start if that matters to it.
 
-- Builder -> team leader (Sat 14 Nov 15:10): **third cross-machine check (step 11).** On the
-  demo Mac: `git pull`, `python -m uvicorn server.main:app`, open http://127.0.0.1:8000 in
-  Safari AND Chrome, switch "Demo tremor" on, move with the TRACKPAD and check the dark
-  (corrected) cursor is visibly steadier than the grey one in "Our model" mode and that
+- Builder -> team leader (Sat 14 Nov 15:10, updated 16:30): **third cross-machine check
+  (step 11), still open.** The page and models changed since (corrector v4, the "Correction"
+  indicator, replayed tremor strength). On the demo Mac: `git pull`,
+  `python -m uvicorn server.main:app`, open http://127.0.0.1:8000 in Safari AND Chrome,
+  switch "Demo tremor" on and choose "Strong", move with the TRACKPAD and check the dark
+  (corrected) cursor is visibly steadier than the grey one in "Our model" mode, and that
   switching filter modes works live. Write what you saw here. Your assistant panel goes in
   `<div id="assistant-panel">`; the page loads `web/assistant/assistant.js` if it exists.
 
-- Builder -> team leader (Sat 14 Nov 15:03): the server is ready for your modules.
+- DONE (answered by the leader 15:35) Builder -> team leader (Sat 14 Nov 15:03): the server is ready for your modules.
   (1) It imports `tracker.reader` (or `tracker`) for `start(callback)` / `stop()`, and starts
   it only when the page sends `POST /api/settings {"tracking": true}`: that is the on/off
   switch, and the demo page will show the button. (2) It includes `assistant.router` (or
@@ -285,12 +328,12 @@ Newest entries go at the top of each list. Use local time and say who you are.
   `python -m uvicorn server.main:app` serves the demo page in the browser; the trackpad
   feel check (third check) is still to do by the leader by hand.
 
-- Builder -> team leader (Sat 14 Nov 15:00): **second cross-machine check (step 8).** On the
+- DONE (see above) Builder -> team leader (Sat 14 Nov 14:49): **second cross-machine check (step 8).** On the
   demo Mac after `git pull` and `python -m pip install -r requirements.txt`, run
   `python models/corrector/time_live.py` and write both lines of output here. It loads
   `models/corrector/weights.pt` and the detector, so it also proves both models load there.
 
-- Builder -> team leader (Sat 14 Nov 14:45): optional check on the demo Mac after pulling:
+- DONE (covered by the step 8 check) Builder -> team leader (Sat 14 Nov 14:42): optional check on the demo Mac after pulling:
   `python models/detector/predict.py` has no main; instead run
   `python -c "from models.detector.predict import Detector; print('ok')"` to confirm the saved
   detector loads (it needs the same scikit-learn version, which requirements.txt pins).

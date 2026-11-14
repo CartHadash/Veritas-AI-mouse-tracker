@@ -33,9 +33,14 @@ import json
 from collections import Counter
 from pathlib import Path
 
+import sys
+
 import numpy as np
 
-from synthetic_paths import CONTINUOUS_EVENTS, DRIFT, EVENTS, LOOKALIKES, STILL, generate_path
+from synthetic_paths import CONTINUOUS_EVENTS, EVENTS, LOOKALIKES, generate_path
+
+sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
+from evaluation.metrics import window_is_moving  # noqa: E402  (one shared meaning of "moving")
 
 ROOT = Path(__file__).resolve().parents[1]
 LIBRARY = ROOT / "data" / "derived" / "tremor_library.npz"
@@ -108,10 +113,10 @@ def build_detector(lib, members, rng, scale, events=EVENTS):
 
     def add(tremor_piece, label, source, info):
         clean, kind = generate_path(rng, WINDOW, events=events)
-        still_share = np.isin(kind, (STILL, DRIFT)).mean()
+        moving = bool(window_is_moving(clean[None])[0])
         inputs.append(clean + tremor_piece)
         tremors.append(tremor_piece)
-        facts.append(dict(info, label=label, source=source, moving=bool(still_share < 0.5),
+        facts.append(dict(info, label=label, source=source, moving=moving,
                           lookalike_share=float(np.isin(kind, LOOKALIKES).mean())))
 
     for i in np.flatnonzero(np.isin(lib["subject"], members)):
@@ -231,7 +236,11 @@ def main():
 
     lib = dict(np.load(LIBRARY))
     split = make_split(lib)
-    if args.tremor_scale == 1.0:
+    if args.tremor_scale != 1.0:
+        # The half/double sets must use exactly the saved split, never a recomputed one.
+        with open(SPLIT_FILE, encoding="utf-8") as f:
+            split = json.load(f)
+    else:
         with open(SPLIT_FILE, "w", encoding="utf-8") as f:
             json.dump(split, f, indent=1)
         print("Saved", SPLIT_FILE.relative_to(ROOT))

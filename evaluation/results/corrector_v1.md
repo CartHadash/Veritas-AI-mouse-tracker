@@ -1,8 +1,8 @@
 # Corrector v1 (gate: detector v1): results on TEST people
 
-Produced by `python evaluation/evaluate_corrector.py`. Test sequences: 930 (236 with marked tremor, 694 without). Scored after the first 2.56 s of each 5.12 s sequence (the detector's warm-up), the same samples for every method. Distances, tremor removed and lag are on sequences with marked tremor; the steady-hand column is the average distance on sequences without marked tremor.
+Produced by `python evaluation/evaluate_corrector.py`. Test sequences: 930 (236 with marked tremor, 694 without). Scored after the first 2.56 s of each 5.12 s sequence (the detector's warm-up), the same samples for every method. Distances, tremor removed and lag are on sequences with marked tremor; the last column is the average distance on sequences without marked tremor.
 
-| Method | Distance while moving (px) | Distance while still (px) | Tremor removed | Lag (ms) | Distance on steady-hand sequences (px) | Notes |
+| Method | Distance while moving (px) | Distance while still (px) | Tremor removed | Lag (ms) | Distance on sequences without marked tremor (px) | Notes |
 |---|---|---|---|---|---|---|
 | No filter | 13.17 | 12.74 | 0% | 0 | 2.30 |  |
 | Lower sensitivity x0.5 | 6.59 | 6.40 | 75% | 0 | 1.15 | hand must travel 2x as far |

@@ -68,7 +68,7 @@ https://physionet.org/content/parkinsons-disease-smartwatch/1.0.0/
 |---|---|
 | Location after download | `data/tremordb/effect-of-deep-brain-stimulation-on-parkinsonian-tremor-1.0.0/` |
 | What was measured | A laser measuring the **velocity of the index fingertip** at rest |
-| Subjects | **16**, all Parkinson's: 8 high-amplitude tremor (g1–s8), 8 low-amplitude (g9–s16) |
+| Subjects | **16** described, all Parkinson's: 8 high-amplitude tremor (g1–s8), 8 low-amplitude (g9–s16). Subject v3 has no recordings, so **15** are usable |
 | Recordings | 101 files in 16 folders, about 60 s each |
 | File format | Plain text, **one number per line**; load with `numpy.loadtxt` |
 | Sampling rate | **100 Hz** |

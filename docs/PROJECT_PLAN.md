@@ -98,9 +98,9 @@ first and update this section in the same commit.
 {"t": 12.345, "x": 812.0, "y": 440.5}
 ```
 `t` is seconds since the tracker started; `x`, `y` are screen positions in points. About
-100 samples per second. The tracker module offers one function,
-`tracker.start(callback)`, and calls `callback(sample)` for every sample, and
-`tracker.stop()`.
+100 samples per second. The tracker module (`tracker/reader.py`) offers
+`tracker.reader.start(callback)`, which calls `callback(sample)` for every sample, and
+`tracker.reader.stop()`.
 
 **Contract 2: the session summary** (server → assistant and summary page)
 
@@ -125,6 +125,11 @@ the leader's assistant is built against that file until the real one exists.
   "notes": ["Tremor replay (demo mode) was ON for part of this session."]
 }
 ```
+
+Optional addition (agreed with the leader, Sat 14 Nov): when the whole-laptop tracker has
+data, the summary also has `"whole_laptop": {"session": ..., "tremor": ..., "usage":
+{"distance_px": ..., "steadiness_score": ...}}` with the same meanings, from the tracker's
+samples.
 
 **Contract 3: the assistant** (interface → assistant)
 

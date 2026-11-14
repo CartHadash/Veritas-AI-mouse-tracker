@@ -126,12 +126,12 @@ laptop cannot be demonstrated. Follow these rules in every step.
   and load with `map_location="cpu"`.
 - Speed measured on the builder's Mac does not prove speed on the demo Mac. Wherever a step asks for a
   timing, record the builder's Mac number and add a line under "Requests" in `STATUS.md` asking
-  the leader to run the same script on the Mac.
+  the leader to run the same script on the demo Mac.
 
-**Proving it works on the Mac (do this early and often)**
+**Proving it works on the demo Mac (do this early and often)**
 
 - After step 1, after step 8, after step 11 and at step 15, push your branch and ask the
-  team leader (via `STATUS.md` "Requests" and the group chat) to pull it on the Mac and
+  team leader (via `STATUS.md` "Requests" and the group chat) to pull it on the demo Mac and
   run the commands in `docs/RUNNING.md`. Do not wait until Sunday evening to find out.
 - `docs/RUNNING.md` must have two clearly separated sections: "On Windows" and "On macOS".
 
@@ -172,7 +172,7 @@ for PyTorch: tell your human to install Python 3.12 and recreate `.venv`.
 
 **Done when:** `python -c "import numpy, pandas, scipy, sklearn, torch, fastapi, anthropic"`
 prints nothing and exits cleanly on the builder's Mac, **and** the team leader has confirmed the same
-command works on the Mac after pulling (first cross-machine check).
+command works on the demo Mac after pulling (first cross-machine check).
 
 ### - [x] Step 2. Look at the data with your own eyes
 
@@ -416,18 +416,18 @@ shaky cursor movement and outputs where the cursor *should* be right now.
 - Output: the corrected current position, expressed as an offset from the raw position.
 - **Causal:** it may never see future samples. This is what makes it usable live.
 - Small: a few 1D convolution layers or a small GRU, a few tens of thousands of weights.
-  Training must finish in under 20 minutes on the builder's Mac's CPU (use `models/device.py` and
+  Training must finish in under 20 minutes on the builder's Mac (processor only) (use `models/device.py` and
   `num_workers=0`).
 - Train to minimise the distance to the clean path. Save the best version by validation
   score to `models/corrector/weights.pt` (must be under 2 MB). Move the model to the CPU
-  before saving, so the file loads on the Mac.
+  before saving, so the file loads on the demo Mac.
 - `live.py` wraps it with the same `reset()` / `update(x, y, t)` shape as the classical
   filters, resampling the incoming samples to 100 per second.
 - **Use the detector to control it:** when the detector's tremor score is low, blend back
   toward the raw cursor, so a steady hand gets no added lag. This is the point where the
   two models work as one system.
 - Measure how long one live update takes on the CPU, with a script
-  (`models/corrector/time_live.py`) the leader can also run on the Mac.
+  (`models/corrector/time_live.py`) the leader can also run on the demo Mac.
 
 **Report** (`evaluation/results/corrector_v1.md`): the same measures as the corrector
 baselines, side by side, on test subjects only.
@@ -439,7 +439,7 @@ weights; trained 6,000 steps (119 s). Test scoring in `evaluation/evaluate_corre
 
 **Done when:** one live update takes well under 8 ms on the builder's Mac, the report exists, the
 loss-curve chart is saved, and the leader has loaded `weights.pt` and run the timing script
-on the Mac (second cross-machine check). Beating One Euro is the hope, not the
+on the demo Mac (second cross-machine check). Beating One Euro is the hope, not the
 requirement; report whatever is true.
 
 ### - [ ] Step 9. Where it fails
@@ -541,7 +541,7 @@ no installation and the builder can read it. A framework (React) only if your hu
 already knows it.
 
 Test the page in **Safari and Chrome on the builder's Mac**, and write it with standard browser
-features only, because on the Mac it will be opened in Safari or Chrome. Use the browser's
+features only, because on the demo Mac it will be opened in Safari or Chrome. Use the browser's
 pointer events, which behave the same for a mouse and a trackpad.
 
 Done on the builder's Mac (Sat 14 Nov): DECISION 6 = C (warm and friendly), DECISION 7 =
@@ -550,7 +550,7 @@ movement. Waiting for the builder's own try and the leader's Mac/trackpad check 
 
 **Done when:** your human can open the page, switch demo tremor on, and see the corrected
 cursor visibly steadier than the raw one, switching between filter modes live; **and** the
-leader has run the same page on the Mac with the trackpad (third cross-machine check).
+leader has run the same page on the demo Mac with the trackpad (third cross-machine check).
 
 ### - [x] Step 12. One measured improvement to each model (Sunday morning)
 
@@ -578,8 +578,9 @@ the app loads whichever versions won.
 
 Added after step 12 (leader's request): `evaluation/compare_modes.py`, `models/resample.py`
 (interpolation instead of holding the last sample), corrector v3 (`train.py --version v3 --loss
-distance`, kept; the app uses detector v2 + corrector v3), demo strength levels and the
-correction indicator on the page.
+distance`, kept), demo strength levels and the correction indicator on the page. Then corrector
+v4 (`--loss distance --smooth 0.5`, chosen by `evaluation/smoothness.py`): the app uses detector
+v2 + corrector v4. A full code review fixed live-pipeline bugs (see `STATUS.md`).
 
 ### - [x] Step 13. The summary page
 
@@ -630,7 +631,7 @@ run it.
 the "On macOS" part of `docs/RUNNING.md` exactly, and confirm the app starts and the
 evaluation scripts run (copy the existing `data` folder across instead of downloading
 again). Fix anything that was missing. Check no file over a few MB and no `.env` is in git.
-Then ask the leader to do the same on the Mac with the "On macOS" part. **The Mac result is
+Then ask the leader to do the same on the demo Mac with the "On macOS" part. **The demo Mac's result is
 the one that counts**, because that is the demo machine.
 
 **Done when:** it works from a fresh clone on both machines and `STATUS.md` says so.
@@ -641,11 +642,11 @@ the one that counts**, because that is the demo machine.
 
 **Do:** add `pywebview`; a short `desktop.py` starts the server in the background and opens
 the page in a native window. `pywebview` works on both Windows and macOS but uses a
-different built-in browser on each, so it must be tried on the Mac before anyone relies on
+different built-in browser on each, so it must be tried on the demo Mac before anyone relies on
 it for the demo. Do not attempt to build an installable `.exe` or `.app`.
 
 **Done when:** `python desktop.py` opens the app in its own window on the builder's Mac, and the
-leader has tried it on the Mac. If it misbehaves on the Mac, the demo uses the browser.
+leader has tried it on the demo Mac. If it misbehaves on the demo Mac, the demo uses the browser.
 
 ---
 

@@ -25,7 +25,7 @@ import numpy as np
 
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT))
-from evaluation.metrics import choose_threshold, detector_scores  # noqa: E402
+from evaluation.metrics import SIZE_CLASSES, choose_threshold, detector_scores  # noqa: E402
 from evaluation.run_baselines import band_share  # noqa: E402
 from models.detector.features import compute_features  # noqa: E402
 
@@ -33,7 +33,7 @@ DERIVED = ROOT / "data" / "derived"
 MODEL_DIR = ROOT / "models" / "detector"
 RESULTS = ROOT / "evaluation" / "results"
 
-SIZE_CLASSES = [("mild (under 3 px)", 0, 3), ("medium (3-10 px)", 3, 10), ("strong (over 10 px)", 10, 1e9)]
+
 
 
 def score_split(model, data):

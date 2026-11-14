@@ -40,11 +40,14 @@ def test_everyone_is_in_a_split():
     assert total == 469 + 15, "expected 484 people (469 PADS + 15 TremorDB), got %d" % total
 
 
-@pytest.mark.parametrize("kind", ["detector", "corrector"])
+@pytest.mark.parametrize("kind", ["detector", "corrector", "detector_continuous",
+                                  "detector_x0.5", "detector_x2", "corrector_x0.5", "corrector_x2"])
 def test_built_examples_only_use_their_own_split(kind):
+    """Also checks the extra sets (pause-free; half and double tremor size)."""
     split = load_split()
+    base, _, extra = kind.partition("_")
     for name, ids in split.items():
-        path = DERIVED / f"{kind}_{name}.npz"
+        path = DERIVED / (f"{base}_{name}_{extra}.npz" if extra else f"{base}_{name}.npz")
         if not path.exists():
             pytest.skip("built data not found; run data_pipeline/build_dataset.py first")
         used = set(np.load(path)["subject"]) - {"synthetic"}

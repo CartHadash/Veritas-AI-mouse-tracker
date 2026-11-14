@@ -26,7 +26,7 @@ const tally = {};                   // per mode: {hits, misses, totalTime}
 function connect() {
   const protocol = location.protocol === "https:" ? "wss" : "ws";
   socket = new WebSocket(`${protocol}://${location.host}/ws/cursor`);
-  socket.onopen = () => setStatus("Connected to the local server.");
+  socket.onopen = () => { setStatus("Connected to the local server."); sendArea(); };
   socket.onmessage = (event) => { latest = JSON.parse(event.data); updateMeter(); };
   socket.onclose = () => { setStatus("Connection lost - retrying..."); setTimeout(connect, 1000); };
 }
@@ -74,6 +74,12 @@ area.addEventListener("pointermove", (event) => {
   }
 });
 area.addEventListener("pointerleave", () => { inside = false; });
+// Coming back into the area (maybe somewhere else): start the filter afresh, so the
+// cursor never jumps across from where the pointer left.
+area.addEventListener("pointerenter", () => send({ type: "reset" }));
+
+// The server needs the practice area's size so "Lower sensitivity" stays inside it.
+function sendArea() { send({ type: "area", width: area.clientWidth, height: area.clientHeight }); }
 
 area.addEventListener("pointerdown", () => {
   if (!latest || !target) return;
@@ -193,6 +199,7 @@ function resizeCanvas() {
   area.height = area.clientHeight * ratio;
   ctx.setTransform(ratio, 0, 0, ratio, 0, 0);
   if (!target) newTarget();
+  sendArea();
 }
 
 function circle(x, y, r, fill) {

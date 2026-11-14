@@ -140,7 +140,7 @@ python -m pip install -r requirements.txt # after requirements change
 python scripts\download_data.py           # once; 1.5 GB into data\
 ```
 
-macOS, the builder's machine, the team leader's machine and the demo machine:
+macOS (the builder's Mac, and the team leader's Mac, which is the demo machine):
 
 ```bash
 python3.12 -m venv .venv                  # once (the built-in python3 is 3.9: too old)
@@ -176,6 +176,11 @@ python -m pytest tracker/test_reader.py
 - scikit-learn models called on ONE window at a time are slow (about 20 ms) because they start
   parallel worker threads each call. Live code wraps the call in
   `threadpoolctl.ThreadpoolController().limit(limits=1, user_api="openmp")` (about 2 ms).
+- Never build a clock by adding 0.01 again and again, and never use `int(t * 100)` for a sample
+  index: floating-point rounding makes ticks land late and samples repeat. Count whole ticks
+  (`start + k / 100`) and round with a small tolerance (see `models/resample.py`).
+- Offline scores do not test the live pipeline. Check the live path with
+  `evaluation/compare_modes.py` (validation people while developing).
 - When a script edits several `.md` files, check every edit succeeded before committing; twice
   a failed edit went unnoticed and a merge went out without its STATUS update.
 

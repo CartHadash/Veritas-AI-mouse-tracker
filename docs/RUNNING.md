@@ -2,9 +2,10 @@
 
 Two parts:
 
-- **The app** (server + interface): needs only this repository. The trained models
-  (`models/detector/detector_v1.joblib`, `models/corrector/weights.pt`) and a few recorded
-  demo tremors (`server/demo_tremor.npz`) are included, so no dataset download is needed.
+- **The app** (server + interface): needs only this repository. The trained models the app
+  uses (`models/detector/detector_v2.joblib` with `detector_v2_threshold.json`, and
+  `models/corrector/weights_v4_s0.5.pt`) and 12 recorded demo tremors from test people
+  (`server/demo_tremor.npz`) are included, so no dataset download is needed.
 - **Rebuilding data and re-scoring the models**: needs the datasets (1.5 GB download).
 
 This project is a prototype and is not medical advice.
@@ -62,20 +63,27 @@ python models/corrector/train.py              # step 8: about 2 minutes
 python evaluation/evaluate_corrector.py       # about 1 minute
 python models/corrector/time_live.py          # live speed on this machine
 python evaluation/find_failures.py            # step 9
-python data_pipeline/build_dataset.py --continuous              # step 12
-python models/detector/train.py --version v2 --with-continuous
-python models/corrector/train.py --version v2 --scale-augment   # (needs the _x0.5/_x2 sets)
-python evaluation/improvements.py --test
+python data_pipeline/build_dataset.py --tremor-scale 0.5         # half / double tremor sets
+python data_pipeline/build_dataset.py --tremor-scale 2           #   (for step 12 and the pixel check)
+python data_pipeline/build_dataset.py --continuous               # step 12: pause-free movement
+python models/detector/train.py --version v2 --with-continuous   # detector the app uses
 python evaluation/evaluate_detector.py --missed-target 0.2 --version v2
+python models/corrector/train.py --version v2 --scale-augment    # step 12 attempt (not kept)
+python models/corrector/train.py --version v3 --loss distance    # after step 12
+python evaluation/improvements.py --test      # needs detector v2 and correctors v2, v3
 python evaluation/evaluate_corrector.py --detector v2
-python models/corrector/train.py --version v3 --loss distance   # the corrector the app uses
-python data_pipeline/make_demo_tremor.py      # the demo page's replayed tremor (test people)
-python evaluation/compare_modes.py            # filter modes on the demo page (no data needed)
+python models/corrector/train.py --version v4_s0.5 --loss distance --smooth 0.5   # corrector the app uses
+python models/corrector/train.py --version v4_s2 --loss distance --smooth 2
+python models/corrector/train.py --version v4_s8 --loss distance --smooth 8
+python evaluation/smoothness.py --test        # chooses the v4 penalty on validation
+python data_pipeline/make_demo_tremor.py               # demo page's replayed tremor (test people)
+python data_pipeline/make_demo_tremor.py --people val  # the same for validation people
+python evaluation/compare_modes.py            # filter modes on the demo page (validation people)
+python evaluation/compare_modes.py --people test   # the final figure (test people, once)
 ```
 
-For the pixel-factor check in `evaluate_detector.py`, first run
-`python data_pipeline/build_dataset.py --tremor-scale 0.5` and `--tremor-scale 2`, then
-`python models/detector/train.py --tremor-scale 0.5` and `--tremor-scale 2`.
+For the pixel-factor check in `evaluate_detector.py` (detector v1), also run
+`python models/detector/train.py --tremor-scale 0.5` and `--tremor-scale 2` before it.
 
 ---
 

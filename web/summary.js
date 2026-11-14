@@ -77,6 +77,7 @@ function drawChart(byTime) {
 
 async function load() {
   const s = await (await fetch("/api/summary")).json();
+  lastSummary = s;
 
   const notes = document.getElementById("notes");
   notes.innerHTML = "";
@@ -133,7 +134,13 @@ async function loadAssistant() {
   } catch (error) { /* no assistant: fine */ }
 }
 
+let lastSummary = null;
+let resizeTimer = null;
 document.getElementById("reload").addEventListener("click", load);
-window.addEventListener("resize", load);
+// On resize only redraw the chart (no new request), at most once the resizing stops.
+window.addEventListener("resize", () => {
+  clearTimeout(resizeTimer);
+  resizeTimer = setTimeout(() => { if (lastSummary) drawChart(lastSummary.tremor.by_time); }, 150);
+});
 load();
 loadAssistant();
