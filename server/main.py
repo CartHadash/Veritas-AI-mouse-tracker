@@ -301,6 +301,7 @@ except Exception as error:
 @app.get("/api/status")
 def get_status():
     return {**status, "demo_tremor_segments": len(np.load(DEMO_TREMOR_FILE)["xy"]),
+            "detector_threshold": round(DETECTOR.threshold, 3),
             "disclaimer": "This project is a prototype and is not medical advice."}
 
 

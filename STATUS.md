@@ -8,11 +8,14 @@ Newest entries go at the top of each list. Use local time and say who you are.
 
 | Lane | Working on | Branch | Blocked by |
 |---|---|---|---|
-| Builder | IN PROGRESS: step 11, live demo page (web/). Steps 1-10 done | builder/demo-page | - |
+| Builder | Steps 1-11 built (8, 9, 11 await checks below). Next: step 12, one measured improvement per model | main | - |
 | Team leader | not started | - | - |
 | Writer | not started | - | - |
 
 ## Done (newest first)
+
+- Sat 14 Nov 15:10 CET, builder's agent: step 11, live demo page (`web/`), style C (warm and
+  friendly), plain JavaScript. All "must do" steps (1-9 and 11) are now built.
 
 - Sat 14 Nov 15:03 CET, builder's agent: step 10, `server/main.py` (FastAPI, 127.0.0.1 only),
   `server/test_ws.py`, `docs/RUNNING.md` (macOS and Windows sections). The app runs from a
@@ -118,6 +121,9 @@ Newest entries go at the top of each list. Use local time and say who you are.
 
 ## Decisions made along the way (what, why, who decided)
 
+- Sat 14 Nov, builder (human): DECISION 5 = A (models run in Python on the server);
+  DECISION 6 = C (warm and friendly look); DECISION 7 = plain JavaScript.
+
 - Sat 14 Nov, builder (human): DECISION 3 = A (gradient boosting on explainable features)
   and train on the builder's Mac (8 GB was enough: about 0.5 GB used so far).
 - Sat 14 Nov, builder (human): DECISION 4 = B, cut-off at most 20% missed on validation
@@ -141,6 +147,13 @@ Newest entries go at the top of each list. Use local time and say who you are.
 - None else yet. (Keep this honest; the write-up needs a "what didn't work" section.)
 
 ## Requests to another lane
+
+- Builder -> team leader (Sat 14 Nov 15:10): **third cross-machine check (step 11).** On the
+  demo Mac: `git pull`, `python -m uvicorn server.main:app`, open http://127.0.0.1:8000 in
+  Safari AND Chrome, switch "Demo tremor" on, move with the TRACKPAD and check the dark
+  (corrected) cursor is visibly steadier than the grey one in "Our model" mode and that
+  switching filter modes works live. Write what you saw here. Your assistant panel goes in
+  `<div id="assistant-panel">`; the page loads `web/assistant/assistant.js` if it exists.
 
 - Builder -> team leader (Sat 14 Nov 15:03): the server is ready for your modules.
   (1) It imports `tracker.reader` (or `tracker`) for `start(callback)` / `stop()`, and starts

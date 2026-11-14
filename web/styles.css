@@ -1,0 +1,106 @@
+/* Style C (DECISION 6): warm and friendly. Large text, big buttons, strong contrast,
+   because the user is often older and has a tremor. */
+
+:root {
+  --bg: #fff8f0;
+  --panel: #fffdf9;
+  --ink: #3b2314;
+  --muted: #6e5444;
+  --line: #e8c9a8;
+  --accent: #2e7d5b;        /* green: buttons that are on */
+  --target: #d9661a;        /* orange: targets */
+  --warn-bg: #ffe1cc;
+  --warn-ink: #6b2c00;
+}
+
+* { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  padding: 16px 24px;
+  background: var(--bg);
+  color: var(--ink);
+  font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  font-size: 18px;
+  line-height: 1.4;
+}
+
+h1 { margin: 0; font-size: 32px; }
+h2 { margin: 0 0 10px; font-size: 22px; }
+.subtitle { margin: 4px 0 12px; color: var(--muted); }
+.small { font-size: 15px; color: var(--muted); margin: 6px 0 0; }
+
+.banner {
+  background: var(--warn-bg);
+  color: var(--warn-ink);
+  border: 2px solid var(--target);
+  border-radius: 12px;
+  padding: 10px 14px;
+  font-weight: 700;
+  margin-bottom: 12px;
+}
+.banner span { font-weight: 400; }
+
+main { display: flex; gap: 20px; align-items: flex-start; flex-wrap: wrap; }
+.left { flex: 3 1 520px; min-width: 0; }
+.right { flex: 2 1 340px; display: flex; flex-direction: column; gap: 14px; min-width: 0; }
+
+#area {
+  display: block;
+  width: 100%;
+  height: 520px;
+  background: var(--panel);
+  border: 3px solid var(--line);
+  border-radius: 16px;
+  cursor: none;              /* the system cursor is hidden inside the practice area */
+  touch-action: none;
+}
+
+.legend { margin: 8px 0 0; font-size: 16px; color: var(--muted); }
+.dot { display: inline-block; width: 14px; height: 14px; border-radius: 50%; vertical-align: -2px; }
+.dot.raw { background: rgba(110, 110, 110, 0.45); }
+.dot.fixed { background: var(--ink); }
+
+.panel {
+  background: var(--panel);
+  border: 2px solid var(--line);
+  border-radius: 16px;
+  padding: 14px 16px;
+}
+
+.buttons { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 10px; }
+button, .button-link {
+  font: inherit;
+  font-weight: 600;
+  padding: 12px 18px;
+  min-height: 48px;          /* big enough to hit with a shaky hand */
+  border-radius: 24px;
+  border: 2px solid var(--accent);
+  background: #fff;
+  color: var(--ink);
+  cursor: pointer;
+  text-decoration: none;
+}
+button.on { background: var(--accent); color: #fff; }
+button:focus-visible, .button-link:focus-visible { outline: 3px solid var(--target); outline-offset: 2px; }
+
+.slider { display: flex; align-items: center; gap: 10px; margin-top: 12px; }
+.slider input { flex: 1; height: 28px; accent-color: var(--accent); }
+
+.meter-label { margin: 0 0 8px; font-size: 20px; font-weight: 700; }
+.bar { position: relative; height: 22px; background: #f0dcc8; border-radius: 11px; overflow: hidden; }
+#score-bar { height: 100%; width: 0; background: var(--accent); transition: width 0.15s; }
+#score-bar.tremor { background: var(--target); }
+#cutoff-mark { position: absolute; top: 0; bottom: 0; width: 3px; background: var(--ink); }
+.meter-numbers { margin: 8px 0 0; }
+
+table { width: 100%; border-collapse: collapse; font-size: 17px; }
+th, td { text-align: left; padding: 6px 4px; border-bottom: 1px solid var(--line); }
+
+footer { margin-top: 18px; text-align: center; }
+footer p { margin: 4px 0; }
+
+@media (max-width: 700px) {
+  body { padding: 12px 16px; }
+  #area { height: 360px; }
+}
