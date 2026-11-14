@@ -35,6 +35,10 @@ Installed in step 1 (exact versions in `requirements.txt`). Add new ones here wh
 - Anthropic Python SDK, https://github.com/anthropics/anthropic-sdk-python (Claude API)
 - python-dotenv, https://github.com/theskumar/python-dotenv (reads the API key from `.env`)
 - pytest, https://pytest.org (automatic tests)
+- joblib, https://joblib.readthedocs.io (saves the trained detector; installed with scikit-learn)
+- scikit-learn's HistGradientBoostingClassifier / Regressor and permutation importance,
+  https://scikit-learn.org/stable/modules/ensemble.html#histogram-based-gradient-boosting
+  (the detector v1 model and its "which features mattered" check)
 
 ## AI tools used while building
 

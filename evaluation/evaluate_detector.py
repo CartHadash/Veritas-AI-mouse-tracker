@@ -101,7 +101,7 @@ def main():
                  round(100 * target), main_run["cut"], main_run["rule_cut"]), "",
              "## Headline", "",
              "| Detector | Missed cases | False alarms | Accuracy |", "|---|---|---|---|",
-             "| Always \"no tremor\" | 100.0% | 0.0% | %s |" % pct((~labels).mean()),
+             "| Always \"no tremor\" | 100.0%% | 0.0%% | %s |" % pct((~labels).mean()),
              "| Frequency rule | %s | %s | %s |" % (pct(r["missed"]), pct(r["false_alarms"]), pct(r["accuracy"])),
              "| **Detector v1 (our model)** | **%s** | **%s** | **%s** |" % (
                  pct(m["missed"]), pct(m["false_alarms"]), pct(m["accuracy"])), ""]
