@@ -210,7 +210,10 @@ function sendArea() { send({ type: "area", width: area.clientWidth, height: area
 area.addEventListener("pointerdown", (event) => {
   if (settings.mode === "low_sensitivity" && !locked && !lockFailed && area.requestPointerLock) {
     hand = areaPosition(event);           // start where the pointer is now
-    area.requestPointerLock();            // this click only starts the mode; it is not a target click
+    // This click only starts the mode; it is not a target click. Newer browsers also report a
+    // refusal as a failed promise: "pointerlockerror" below already handles it, so ignore that.
+    const request = area.requestPointerLock();
+    if (request && request.catch) request.catch(() => {});
     return;
   }
   if (!latest || !target || calib) return;

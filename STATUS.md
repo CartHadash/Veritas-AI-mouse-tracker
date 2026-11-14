@@ -500,6 +500,22 @@ Time line: first full version by **Sun 15 Nov 22:00 CET**; no new features after
 
 ## Requests to another lane
 
+- Sat 14 Nov 22:30 CET, builder -> team leader: **tested the new design** (app's built-in browser, simulated
+  movement, desktop and 375 px phone width). Works: all three tabs, filters, demo tremor and
+  levels, meter and live graph, correction indicator, targets and hit bars, strength slider,
+  click freeze, tracking switch, calibration, Lower sensitivity hint and Pointer Lock fallback,
+  "Show me" buttons, Analysis tiles, chart and history, assistant plain summary, old
+  summary.html forwarding, path check page; no sideways overflow on a phone. To fix (your
+  files): (1) the floating "Ask the assistant" button covers content at the bottom right (e.g.
+  "Clicks that hit the target" in Analysis); (2) Analysis chart: right-hand labels cut off
+  ("21.8 p"); (3) How it works -> "How well it does" repeats "Filter now: Our model, strength 1"
+  and gives no corrector result (test: 86% of tremor removed, no lag, `RESULTS.md`); (4) the
+  meter keeps showing the last values ("Correction: ON (100%)") after the hand stops or leaves
+  the area: grey it out after about a second without movement?; (5) assistant plain summary
+  says "moving for about 0 minutes" (0.3 min) and "Cursor smoothing: learned" (say "Our model").
+  Fixed by the builder (one line, `web/app.js`): a refused Pointer Lock left an "Uncaught"
+  error in the browser console. Not tested: a real hand in Chrome and Safari, AI answers with a key.
+
 - Sat 14 Nov 22:02 CET, builder -> team leader: **B3 is ready for your check on the demo Mac** (it needs
   the Accessibility permission, which only you may switch on). `git pull`, then follow
   `docs/RUNNING.md` "System-wide correction": first `--demo strong --mode none` (the real
