@@ -8,7 +8,7 @@ Newest entries go at the top of each list. Use local time and say who you are.
 
 | Lane | Working on | Branch | Blocked by |
 |---|---|---|---|
-| Builder | Steps 1-8 done (step 8 awaits the leader's Mac check). Next: step 9, failure analysis | main | - |
+| Builder | IN PROGRESS: step 9, failure analysis (evaluation/). Steps 1-8 done (8 awaits Mac check) | builder/failures | - |
 | Team leader | not started | - | - |
 | Writer | not started | - | - |
 
