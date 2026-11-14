@@ -8,7 +8,7 @@ Newest entries go at the top of each list. Use local time and say who you are.
 
 | Lane | Working on | Branch | Blocked by |
 |---|---|---|---|
-| Builder | Steps 1-13 built + the leader's demo-gain request done. Next: step 14, results package | main | - |
+| Builder | IN PROGRESS: leader request, jerkiness metric and smoother corrector (v4). Steps 1-13 built | builder/smooth-corrector | - |
 | Team leader | B1 (whole-laptop tracker) DONE and merged. Next: B2, the assistant | - | - |
 | Writer | not started | - | - |
 
