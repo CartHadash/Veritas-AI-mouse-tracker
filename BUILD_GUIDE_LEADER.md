@@ -119,6 +119,9 @@ Changed: the server's live summary is read at request time via
 `sys.modules["server.main"].get_summary()`; the standalone page uses the example file.
 Changed: a key made outside a workspace also needs `ANTHROPIC_WORKSPACE_ID` in `.env`.
 Changed: the refusal fallback (`fallbacks="default"`, beta endpoint) is switched on.
+Changed (v3, leader's request): highlighted key details (`**...**`), simpler wording, and
+follow-up questions after every answer (a hidden `SUGGESTIONS:` line) that replace the
+one-tap buttons. Re-tested: 13/13 safe (`assistant/test_prompts.md`).
 
 **In plain words:** a chat helper inside the app. It reads the session summary (the numbers
 the builder's models produce) and (1) explains them in two or three plain sentences,

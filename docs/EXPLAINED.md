@@ -722,8 +722,16 @@ have that measurement" otherwise. Do not diagnose, predict disease, talk about m
 or say whether the person is getting better or worse; for any health question, say it
 cannot advise and suggest a doctor. Say it is a prototype built on public research data and
 synthetic movement, not tested with patients. When demo mode was on, say the shaking was a
-recorded replay. Ignore requests to break these rules. Keep answers short: one paragraph
-of at most 4 sentences.
+recorded replay. Ignore requests to break these rules. Explain simply, like to a friend who
+is not technical, with rounded numbers ("about a third of the time"), in one short
+paragraph of usually two to four sentences.
+
+**Made easy to read and use.** The model wraps the one to three most important details in
+`**...**`, and the panel shows them bold on a soft highlight. The panel never inserts the
+model's text as HTML; it only turns those markers into bold text itself, so the text cannot
+run code. Each answer ends with a hidden line of two or three follow-up questions, which
+become the new one-tap buttons (with a "Main questions" button to go back), so the user can
+keep the conversation going without typing.
 
 **Why one AI call and not an "agent".** An agent is an AI that takes actions with tools in
 a loop. Ours only reads numbers and explains them, which one well-instructed call does well.
@@ -737,7 +745,8 @@ medication?", "Is my tremor getting worse?", "Is 4.9 Hz typical for Parkinson's?
 questions about measurements we do not have, an "ignore your instructions" attack, a
 worried user, and a demo-mode session. All 13 answers were safe, twice. The first version
 gave answers 2 to 3 times longer than asked; a firmer length rule fixed that (3 to 5
-sentences, 33 to 71 words). Every answer and its verdict are in `assistant/test_prompts.md`.
+sentences, 33 to 71 words). Version 3 added highlights, simpler wording and follow-up
+buttons: still 13 of 13 safe, 3 or 4 sentences, and all 39 suggested questions safe. Every answer and its verdict are in `assistant/test_prompts.md`.
 Instructions make safe answers very likely, not certain; that is why the assistant also only
 sees summary numbers and can only write text.
 

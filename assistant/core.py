@@ -116,7 +116,7 @@ def fixed_explanation(summary):
     if share is None:
         lines.append("No movement has been analysed for shaking yet.")
     else:
-        lines.append("Tremor-like shaking was flagged about %d%% of the time." % round(share * 100))
+        lines.append("Tremor-like shaking was flagged **about %d%% of the time**." % round(share * 100))
         freq, size = tremor.get("typical_frequency_hz"), tremor.get("typical_strength_px")
         if freq is not None and size is not None:
             lines.append("When flagged, it was typically about %.1f shakes per second and about "
@@ -124,11 +124,11 @@ def fixed_explanation(summary):
         by_time = [m for m in tremor.get("by_time", []) if m.get("detected_share") is not None]
         if len(by_time) > 1:
             top = max(by_time, key=lambda m: m["detected_share"])
-            lines.append("It was flagged most often around minute %d." % top["minute"])
+            lines.append("It was flagged most often **around minute %d**." % top["minute"])
 
     steadiness = usage.get("steadiness_score")
     if steadiness is not None:
-        lines.append("Steadiness score: %.2f (0 = very shaky, 1 = very steady)." % steadiness)
+        lines.append("Steadiness score: **%.2f** (0 = very shaky, 1 = very steady)." % steadiness)
     accuracy = usage.get("click_accuracy")
     if accuracy is not None:
         lines.append("%d%% of %d clicks hit the practice targets."

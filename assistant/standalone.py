@@ -5,6 +5,7 @@
 Lets us build and test the assistant without the builder's server or models.
 """
 
+import time
 from pathlib import Path
 
 import uvicorn
@@ -25,7 +26,7 @@ max-width:640px;margin:24px auto;padding:0 16px}</style></head>
 <body><h1>Assistant test page</h1>
 <p>Uses the EXAMPLE summary (invented numbers), not a real session.</p>
 <div id="assistant-panel"></div>
-<script src="assistant/assistant.js"></script></body></html>"""
+<script src="assistant/assistant.js?v=%d"></script></body></html>"""
 
 app = FastAPI(title="Assistant (standalone)")
 app.include_router(router)
@@ -34,7 +35,8 @@ app.mount("/assistant", StaticFiles(directory=WEB_ASSISTANT), name="assistant-fi
 
 @app.get("/", response_class=HTMLResponse)
 def page():
-    return PAGE
+    # ?v=<time> makes the browser fetch the newest panel code instead of an old cached copy.
+    return PAGE % int(time.time())
 
 
 if __name__ == "__main__":
