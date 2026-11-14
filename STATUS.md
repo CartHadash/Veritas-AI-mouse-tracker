@@ -8,11 +8,16 @@ Newest entries go at the top of each list. Use local time and say who you are.
 
 | Lane | Working on | Branch | Blocked by |
 |---|---|---|---|
-| Builder | IN PROGRESS: click freeze (Timofey's idea 2), web/ + evaluation/. Steps 1-15 built | builder/click-freeze | - |
+| Builder | Steps 1-15 built (4, 9, 11, 14, 15 await human or Mac checks) + click freeze. Next: Godson's calibration idea if wanted | main | - |
 | Team leader | B1 (whole-laptop tracker) DONE and merged. Next: B2, the assistant | - | - |
 | Writer | not started | - | - |
 
 ## Done (newest first)
+
+- Sat 14 Nov 18:14 CET, builder's agent: click freeze (Timofey's idea 2). Demo page hits need
+  press and release on the target; a "Click freeze" switch holds the cursor until release
+  (max 0.3 s). `evaluation/click_sim.py --people test`: 10 px target, strong tremor: no
+  filter 24% -> 39% of clicks land with freeze, our model 92% -> 94%.
 
 - Sat 14 Nov 18:05 CET, builder's agent: step 15 on the builder's Mac. Fresh clone from GitHub
   + "On macOS" commands: install 41 s, app and `server/test_ws.py` pass with no data. With
@@ -243,6 +248,10 @@ Newest entries go at the top of each list. Use local time and say who you are.
 (Keep this list honest; the write-up needs a "what didn't work" section.)
 
 ## Requests to another lane
+
+- Builder -> team leader (Sat 14 Nov 18:14): your idea 2 (click freeze) is built and merged;
+  try it on the demo page with "Demo tremor: Strong" and the "Click freeze" button. Your
+  idea 1 (movement-aware detector) is partly covered by detector v2; ideas 3-4 not started.
 
 - Builder -> team leader (Sat 14 Nov 18:05): **step 15 on the demo Mac (the result that
   counts).** In a NEW folder (not your working copy): `git clone

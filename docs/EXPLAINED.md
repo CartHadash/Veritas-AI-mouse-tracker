@@ -540,6 +540,34 @@ a 30-second explanation. Every number in it was copied from a file a script gene
 files (it does not check that each number is quoted in the right place, so a human read is
 still needed). The dataset counts come from `python evaluation/data_facts.py`.
 
+## Click freeze (an idea from Timofey, a team member)
+
+**The problem.** A click on a button only counts if the button is pressed **and released** on
+it. With a tremor, the hand keeps shaking while the button is held, and the cursor can be
+carried off before the release, so the click is lost.
+
+**What we built.** On the demo page a hit now needs press and release on the target, like real
+buttons. A "Click freeze" switch holds the shown cursor where the button went down until it
+comes up (at most 0.3 s). The targets table keeps "with click freeze" separate, to compare.
+
+**How we measured it** (`python evaluation/click_sim.py`; a simulation, no real people): a
+hand aimed perfectly at the target's centre holds still while replayed tremor shakes it;
+clicks are held 80-200 ms. On test people's recordings, with strong tremor, the share of
+clicks that land on a 10 px target (about a small checkbox):
+
+| | Without freeze | With freeze |
+|---|---|---|
+| No filter | 24% | 39% |
+| Our model | 92% | 94% |
+
+On the page's 22 px target almost every click lands with our model anyway (strong tremor: 100%;
+no filter 76% -> 79% with freeze). Freeze helps most when nothing else is correcting the
+cursor. The 10 px case was added after seeing that 22 px is easy; on validation people's
+recordings our model scored lower (67% -> 81%), a reminder that 4 recordings per strength is a
+small sample. Real people also jolt the mouse when pressing; we have no data for that.
+Checked in the browser: a press with the cursor pushed 60 px off before release was a miss
+without freeze and a hit with it.
+
 ## Can someone else reproduce it? (step 15)
 
 Yes. A fresh copy of the repository from GitHub, set up with the commands in `docs/RUNNING.md`,

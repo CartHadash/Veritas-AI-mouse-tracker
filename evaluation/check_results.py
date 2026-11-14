@@ -44,6 +44,7 @@ DEFINITIONS = {
     "0": "0 ms / 0%",
     "30": "'in 30 seconds' heading",
     "060": "PADS subject id in a chart file name",
+    "0.3": "click freeze holds the cursor at most 0.3 s (FREEZE_MS in web/app.js)",
 }
 
 

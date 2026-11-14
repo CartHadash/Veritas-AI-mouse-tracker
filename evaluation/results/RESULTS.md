@@ -140,6 +140,14 @@ Honest weakness: for a hand held perfectly still, One Euro is closer (medium tre
 3.70 px); our advantage is during movement (reaching with medium tremor: One Euro 11.76 px off
 the path, ours 4.65 px).
 
+## Click freeze (simulation)
+
+A click needs press and release on the target; tremor while the button is held can carry the
+cursor off. "Click freeze" holds the shown cursor still from press to release (at most 0.3 s).
+Simulated clicks (perfect aim, held 80-200 ms) on a 10 px target with strong replayed tremor of
+test people: no filter 24% land, 39% with freeze; our model 92%, 94% with freeze
+(`click_freeze_test.md`, `python evaluation/click_sim.py --people test`).
+
 ## Where it fails
 
 Full write-up with charts: `failures/failures.md`. In short (`failures/failure_facts.md`):

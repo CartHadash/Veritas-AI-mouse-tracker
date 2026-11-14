@@ -82,6 +82,8 @@ python evaluation/compare_modes.py            # filter modes on the demo page (v
 python evaluation/compare_modes.py --people test   # the final figure (test people, once)
 python evaluation/data_facts.py               # step 14: dataset counts
 python evaluation/check_results.py            # step 14: every number in RESULTS.md is sourced
+python evaluation/click_sim.py                # click freeze, validation people's tremor
+python evaluation/click_sim.py --people test  # click freeze, final figure (test people)
 ```
 
 For the pixel-factor check in `evaluate_detector.py` (detector v1), also run
