@@ -57,14 +57,15 @@ works for them. In the write-up the *named user* stays the person with tremor.
 
 | Person | Tools | Owns |
 |---|---|---|
-| **Builder** | Claude Code (**MacBook**, Apple Silicon; not the demo machine) | Data pipeline, both models, evaluation, server, main interface. Follows `BUILD_GUIDE_BUILDER.md` |
-| **Team leader** | Claude Code (MacBook, **the demo machine**) | Whole-laptop pointer reader, the assistant, system-wide stretch goal, final decisions. Follows `BUILD_GUIDE_LEADER.md` |
+| **Builder** | Claude Code (**MacBook**, Apple Silicon; not the demo machine) | Data pipeline, both models, evaluation, server, main interface, system-wide stretch goal (B3). Follows `BUILD_GUIDE_BUILDER.md` |
+| **Team leader** | Claude Code (MacBook, **the demo machine**) | Whole-laptop pointer reader, the assistant, final decisions. Follows `BUILD_GUIDE_LEADER.md` |
 | **Writer** | ChatGPT | Write-up text, sources list, demo video script and recording, submission form. Works from `STATUS.md`, `evaluation/results/` and `docs/` |
 
 **Two machines.** The builder develops on their own Mac (until Sat 14 Nov afternoon the
 plan was a Windows PC); the demo runs on the leader's Mac. All builder-lane code must still
 run on macOS and Windows. The Mac-only parts (`tracker/`,
-`systemwide/`) are in the leader's lane for exactly this reason. The leader pulls and runs
+`systemwide/`) were put in the leader's lane for this reason; `systemwide/` (B3) moved to
+the builder on Sat 14 Nov 21:20 (leader's decision), and the leader runs its Mac checks. The leader pulls and runs
 the builder's work on the Mac at the checkpoints listed in `BUILD_GUIDE_BUILDER.md`.
 
 ### Folder ownership (this is what prevents overlap)
@@ -82,7 +83,7 @@ them (or write it in `STATUS.md` under "Requests").
 | `tracker/` | Team leader | Reads the pointer everywhere on the laptop; local log |
 | `assistant/` | Team leader | Claude API code and prompts |
 | `web/assistant/` | Team leader | The assistant's chat panel in the interface |
-| `systemwide/` | Team leader | Stretch goal: correcting the real cursor everywhere |
+| `systemwide/` | Builder (moved from the leader, Sat 14 Nov 21:20) | Stretch goal: correcting the real cursor everywhere |
 | `baselines/`, `scripts/` | Nobody (frozen) | Reused pre-hackathon files. Bug fixes only |
 | `README.md` | Writer, at the end | The write-up. Empty until Sunday |
 | `docs/`, `STATUS.md`, `CLAUDE.md`, guides | Everyone | Kept up to date by every agent (rules in `CLAUDE.md`) |

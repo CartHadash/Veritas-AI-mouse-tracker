@@ -31,8 +31,14 @@ Time line: first full version by **Sun 15 Nov 22:00 CET**; no new features after
 - [ ] Timofey: trackpad check on the demo Mac (step 11) and the fresh-clone test (step 15).
 - [ ] Timofey: answer the open question on rewriting the two pre-hackathon files.
 
+- [ ] Rewrite `scripts/download_data.py` and `baselines/classical_filters.py` from scratch
+      (leader said YES, 21:20); re-run the baselines and check the numbers still match; update
+      `docs/REUSED_CODE.md`. About 30-45 min.
+- [ ] Step 9 additions picked by the leader (21:20): per-person uncertainty ranges; failures
+      per person and a corrector failure on real marked tremor; the live still-hand weak
+      spot. About 1 h.
+
 **3. After the answers (only if time allows; cut from the bottom up):**
-- [ ] Step 9 additions that the team picks (about 1 h).
 - [ ] Step 4: stress test the models on the realistic movement (about 1 h); retrain only if
       they clearly drop (2-3 h more).
 - [ ] Timofey's idea 3, sticky targets (about 1 h).
@@ -41,6 +47,9 @@ Time line: first full version by **Sun 15 Nov 22:00 CET**; no new features after
       dyslexia, colour-blind-safe colours for the two cursors, targets and charts, and larger
       text. About 1-1.5 h for all. Reading the assistant's answers aloud touches
       `web/assistant/` (leader's lane): needs the leader's OK, or the leader adds it.
+- [ ] B3, correcting the real cursor everywhere (`systemwide/`), moved to the builder by the
+      leader (21:20). Steps in `BUILD_GUIDE_LEADER.md` "Step B3". Mac-only and needs the
+      Accessibility permission; the demo Mac is the leader's, so the leader runs the check.
 - [ ] Step 16, the desktop window (cut first).
 
 ## Done (newest first)
@@ -286,6 +295,13 @@ Time line: first full version by **Sun 15 Nov 22:00 CET**; no new features after
   4.30 Hz, 99% of power in 3-12 Hz. TremorDB rofh/s6rof.let: peak 4.88 Hz, 98% in 3-12 Hz.
 
 ## Decisions made along the way (what, why, who decided)
+
+- Sat 14 Nov 21:20, team leader (human): (1) YES, the builder rewrites
+  `scripts/download_data.py` and `baselines/classical_filters.py` from scratch (removes any
+  rule-2 risk). (2) Step 9 additions: per-person uncertainty ranges, failures (per person,
+  and a corrector failure on real marked tremor), and the live still-hand weak spot.
+  (3) B3, correcting the real cursor everywhere (`systemwide/`), moves from the leader's lane
+  to the builder's; still a stretch goal, cut before everything except step 16.
 
 - Sat 14 Nov evening, team leader (human): DECISION L1 changed from A to B. Keep a history of
   session SUMMARIES (numbers only) on the laptop so the assistant can compare sessions; it may
@@ -534,10 +550,9 @@ Time line: first full version by **Sun 15 Nov 22:00 CET**; no new features after
   `web/path_check.html`): (1) step 4 rework scope: A) stress test first: measure the current
   models on the realistic movement (validation people), retrain only if they clearly drop
   (recommended); B) full rework now: rebuild, retrain, re-run everything (2-3 h, every number
-  changes); C) only fix the chart and docs. (2) step 9 additions (any): per-person
-  uncertainty ranges; failures per person; a corrector failure on real marked tremor; the
-  live still-hand weak spot.
+  changes); C) only fix the chart and docs. STILL OPEN.
+  (2) step 9 additions: ANSWERED by the leader (Sat 14 Nov 21:20), see "Decisions".
 
-- Sat 14 Nov 14:10, from the builder: rewrite `scripts/download_data.py` and
-  `baselines/classical_filters.py` from scratch to remove any rule-2 risk? Builder's agent
-  recommends yes (about 30-45 min). Changes the decision in `docs/REUSED_CODE.md`.
+- ANSWERED (Sat 14 Nov 21:20, leader: YES). Rewrite `scripts/download_data.py` and
+  `baselines/classical_filters.py` from scratch to remove any rule-2 risk. Now a builder
+  task (see "Builder's plan"); the builder updates `docs/REUSED_CODE.md` when done.

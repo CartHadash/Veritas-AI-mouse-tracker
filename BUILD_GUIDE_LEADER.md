@@ -5,7 +5,8 @@ deliberately small and separate, so it never collides with the builder's work, a
 leader keeps time for steering, decisions and review.
 
 **Agent:** read `CLAUDE.md` first. You own only `tracker/`, `assistant/`,
-`web/assistant/` and `systemwide/`. Everything else belongs to the builder; do not edit it.
+`web/assistant/` (`systemwide/` moved to the builder on Sat 14 Nov 21:20). Everything else
+belongs to the builder; do not edit it.
 You meet the builder's code through the three contracts in `docs/PROJECT_PLAN.md`, which
 means **you can build and test everything here before the builder's parts exist.**
 Tick each box when its "Done when" is true and keep this file accurate.
@@ -192,6 +193,9 @@ was built around it. So note in `docs/EXPLAINED.md`: the assistant sees only sum
 numbers, its limits, and the trap-question test results.
 
 ### - [ ] Step B3 (stretch). Correcting the real cursor everywhere (`systemwide/`)
+
+Changed: moved to the BUILDER on Sat 14 Nov 21:20 (leader's decision). The builder follows
+the steps below; the leader only runs the checks on the demo Mac.
 
 **In plain words:** make the actual macOS cursor steadier in every app, not only in ours.
 This is the riskiest part of the whole project and was never proven to work. **It is the

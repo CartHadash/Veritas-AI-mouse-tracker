@@ -23,8 +23,9 @@ comes with a recommendation; "go with your recommendation" is a fine answer),
 You will have to explain this project to judges, so do not skip (3).
 
 Not in this lane (the team leader builds these, in parallel): reading the pointer across
-the whole laptop (`tracker/`), the Claude assistant (`assistant/`, `web/assistant/`), and
-correcting the real cursor everywhere (`systemwide/`). Do not build them. You connect to
+the whole laptop (`tracker/`) and the Claude assistant (`assistant/`, `web/assistant/`).
+Do not build them. Changed: B3, correcting the real cursor everywhere (`systemwide/`), is
+now yours (leader's decision, Sat 14 Nov 21:20); its steps are in `BUILD_GUIDE_LEADER.md`. You connect to
 them through the three contracts in `docs/PROJECT_PLAN.md`.
 
 ---
@@ -111,7 +112,7 @@ laptop cannot be demonstrated. Follow these rules in every step.
   `multiprocessing`) must be inside `if __name__ == "__main__":`, or it crashes on Windows.
   Simplest: keep `num_workers=0`; our data is small.
 - No macOS-only or Windows-only libraries anywhere in this lane. The Mac-only pieces
-  (`tracker/`, `systemwide/`) belong to the leader; your server must run with them absent
+  (`tracker/`, and `systemwide/` which is now yours but Mac-only) stay out of this rule; your server must run with them absent
   (the situation on Windows, and on this Mac until the leader's code is merged).
 - Line endings: the repository's `.gitattributes` keeps all text files with Unix line
   endings. Do not change that file.
