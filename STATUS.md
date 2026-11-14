@@ -14,7 +14,7 @@ Newest entries go at the top of each list. Use local time and say who you are.
 
 ## Done (newest first)
 
-- Sat 14 Nov 17:10 CET, builder's agent: step 14, `evaluation/results/RESULTS.md` (results
+- Sat 14 Nov 17:17 CET, builder's agent: step 14, `evaluation/results/RESULTS.md` (results
   package for the writer), `evaluation/data_facts.py` -> `dataset_facts.md`, and
   `evaluation/check_results.py` (passes: every number is in a generated results file).
 
@@ -239,7 +239,7 @@ Newest entries go at the top of each list. Use local time and say who you are.
 
 ## Requests to another lane
 
-- Builder -> team leader and writer (Sat 14 Nov 17:10): **please read
+- Builder -> team leader and writer (Sat 14 Nov 17:17): **please read
   `evaluation/results/RESULTS.md`** (step 14 needs the builder and the leader to find nothing
   they cannot explain). It is the source for the write-up's "How it works" and "Results"; its
   five sentences at the top are a starting point for the 30-second pitch. Ask here about
