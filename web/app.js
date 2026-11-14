@@ -126,11 +126,21 @@ function updateMeter() {
   bar.style.width = `${Math.round(latest.score * 100)}%`;
   bar.classList.toggle("tremor", latest.tremor);
   document.getElementById("score").textContent = latest.score.toFixed(2);
+  // How much of our model's correction is being applied right now (the detector's gate).
+  const correcting = document.getElementById("correcting-word");
+  if (latest.mode !== "learned") {
+    correcting.textContent = "our model is not selected";
+    correcting.classList.remove("on");
+  } else {
+    const g = latest.gate ?? 0;
+    correcting.textContent = g > 0.5 ? `ON (${Math.round(g * 100)}%)` : g > 0.05 ? `partly (${Math.round(g * 100)}%)` : "off - no tremor-like movement";
+    correcting.classList.toggle("on", g > 0.5);
+  }
   document.getElementById("freq").textContent = latest.tremor ? latest.frequency_hz.toFixed(1) : "-";
   document.getElementById("size").textContent = latest.size_px.toFixed(1);
   const demo = latest.demo;
   document.getElementById("demo-source").textContent = demo
-    ? `(Now: a test-set person with ${demo.condition}, about ${demo.strength_px} px.)` : "";
+    ? `(Now: ${demo.level} tremor of a test-set person with ${demo.condition}, about ${demo.strength_px} px.)` : "";
 }
 
 function showSettings() {
@@ -143,6 +153,11 @@ function showSettings() {
   demoButton.textContent = `Demo tremor: ${settings.demo_tremor ? "on" : "off"}`;
   demoButton.classList.toggle("on", settings.demo_tremor);
   document.getElementById("demo-banner").hidden = !settings.demo_tremor;
+  document.getElementById("demo-levels").hidden = !settings.demo_tremor;
+  document.getElementById("demo-tip").hidden = settings.demo_tremor;
+  for (const button of document.querySelectorAll("#demo-levels button")) {
+    button.classList.toggle("on", button.dataset.level === settings.demo_level);
+  }
   document.getElementById("legend-demo").hidden = !settings.demo_tremor;
   const trackButton = document.getElementById("tracking-toggle");
   trackButton.textContent = `Whole-laptop tracking: ${settings.tracking ? "on" : "off"}`;
@@ -151,6 +166,9 @@ function showSettings() {
 
 for (const button of document.querySelectorAll("#modes button")) {
   button.addEventListener("click", () => postSettings({ mode: button.dataset.mode }));
+}
+for (const button of document.querySelectorAll("#demo-levels button")) {
+  button.addEventListener("click", () => postSettings({ demo_level: button.dataset.level }));
 }
 document.getElementById("strength").addEventListener("change", (e) => postSettings({ strength: Number(e.target.value) }));
 document.getElementById("strength").addEventListener("input", (e) => {

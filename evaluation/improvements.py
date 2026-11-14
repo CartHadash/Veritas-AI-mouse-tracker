@@ -10,6 +10,10 @@ DETECTOR: v1 vs v2. v2 also learned from windows whose movement never pauses (gl
   a sign of tremor. Both get their cut-off the same way: at most 20% missed on the normal
   validation windows (DECISION 4). Measured on normal AND on pause-free validation windows.
 
+CORRECTOR v3 (second corrector attempt, after the leader found the demo gain small): trained to
+  minimise the plain distance instead of the squared distance. Compared with v1 per tremor size,
+  with the detector v2 gate as in the app.
+
 CORRECTOR: v1 vs v2. v2 is trained with every sequence's tremor randomly made 0.5x-2x as
   large (a response to "different mouse DPI settings move the cursor different distances").
   Measured on validation sequences at tremor size x0.5, x1 and x2.
@@ -92,6 +96,36 @@ def corrector_part(lines):
     return distances
 
 
+SIZES = [("mild (under 3 px)", 0, 3), ("medium (3-10 px)", 3, 10), ("strong (over 10 px)", 10, 1e9)]
+
+
+def corrector_v3_part(lines, split="val"):
+    """v1 vs v3 per tremor size, gated by detector v2 like the app. split = val or test."""
+    data = np.load(DERIVED / f"corrector_{split}.npz")
+    shaky, clean = data["shaky"], data["clean"]
+    tremor = data["tremor"].astype(bool)
+    gate = detector_gate(Detector(), shaky)[..., None]
+    title = "validation" if split == "val" else "TEST (scored once)"
+    lines += ["## Corrector: v1 vs v3 (plain-distance training), %s, gated by detector v2" % title, "",
+              "| Version | Sequences | Off the path moving / still (px) | Tremor removed | Lag (ms) |",
+              "|---|---|---|---|---|"]
+    best = {}
+    for version, path in [("v1", "weights.pt"), ("v3", "weights_v3.pt")]:
+        out = shaky + gate * corrector_offsets(load_corrector(MODELS / "corrector" / path), shaky)
+        steady = np.linalg.norm(out[~tremor][:, SKIP:] - clean[~tremor][:, SKIP:], axis=2).mean()
+        for name, lo, hi in [("all with marked tremor", 0, 1e9)] + SIZES:
+            m = tremor & (data["strength_px"] >= lo) & (data["strength_px"] < hi)
+            s = corrector_scores(out[m], clean[m], shaky[m], skip=SKIP)
+            lines.append("| %s | %s (%d) | %.2f / %.2f | %.0f%% | %.0f |" % (
+                version, name, m.sum(), s["distance_moving"], s["distance_still"],
+                100 * s["tremor_removed"], s["lag_ms"]))
+        lines.append("| %s | steady hand (%d without marked tremor) | %.2f overall | | |" % (
+            version, (~tremor).sum(), steady))
+        best[version] = steady
+    none_steady = np.linalg.norm(shaky[~tremor][:, SKIP:] - clean[~tremor][:, SKIP:], axis=2).mean()
+    lines += ["", "No filter on the steady-hand sequences: %.2f px." % none_steady, ""]
+
+
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("--test", action="store_true", help="also score the kept versions on test (once)")
@@ -102,6 +136,9 @@ def main():
              "use validation people only." % (" --test" if args.test else ""), ""]
     sets, det = detector_part(lines, args.test)
     distances = corrector_part(lines)
+    corrector_v3_part(lines, "val")
+    if args.test:
+        corrector_v3_part(lines, "test")
 
     if args.test:
         lines += ["## Kept versions on TEST people (scored once)", ""]

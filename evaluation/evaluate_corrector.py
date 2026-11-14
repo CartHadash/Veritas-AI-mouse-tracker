@@ -91,7 +91,7 @@ def main():
     tremor = data["tremor"].astype(bool)
     print("Test sequences: %d (%d with marked tremor)" % (len(shaky), tremor.sum()))
 
-    offsets = corrector_offsets(load_corrector(), shaky)
+    offsets = corrector_offsets(load_corrector(ROOT / "models" / "corrector" / "weights.pt"), shaky)   # v1
     detector = Detector(MODEL_FILE.with_name(f"detector_{args.detector}.joblib"),
                         MODEL_FILE.with_name(f"detector_{args.detector}_threshold.json"))
     gate = detector_gate(detector, shaky)[..., None]

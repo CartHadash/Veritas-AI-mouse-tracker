@@ -41,6 +41,12 @@
           <span id="strength-value">1.0</span></label>
         <div class="buttons">
           <button id="demo-toggle" class="toggle">Demo tremor: off</button>
+        </div>
+        <div class="buttons" id="demo-levels" hidden>
+          <span class="level-label">Replayed tremor:</span>
+          <button data-level="mild">Mild</button>
+          <button data-level="medium">Medium</button>
+          <button data-level="strong">Strong</button>
           <button id="tracking-toggle" class="toggle" hidden>Whole-laptop tracking: off</button>
         </div>
       </div>
@@ -49,6 +55,9 @@
         <h2>Tremor meter</h2>
         <p class="meter-label"><span id="tremor-word">Waiting for movement...</span></p>
         <div class="bar"><div id="score-bar"></div><div id="cutoff-mark"></div></div>
+        <p class="correcting" id="correcting">Correction: <b id="correcting-word">-</b></p>
+        <p class="small" id="demo-tip">Tip: switch "Demo tremor" on to see the correction. A steady
+          hand is deliberately left alone.</p>
         <p class="meter-numbers">Score <b id="score">-</b> &nbsp;·&nbsp; about <b id="freq">-</b> Hz
           &nbsp;·&nbsp; size <b id="size">-</b> px</p>
         <p class="small">The detector looks at the last 2.56 seconds. It flags tremor-like movement;

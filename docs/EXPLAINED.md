@@ -420,6 +420,46 @@ spiked to 17 ms when the computer was busy. So the live detector now runs on a b
 thread and the cursor never waits for it (it uses the latest finished result). Measured with
 `python models/corrector/time_live.py`: mean 0.5-0.75 ms, worst 4.4-4.8 ms per update.
 
+### After step 12: why the demo looked weak, and corrector v3
+
+The team leader tried the demo page and found "Our model" hard to tell apart from "No filter".
+`python evaluation/compare_modes.py` (-> `evaluation/results/demo_modes.md`) runs the server's
+own code in every mode and measures the shown cursor's distance from the intended path.
+It found three things:
+
+1. **A real bug.** Browsers send about 60 positions a second at uneven times. The live code
+   turned them into 100 per second by repeating the last position, which makes a staircase,
+   and the corrector read the stairs as shaking: on reaching movement it made the cursor
+   *worse* than no filter (7.12 vs 5.85 px). Now each 10 ms point is taken on a straight line
+   between the two latest samples (`models/resample.py`, still causal): 4.92 vs 5.85 px.
+2. **The gain depends strongly on tremor size.** The demo replayed medium tremor, where our
+   corrector removed far less than for strong tremor. That matches the test results by size;
+   the big headline numbers come mostly from strong tremor.
+3. **The training goal favoured strong tremor.** v1 learned to minimise the *squared* distance,
+   so big errors from strong tremor dominated. **Corrector v3** learns the plain distance
+   instead. Same data and time (111 s). It is better at every size, on validation and on test
+   (`python evaluation/improvements.py --test`), so the app now uses v3:
+
+| Test, gated by detector v2 | v1 | v3 |
+|---|---|---|
+| All marked tremor: off the path moving / still | 7.15 / 5.93 px | 6.85 / 4.93 px |
+| Tremor removed: mild / medium / strong | 3% / 48% / 85% | 8% / 50% / 87% |
+| Steady hand (no filter: 2.30 px) | 2.00 px | 1.82 px |
+| Lag | 0 ms | 0 ms |
+
+**On the demo page now** (`compare_modes.py`, with the chosen replayed tremor), our model's cursor
+is closer to the intended path than with no filter by: strong tremor 46% (hand still) / 34%
+(reaching); medium 35% / 21%; mild 20% / -7% (slightly worse while reaching). **Honest
+weakness:** for a hand held perfectly still, One Euro is better at every strength (for
+example 1.44 vs 3.98 px with medium tremor), because without movement its lag costs nothing.
+Our model's advantage is during movement, where One Euro lags (11.8 px off on reaches, ours
+4.8 px).
+
+**Changes to the page.** It shows "Correction: ON / partly / off" (how far the detector's gate
+is open), a tip to switch demo tremor on (a steady hand is deliberately left alone), and a
+choice of replayed tremor: mild (1.5-3 px), medium (4-10 px) or strong (10-25 px), 4
+recordings each, all from test people (`data_pipeline/make_demo_tremor.py`).
+
 ## Where it fails
 
 Full write-up: `evaluation/results/failures/failures.md` (charts in the same folder, made by
