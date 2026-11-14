@@ -14,7 +14,8 @@ How the two models work together ("gating"):
     gate = 0 when score <= 0.05; 1 when score >= the DECISION 4 cut-off; a straight line between.
 
 Samples can arrive at any rate (browsers send 60-120 per second); they are resampled to 100
-per second, the rate the models were trained on, by holding the latest position.
+per second, the rate the models were trained on, by drawing a straight line between
+consecutive samples (models/resample.py).
 """
 
 import math
@@ -28,8 +29,12 @@ import torch
 ROOT = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(ROOT))
 from models.corrector.model import HISTORY, Corrector  # noqa: E402
+from models.resample import Resampler  # noqa: E402
 
-WEIGHTS = ROOT / "models" / "corrector" / "weights.pt"
+# The version the app uses: v3 (trained on plain distance; better than v1 at every tremor
+# size on validation, see evaluation/results/improvements.md). v1 is weights.pt.
+VERSION = "v3"
+WEIGHTS = ROOT / "models" / "corrector" / f"weights_{VERSION}.pt"
 RATE = 100
 GATE_LOW = 0.05          # detector score at which the gate starts opening
 GATE_SECONDS = 0.3       # how quickly the gate follows the detector
@@ -67,7 +72,7 @@ class LiveCorrector:
 
     def reset(self):
         self.positions = deque(maxlen=HISTORY + 1)
-        self.next_t = None
+        self.resampler = Resampler()
         self.last_t = None
         self.gate = 0.0
         self.offset = (0.0, 0.0)
@@ -76,14 +81,10 @@ class LiveCorrector:
             self.detector.reset()
 
     def update(self, x, y, t):
-        # 1) Resample to 100 per second (hold the latest position at each 10 ms tick).
-        new_tick = False
-        if self.next_t is None:
-            self.next_t = t
-        while t >= self.next_t:
-            self.positions.append((x, y))
-            self.next_t += 1.0 / RATE
-            new_tick = True
+        # 1) Resample to 100 per second (straight line between samples; models/resample.py).
+        ticks = self.resampler.feed(x, y, t)
+        self.positions.extend(ticks)
+        new_tick = bool(ticks)
 
         # 2) Detector score -> gate (smoothly).
         if self.detector is not None:

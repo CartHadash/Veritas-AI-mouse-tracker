@@ -27,6 +27,7 @@ from threadpoolctl import ThreadpoolController
 ROOT = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(ROOT))
 from models.detector.features import FEATURE_NAMES, compute_features  # noqa: E402
+from models.resample import Resampler  # noqa: E402
 
 # The version the app uses. Step 12 kept v2 (better on pause-free movement); see
 # evaluation/results/improvements.md.
@@ -78,8 +79,7 @@ class LiveDetector:
 
     def reset(self):
         self.samples = deque(maxlen=WINDOW)
-        self.next_t = None
-        self.last = None
+        self.resampler = Resampler()
         self.count = 0
         self.result = None
         self.pending = None
@@ -89,12 +89,9 @@ class LiveDetector:
         if self.pending is not None and self.pending.done():
             self.result = self.pending.result()
             self.pending = None
-        # Resample to exactly 100 per second by taking the latest position at each tick.
-        if self.next_t is None:
-            self.next_t = t
-        while t >= self.next_t:
-            self.samples.append((x, y))
-            self.next_t += 1.0 / RATE
+        # Resample to exactly 100 per second (straight line between samples; models/resample.py).
+        for tick in self.resampler.feed(x, y, t):
+            self.samples.append(tick)
             self.count += 1
         if len(self.samples) == WINDOW and self.count >= self.every:
             window = np.array(self.samples)

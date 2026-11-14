@@ -93,6 +93,9 @@ button:focus-visible, .button-link:focus-visible { outline: 3px solid var(--targ
 #score-bar.tremor { background: var(--target); }
 #cutoff-mark { position: absolute; top: 0; bottom: 0; width: 3px; background: var(--ink); }
 .meter-numbers { margin: 8px 0 0; }
+.correcting { margin: 10px 0 0; font-size: 18px; }
+.correcting b.on { color: var(--accent); }
+.level-label { align-self: center; font-weight: 600; }
 
 table { width: 100%; border-collapse: collapse; font-size: 17px; }
 th, td { text-align: left; padding: 6px 4px; border-bottom: 1px solid var(--line); }

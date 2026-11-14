@@ -12,6 +12,9 @@ so it loads on any computer). Test people are never used here.
 Run from the repository folder:
     python models/corrector/train.py
     python models/corrector/train.py --version v2 --scale-augment   # step 12
+    python models/corrector/train.py --version v3 --loss distance    # after step 12 (see below)
+      (v3: learns to minimise the plain distance instead of the squared distance; squaring
+       makes strong tremor's big errors dominate, so v1 helps medium tremor much less)
       (v2: each training sequence's tremor is randomly made 0.5x-2x as large, so the network
        sees the range of sizes different mouse settings (DPI) would produce)
 Also saves the loss-curve chart to evaluation/results/figures/corrector_v1_loss.png.
@@ -89,6 +92,7 @@ def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("--version", default="v1")
     parser.add_argument("--scale-augment", action="store_true")
+    parser.add_argument("--loss", choices=["squared", "distance"], default="squared")
     args = parser.parse_args()
     weights = WEIGHTS if args.version == "v1" else WEIGHTS.with_name(f"weights_{args.version}.pt")
     figure = FIGURE.with_name(f"corrector_{args.version}_loss.png")
@@ -109,7 +113,8 @@ def main():
         if args.scale_augment:      # log-uniform between 0.5 and 2: as often smaller as bigger
             scale = torch.tensor(np.exp(rng.uniform(np.log(0.5), np.log(2.0), BATCH)), dtype=torch.float32)
         h, target = gather(*train, seq, t, scale)
-        loss = ((model(h.to(device)) - target.to(device)) ** 2).sum(dim=1).mean()
+        squared = ((model(h.to(device)) - target.to(device)) ** 2).sum(dim=1)
+        loss = squared.mean() if args.loss == "squared" else torch.sqrt(squared + 1e-6).mean()
         optimiser.zero_grad()
         loss.backward()
         optimiser.step()

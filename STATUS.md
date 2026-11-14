@@ -8,11 +8,15 @@ Newest entries go at the top of each list. Use local time and say who you are.
 
 | Lane | Working on | Branch | Blocked by |
 |---|---|---|---|
-| Builder | IN PROGRESS: leader request, why the demo gain is small (evaluation/compare_modes.py). Steps 1-13 built | builder/demo-gain | - |
+| Builder | Steps 1-13 built + the leader's demo-gain request done. Next: step 14, results package | main | - |
 | Team leader | B1 (whole-laptop tracker) DONE and merged. Next: B2, the assistant | - | - |
 | Writer | not started | - | - |
 
 ## Done (newest first)
+
+- Sat 14 Nov 16:02 CET, builder's agent: the leader's demo-gain request. Resampling bug fixed,
+  corrector v3 kept (app = detector v2 + corrector v3), demo strength levels, correction
+  indicator, `evaluation/compare_modes.py` -> `evaluation/results/demo_modes.md`.
 
 - Sat 14 Nov 15:36 CET, builder's agent: step 13, summary page (`web/summary.html`); server
   now counts any movement as active time (slow movement was missed before).
@@ -89,6 +93,13 @@ Newest entries go at the top of each list. Use local time and say who you are.
   plan, dataset notes, two build guides, reused-code disclosure.
 
 ## Results so far (real numbers only; say which script produced them)
+
+- `evaluation/improvements.py --test` (corrector, gated by detector v2): v3 vs v1 off the path
+  moving / still 6.85 / 4.93 vs 7.15 / 5.93 px; tremor removed mild / medium / strong 8% / 50%
+  / 87% vs 3% / 48% / 85%; steady hand 1.82 vs 2.00 px (no filter 2.30); lag 0 ms both.
+- `evaluation/compare_modes.py` (demo page, our model vs no filter, hand still / reaching):
+  strong 46% / 34% closer, medium 35% / 21%, mild 20% / -7%. One Euro beats our model for a
+  perfectly still hand (medium: 1.44 vs 3.98 px) but lags while reaching (11.8 vs 4.8 px).
 
 - `python -m tracker.demo` (demo Mac, leader moving the pointer in another app): 1,001
   samples in 10 s, 100.0 samples per second, gap median 10.00 ms / 95th percentile 11.80 ms /
@@ -179,6 +190,10 @@ Newest entries go at the top of each list. Use local time and say who you are.
   beat v1 on validation; dropped. Detector v2's half/double pixel-factor check was not re-run.
 - Sat 14 Nov, builder's agent: the server's active-time rule missed slow movement (under
   0.5 px between samples); found by the step 13 session test and fixed.
+- Sat 14 Nov, builder's agent: the live code's resampling (repeat the last position) made the
+  corrector worse than no filter at browser-like 60 Hz; found by the leader's demo test, fixed.
+- Sat 14 Nov, builder's agent: for a perfectly still hand One Euro beats our model at every
+  tremor strength on the demo page. Not fixed; reported.
 - None else yet. (Keep this honest; the write-up needs a "what didn't work" section.)
 
 ## Requests to another lane
@@ -196,6 +211,11 @@ Newest entries go at the top of each list. Use local time and say who you are.
   - Demo tremor ON: no filter 6.20 px, One Euro 8.79 px, our model 4.53 px (gate above
     0.5 for 83% of the time). The model helps, but only about 27% closer to the path, much
     less than the test-set figures in `evaluation/results/corrector_v1.md`; hard to see by eye.
+  ANSWERED (Sat 14 Nov 16:02, builder): (1) the page now shows "Correction: ON / partly /
+  off" and a tip to switch demo tremor on; (2) causes: a resampling bug at browser rates
+  (fixed), the demo's medium tremor (gain depends on size; now a mild/medium/strong choice),
+  and v1's squared-error training (corrector v3 fixes part of it); (3)
+  `python evaluation/compare_modes.py` reproduces the numbers. Details in `docs/EXPLAINED.md`.
   Requests: (1) on the page, show when the model is correcting (for example the gate value
   or a "correcting" label) and tell the user to switch Demo tremor on first; (2) find out why
   the demo-tremor gain is smaller than on the test set (bigger demo segments? path speed?);

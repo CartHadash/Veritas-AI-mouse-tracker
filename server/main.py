@@ -54,7 +54,8 @@ app = FastAPI(title="Tremor-aware pointer assistant (prototype, not medical advi
 
 # ---------------------------------------------------------------- shared state
 
-settings = {"mode": "learned", "strength": 1.0, "demo_tremor": False, "tracking": False}
+settings = {"mode": "learned", "strength": 1.0, "demo_tremor": False, "demo_level": "medium", "tracking": False}
+DEMO_LEVELS = ["mild", "medium", "strong"]
 settings_version = [0]          # bumped on every change, so open sessions rebuild their filter
 status = {}
 
@@ -149,11 +150,12 @@ laptop_stats = SessionStats()    # whole-laptop movement from the leader's track
 class DemoTremor:
     """Replays recorded tremor of TEST people (server/demo_tremor.npz) on top of live movement."""
 
-    def __init__(self):
+    def __init__(self, level="medium"):
         data = np.load(DEMO_TREMOR_FILE)
-        self.segments = data["xy"]
-        self.info = [{"subject": str(s), "condition": str(c), "strength_px": round(float(p), 1)}
-                     for s, c, p in zip(data["subject"], data["condition"], data["strength_px"])]
+        keep = data["level"] == level          # only the recordings of the chosen strength
+        self.segments = data["xy"][keep]
+        self.info = [{"subject": str(s), "condition": str(c), "strength_px": round(float(p), 1), "level": level}
+                     for s, c, p in zip(data["subject"][keep], data["condition"][keep], data["strength_px"][keep])]
         self.start_t = None
 
     def offset(self, t):
@@ -188,7 +190,7 @@ class CursorSession:
     def __init__(self, stats):
         self.stats = stats
         self.detector = LiveDetector(DETECTOR)
-        self.demo = DemoTremor()
+        self.demo = None
         self.version = None
         self.build()
 
@@ -196,6 +198,8 @@ class CursorSession:
         self.version = settings_version[0]
         self.mode = settings["mode"]
         self.strength = float(settings["strength"])
+        if self.demo is None or self.demo.info[0]["level"] != settings["demo_level"]:
+            self.demo = DemoTremor(settings["demo_level"])
         self.detector.reset()
         if self.mode == "learned":
             self.filter = LiveCorrector(live_detector=self.detector, strength=self.strength, model=CORRECTOR_MODEL)
@@ -320,7 +324,7 @@ def get_settings():
 @app.post("/api/settings")
 def post_settings(new: dict):
     """Change any of: mode (none / low_sensitivity / one_euro / learned), strength (0-1),
-    demo_tremor (true/false), tracking (true/false)."""
+    demo_tremor (true/false), demo_level (mild / medium / strong), tracking (true/false)."""
     if "mode" in new:
         if new["mode"] not in MODES:
             return JSONResponse({"error": "mode must be one of %s" % MODES}, status_code=400)
@@ -329,6 +333,10 @@ def post_settings(new: dict):
         settings["strength"] = float(np.clip(float(new["strength"]), 0.0, 1.0))
     if "demo_tremor" in new:
         settings["demo_tremor"] = bool(new["demo_tremor"])
+    if "demo_level" in new:
+        if new["demo_level"] not in DEMO_LEVELS:
+            return JSONResponse({"error": "demo_level must be one of %s" % DEMO_LEVELS}, status_code=400)
+        settings["demo_level"] = new["demo_level"]
     if "tracking" in new:
         set_tracking(bool(new["tracking"]))
     settings_version[0] += 1

@@ -576,6 +576,11 @@ because it answered a teammate's question and could be measured at x0.5 / x1 / x
 **Done when:** `improvements.md` exists with real before/after numbers for both models, and
 the app loads whichever versions won.
 
+Added after step 12 (leader's request): `evaluation/compare_modes.py`, `models/resample.py`
+(interpolation instead of holding the last sample), corrector v3 (`train.py --version v3 --loss
+distance`, kept; the app uses detector v2 + corrector v3), demo strength levels and the
+correction indicator on the page.
+
 ### - [x] Step 13. The summary page
 
 **In plain words:** turn a session's measurements into a few clear charts.

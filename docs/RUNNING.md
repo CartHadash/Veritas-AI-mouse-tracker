@@ -68,6 +68,9 @@ python models/corrector/train.py --version v2 --scale-augment   # (needs the _x0
 python evaluation/improvements.py --test
 python evaluation/evaluate_detector.py --missed-target 0.2 --version v2
 python evaluation/evaluate_corrector.py --detector v2
+python models/corrector/train.py --version v3 --loss distance   # the corrector the app uses
+python data_pipeline/make_demo_tremor.py      # the demo page's replayed tremor (test people)
+python evaluation/compare_modes.py            # filter modes on the demo page (no data needed)
 ```
 
 For the pixel-factor check in `evaluate_detector.py`, first run
