@@ -43,7 +43,7 @@ ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT))
 from baselines.classical_filters import OneEuroFilter  # noqa: E402
 from models.corrector.live import LiveCorrector, load_corrector  # noqa: E402
-from models.detector.predict import THRESHOLD_FILE, Detector, LiveDetector  # noqa: E402
+from models.detector.predict import THRESHOLD_FILE, VERSION, Detector, LiveDetector  # noqa: E402
 
 RATE = 100
 MODES = ["none", "low_sensitivity", "one_euro", "learned"]
@@ -133,7 +133,7 @@ class SessionStats:
                       "click_accuracy": None if self.clicks == 0 else round(self.hits / self.clicks, 3),
                       "steadiness_score": steadiness},
             "filter": {"mode": settings["mode"], "strength": settings["strength"]},
-            "model_info": {"detector_version": "v1",
+            "model_info": {"detector_version": VERSION,
                            "missed_cases_rate": _detector_info.get("test_missed_cases_rate"),
                            "false_alarm_rate": _detector_info.get("test_false_alarm_rate")},
             "notes": notes,

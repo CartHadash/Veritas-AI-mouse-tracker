@@ -378,6 +378,48 @@ was starting parallel worker threads for every single window, so live calls now 
 **How we know the scoring matches the live code.** Feeding test sequences through
 `live.py` sample by sample gives the same positions as the offline scoring, to within 0.09 px.
 
+## One measured improvement to each model (step 12)
+
+The schedule asks for "one improvement, measured": change one thing, compare before and after
+on validation people, keep it only if it helps, then score once on test.
+`python evaluation/improvements.py --test` -> `evaluation/results/improvements.md`.
+
+**Detector v2: kept.** The failure analysis and our server test showed v1 treats movement that
+never pauses as a sign of tremor (its strongest clue was "share of time nearly still"). We
+added a new kind of synthetic movement, the *glide* (a long smooth curve that never stops),
+and built extra training windows of pause-free movement, with and without tremor, from the
+same training people (`python data_pipeline/build_dataset.py --continuous`). Both versions get
+their cut-off the same way (at most 20% missed on normal validation windows).
+
+| Detector | Normal windows: missed / false alarms | Pause-free windows: missed / false alarms |
+|---|---|---|
+| v1, validation | 19.8% / 27.8% | 13.5% / 43.6% |
+| v2, validation | 20.0% / 27.3% | 19.5% / 19.8% |
+| v1, test | 14.3% / 27.0% | 8.1% / 45.3% |
+| v2, test | 12.9% / 27.1% | 11.2% / 20.4% |
+
+On pause-free movement v2 halves the false alarms; on normal movement it is as good as v1.
+In the app, the smooth slow circle that v1 scored 0.185 ("tremor") now scores 0.013. The app
+uses v2 (`models/detector/detector_v2.joblib`, 0.99 MB; full per-group report in
+`evaluation/results/detector_v2.md`). Its half/double pixel-factor check was not re-run; the
+v1 check is in the detector section.
+
+**Corrector v2: not kept.** Prompted by Godson's point that different mouse DPI settings move
+the cursor different distances, we trained a version on tremor randomly made 0.5x to 2x as
+large. On validation it made no real difference (distance to the intended path 2.32 / 3.11 /
+4.54 px at tremor x0.5 / x1 / x2, vs 2.21 / 3.05 / 4.55 px for v1), so v1 stays. The useful
+finding: **v1 already copes with that range**, removing 80% / 90% / 94% of the tremor at
+x0.5 / x1 / x2 on validation.
+
+**Our final system** = corrector v1 gated by detector v2. On test (`python
+evaluation/evaluate_corrector.py --detector v2`): 84% of tremor removed, 0 ms lag, 7.15 / 5.93
+px from the intended path moving / still, 2.00 px on steady hands (no filter: 2.30).
+
+**Live speed, made robust.** Detector v2 is bigger: one call usually takes about 3.6 ms but
+spiked to 17 ms when the computer was busy. So the live detector now runs on a background
+thread and the cursor never waits for it (it uses the latest finished result). Measured with
+`python models/corrector/time_live.py`: mean 0.5-0.75 ms, worst 4.4-4.8 ms per update.
+
 ## Where it fails
 
 Full write-up: `evaluation/results/failures/failures.md` (charts in the same folder, made by
@@ -393,10 +435,9 @@ Full write-up: `evaluation/results/failures/failures.md` (charts in the same fol
   5 Hz shake that looks exactly like tremor. We do not change the rule after seeing results;
   we report it. Deliberate look-alike movement also causes false alarms (33.4% when it fills
   more than 30% of the window, vs 21.6% otherwise).
-- **Smooth continuous movement can trigger the detector.** Found while testing the server
-  (step 10): a slow, perfectly smooth circle with no pauses scored just over the cut-off.
-  The strongest feature is "share of time nearly still", and our synthetic movement almost
-  always has pauses, so uninterrupted movement looks unusual to the model.
+- **Smooth continuous movement could trigger detector v1.** Found while testing the server
+  (step 10): a slow, perfectly smooth circle with no pauses scored just over the cut-off,
+  because our synthetic movement almost always has pauses. Fixed in step 12 (detector v2).
 - **The corrector loses to One Euro on irregular shaking.** When the shaking is not a steady
   rhythm, the detector keeps the gate closed, so our system leaves it alone; One Euro smooths
   everything (and pays with 40 ms of lag everywhere else).

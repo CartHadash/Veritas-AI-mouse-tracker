@@ -24,6 +24,7 @@ Run from the repository folder:
     python data_pipeline/build_dataset.py                    # normal pixel factor
     python data_pipeline/build_dataset.py --tremor-scale 0.5 # half (DECISION 1 check)
     python data_pipeline/build_dataset.py --tremor-scale 2   # double
+    python data_pipeline/build_dataset.py --continuous       # step 12: pause-free movement
 Output: data/derived/detector_<split>.npz and corrector_<split>.npz (not in git).
 """
 
@@ -34,7 +35,7 @@ from pathlib import Path
 
 import numpy as np
 
-from synthetic_paths import DRIFT, LOOKALIKES, STILL, generate_path
+from synthetic_paths import CONTINUOUS_EVENTS, DRIFT, EVENTS, LOOKALIKES, STILL, generate_path
 
 ROOT = Path(__file__).resolve().parents[1]
 LIBRARY = ROOT / "data" / "derived" / "tremor_library.npz"
@@ -101,12 +102,12 @@ NO_SOURCE = dict(subject="synthetic", dataset="none", condition="none", age_band
                  sex="none", task_type="none", peak_hz=float("nan"), strength_px=0.0)
 
 
-def build_detector(lib, members, rng, scale):
+def build_detector(lib, members, rng, scale, events=EVENTS):
     """Detector windows for one split."""
     inputs, tremors, facts = [], [], []
 
     def add(tremor_piece, label, source, info):
-        clean, kind = generate_path(rng, WINDOW)
+        clean, kind = generate_path(rng, WINDOW, events=events)
         still_share = np.isin(kind, (STILL, DRIFT)).mean()
         inputs.append(clean + tremor_piece)
         tremors.append(tremor_piece)
@@ -201,11 +202,32 @@ def print_tables(split, lib, detector, corrector):
         print("  by %-9s %s" % (title + ":", text))
 
 
+def build_continuous():
+    """Step 12: detector windows with pause-free synthetic movement (glides, reaches, drifts),
+    from the SAME people in the same splits, with new random seeds. Saved as
+    detector_<split>_continuous.npz. Used to train detector v2 and to test whether a detector
+    wrongly treats uninterrupted movement as tremor."""
+    lib = dict(np.load(LIBRARY))
+    with open(SPLIT_FILE, encoding="utf-8") as f:
+        split = json.load(f)
+    for seed, name in enumerate(SPLITS, start=11):
+        rng = np.random.default_rng(seed)
+        x, tremor, facts = build_detector(lib, split[name], rng, 1.0, events=CONTINUOUS_EVENTS)
+        save(OUT_DIR / f"detector_{name}_continuous.npz", dict(xy=x, tremor_xy=tremor), facts)
+        labels = np.array([f["label"] for f in facts])
+        print("  %-5s %6d continuous windows (%d tremor)" % (name, len(labels), labels.sum()))
+
+
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("--tremor-scale", type=float, default=1.0,
                         help="multiply every tremor by this (0.5 / 2 for the DECISION 1 check)")
+    parser.add_argument("--continuous", action="store_true",
+                        help="step 12: extra detector windows whose movement never pauses")
     args = parser.parse_args()
+    if args.continuous:
+        build_continuous()
+        return
 
     lib = dict(np.load(LIBRARY))
     split = make_split(lib)

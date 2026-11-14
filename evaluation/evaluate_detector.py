@@ -10,7 +10,9 @@ headline is repeated at half and double the pixel factor (DECISION 1 check).
 Run from the repository folder (after models/detector/train.py, also with --tremor-scale
 0.5 and 2):
     python evaluation/evaluate_detector.py --missed-target 0.20
-Writes evaluation/results/detector_v1.md and models/detector/detector_v1_threshold.json.
+    python evaluation/evaluate_detector.py --missed-target 0.20 --version v2   # step 12
+Writes evaluation/results/detector_<version>.md and models/detector/detector_<version>_threshold.json.
+(The cut-off is always chosen on the NORMAL validation windows, for every version.)
 """
 
 import argparse
@@ -29,7 +31,7 @@ from models.detector.features import compute_features  # noqa: E402
 
 DERIVED = ROOT / "data" / "derived"
 MODEL_DIR = ROOT / "models" / "detector"
-RESULT = ROOT / "evaluation" / "results" / "detector_v1.md"
+RESULTS = ROOT / "evaluation" / "results"
 
 SIZE_CLASSES = [("mild (under 3 px)", 0, 3), ("medium (3-10 px)", 3, 10), ("strong (over 10 px)", 10, 1e9)]
 
@@ -61,13 +63,16 @@ def group_rows(title, groups, labels, predictions, subjects):
     return rows + [""]
 
 
-def evaluate_scale(scale, target):
+def evaluate_scale(scale, target, version):
     """Headline numbers (model and frequency rule) at one pixel-factor scale."""
     suffix = "" if scale == 1.0 else "_x%g" % scale
-    model = joblib.load(MODEL_DIR / f"detector_v1{suffix}.joblib")
+    path = MODEL_DIR / f"detector_{version}{suffix}.joblib"
+    if not path.exists():
+        return None
+    model = joblib.load(path)
     val = dict(np.load(DERIVED / f"detector_val{suffix}.npz"))
     test = dict(np.load(DERIVED / f"detector_test{suffix}.npz"))
-    val_scores = np.load(DERIVED / f"detector_v1_val_scores{suffix}.npy")
+    val_scores, _ = score_split(model, val)
     cut = choose_threshold(val_scores, val["label"], max_missed=target)
     rule_cut = choose_threshold(band_share(val["xy"]), val["label"], max_missed=target)
     scores, sizes = score_split(model, test)
@@ -80,11 +85,12 @@ def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("--missed-target", type=float, required=True,
                         help="DECISION 4: highest missed-case rate allowed on validation, e.g. 0.20")
+    parser.add_argument("--version", default="v1")
     args = parser.parse_args()
-    target = args.missed_target
+    target, version = args.missed_target, args.version
 
-    main_run = evaluate_scale(1.0, target)
-    with open(MODEL_DIR / "detector_v1_threshold.json", "w", encoding="utf-8") as f:
+    main_run = evaluate_scale(1.0, target, version)
+    with open(MODEL_DIR / f"detector_{version}_threshold.json", "w", encoding="utf-8") as f:
         json.dump({"threshold": main_run["cut"], "missed_target_on_validation": target,
                    "test_missed_cases_rate": round(float(main_run["model"]["missed"]), 4),
                    "test_false_alarm_rate": round(float(main_run["model"]["false_alarms"]), 4)},
@@ -95,10 +101,11 @@ def main():
     pred = scores >= main_run["cut"]
     m, r = main_run["model"], main_run["rule"]
 
-    lines = ["# Detector v1: results on TEST people", "",
-             "Produced by `python evaluation/evaluate_detector.py --missed-target %g`. Test people "
+    lines = ["# Detector %s: results on TEST people" % version, "",
+             "Produced by `python evaluation/evaluate_detector.py --missed-target %g%s`. Test people "
              "(%d windows: %d tremor, %d no tremor) were used once, after every setting was "
-             "chosen on validation." % (target, len(labels), labels.sum(), (~labels).sum()), "",
+             "chosen on validation." % (target, "" if version == "v1" else " --version " + version,
+                                         len(labels), labels.sum(), (~labels).sum()), "",
              "DECISION 4: cut-off chosen on validation so that missed cases are at most %d%% there "
              "(model cut-off %.3f; frequency-rule cut-off %.3f, chosen the same way)." % (
                  round(100 * target), main_run["cut"], main_run["rule_cut"]), "",
@@ -106,7 +113,7 @@ def main():
              "| Detector | Missed cases | False alarms | Accuracy |", "|---|---|---|---|",
              "| Always \"no tremor\" | 100.0%% | 0.0%% | %s |" % pct((~labels).mean()),
              "| Frequency rule | %s | %s | %s |" % (pct(r["missed"]), pct(r["false_alarms"]), pct(r["accuracy"])),
-             "| **Detector v1 (our model)** | **%s** | **%s** | **%s** |" % (
+             "| **Detector %s (our model)** | **%%s** | **%%s** | **%%s** |" % version % (
                  pct(m["missed"]), pct(m["false_alarms"]), pct(m["accuracy"])), ""]
 
     moving = test["moving"].astype(bool)
@@ -151,12 +158,15 @@ def main():
               "| Pixel factor | Model: missed | Model: false alarms | Rule: missed | Rule: false alarms |",
               "|---|---|---|---|---|"]
     for scale in (0.5, 1.0, 2.0):
-        run = main_run if scale == 1.0 else evaluate_scale(scale, target)
+        run = main_run if scale == 1.0 else evaluate_scale(scale, target, version)
+        if run is None:
+            lines.append("| x%g | not trained for this version | | | |" % scale)
+            continue
         lines.append("| x%g | %s | %s | %s | %s |" % (scale, pct(run["model"]["missed"]),
                      pct(run["model"]["false_alarms"]), pct(run["rule"]["missed"]),
                      pct(run["rule"]["false_alarms"])))
     lines += ["", "This project is a prototype and is not medical advice.", ""]
-    RESULT.write_text("\n".join(lines), encoding="utf-8")
+    (RESULTS / f"detector_{version}.md").write_text("\n".join(lines), encoding="utf-8")
     print("\n".join(lines))
 
 

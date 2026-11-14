@@ -62,6 +62,12 @@ python models/corrector/train.py              # step 8: about 2 minutes
 python evaluation/evaluate_corrector.py       # about 1 minute
 python models/corrector/time_live.py          # live speed on this machine
 python evaluation/find_failures.py            # step 9
+python data_pipeline/build_dataset.py --continuous              # step 12
+python models/detector/train.py --version v2 --with-continuous
+python models/corrector/train.py --version v2 --scale-augment   # (needs the _x0.5/_x2 sets)
+python evaluation/improvements.py --test
+python evaluation/evaluate_detector.py --missed-target 0.2 --version v2
+python evaluation/evaluate_corrector.py --detector v2
 ```
 
 For the pixel-factor check in `evaluate_detector.py`, first run
