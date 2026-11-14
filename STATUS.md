@@ -14,7 +14,7 @@ Newest entries go at the top of each list. Use local time and say who you are.
 
 ## Done (newest first)
 
-- Sat 14 Nov 15:50 CET, builder's agent: step 13, summary page (`web/summary.html`); server
+- Sat 14 Nov 15:36 CET, builder's agent: step 13, summary page (`web/summary.html`); server
   now counts any movement as active time (slow movement was missed before).
 
 - Sat 14 Nov 15:35 CET, team leader's agent: step B1, the whole-laptop pointer reader
