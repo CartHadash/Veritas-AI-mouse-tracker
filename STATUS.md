@@ -8,11 +8,15 @@ Newest entries go at the top of each list. Use local time and say who you are.
 
 | Lane | Working on | Branch | Blocked by |
 |---|---|---|---|
-| Builder | Step 1 done on the builder's Mac; waiting for the Mac check. Data download finishing; then step 2 | main | Leader's Mac check of step 1 (see Requests) |
+| Builder | Steps 1-2 done (step 1 awaits the leader's Mac check). Next: step 3, tremor library | main | Leader's Mac check of step 1 (see Requests) |
 | Team leader | not started | - | - |
 | Writer | not started | - | - |
 
 ## Done (newest first)
+
+- Sat 14 Nov 14:10 CET, builder's agent: data downloaded on the builder's Mac ("PADS: done,
+  all files OK."). Step 2: `data_pipeline/look_at_data.py` counts subjects and plots two
+  recordings; all numbers match `docs/DATASETS.md`.
 
 - Sat 14 Nov 14:05 CET, builder's agent: step 1. `requirements.txt` (pinned versions) and
   `models/device.py` added. Import check passes on the builder's Mac (Python 3.12.10,
@@ -30,7 +34,10 @@ Newest entries go at the top of each list. Use local time and say who you are.
 
 ## Results so far (real numbers only; say which script produced them)
 
-- None yet.
+- `data_pipeline/look_at_data.py`: PADS 469 subjects (276 Parkinson's, 79 healthy, 60 other
+  movement disorders, 28 essential tremor, 15 atypical Parkinsonism, 11 MS); ages 161 / 149 /
+  159 (under 60 / 60-69 / 70+); 281 male, 188 female. PADS 060 right wrist Relaxed: peak
+  4.30 Hz, 99% of power in 3-12 Hz. TremorDB rofh/s6rof.let: peak 4.88 Hz, 98% in 3-12 Hz.
 
 ## Decisions made along the way (what, why, who decided)
 
@@ -50,4 +57,6 @@ Newest entries go at the top of each list. Use local time and say who you are.
 
 ## Questions waiting for the team leader
 
-- None.
+- Sat 14 Nov 14:10, from the builder: rewrite `scripts/download_data.py` and
+  `baselines/classical_filters.py` from scratch to remove any rule-2 risk? Builder's agent
+  recommends yes (about 30-45 min). Changes the decision in `docs/REUSED_CODE.md`.

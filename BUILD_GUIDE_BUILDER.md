@@ -174,7 +174,7 @@ for PyTorch: tell your human to install Python 3.12 and recreate `.venv`.
 prints nothing and exits cleanly on the builder's Mac, **and** the team leader has confirmed the same
 command works on the Mac after pulling (first cross-machine check).
 
-### - [ ] Step 2. Look at the data with your own eyes
+### - [x] Step 2. Look at the data with your own eyes
 
 **In plain words:** before training anything, open a few recordings and plot them. The
 hackathon guide says this is the easiest way to catch bad data, and it gives us a chart
