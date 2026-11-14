@@ -47,14 +47,16 @@ Time line: first full version by **Sun 15 Nov 22:00 CET**; no new features after
 **3. After the answers (only if time allows; cut from the bottom up):**
 - [ ] Step 4: stress test the models on the realistic movement (about 1 h); retrain only if
       they clearly drop (2-3 h more).
-- [ ] Timofey's idea 3, sticky targets (about 1 h).
-- [ ] Accessibility (Oleksandr's idea): a "Read aloud" button for the summary numbers (the
+- [ ] Timofey's idea 3, sticky targets (about 1 h). **UI: taken by the team leader (Sat 22:00).**
+- [ ] **UI: taken by the team leader (Sat 22:00).** Accessibility (Oleksandr's idea): a "Read aloud" button for the summary numbers (the
       browser's built-in speech, no new library), a font toggle that is easier to read with
       dyslexia, colour-blind-safe colours for the two cursors, targets and charts, and larger
       text. About 1-1.5 h for all. Reading the assistant's answers aloud touches
       `web/assistant/` (leader's lane): needs the leader's OK, or the leader adds it.
 - [ ] B3, correcting the real cursor everywhere (`systemwide/`), moved to the builder by the
-      leader (21:20). Steps in `BUILD_GUIDE_LEADER.md` "Step B3". Mac-only and needs the
+      leader (21:20). **Leader (Sat 22:00): wanted, not optional.** Time box 2 h, finished
+      before Sun 15:00 CET (start by about 13:00); if not visibly steadier by then, stop and
+      document it. Steps in `BUILD_GUIDE_LEADER.md` "Step B3". Mac-only and needs the
       Accessibility permission; the demo Mac is the leader's, so the leader runs the check.
 - [ ] Step 16, the desktop window (cut first).
 
@@ -426,6 +428,14 @@ Time line: first full version by **Sun 15 Nov 22:00 CET**; no new features after
 (Keep this list honest; the write-up needs a "what didn't work" section.)
 
 ## Requests to another lane
+
+- Team leader -> builder (Sat 14 Nov 22:00): (1) **B3 is wanted**: please do it (2 h time
+  box, done before Sun 15:00 CET; safety off-switch first; the leader runs the check on the
+  demo Mac and switches on the Accessibility permission). (2) **The leader takes the UI work**
+  (visual polish, accessibility: read aloud, dyslexia-friendly font, colour-blind-safe
+  colours, larger text; and sticky targets), so please skip those. To avoid both of us editing
+  the same `web/` file at once, the leader works on a `leader/ui` branch and says in the group
+  chat before touching a file; your bug fixes in `web/` go first, just tell the leader.
 
 - Team leader -> builder (Sat 14 Nov 21:45): **step 15 on the demo Mac is done** (see
   "Results"): app passes; the full rebuild works after reordering two lines in `RUNNING.md`
