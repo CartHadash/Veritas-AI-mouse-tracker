@@ -8,7 +8,7 @@ Newest entries go at the top of each list. Use local time and say who you are.
 
 | Lane | Working on | Branch | Blocked by |
 |---|---|---|---|
-| Builder | Steps 1-15 built (4, 9, 11, 14, 15 await human or Mac checks below). Next: step 16 only if time allows | main | - |
+| Builder | IN PROGRESS: click freeze (Timofey's idea 2), web/ + evaluation/. Steps 1-15 built | builder/click-freeze | - |
 | Team leader | B1 (whole-laptop tracker) DONE and merged. Next: B2, the assistant | - | - |
 | Writer | not started | - | - |
 
