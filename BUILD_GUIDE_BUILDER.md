@@ -404,7 +404,7 @@ validation (the builder chose this).
 moving windows. **If it does not beat the baseline, say so plainly** in `STATUS.md`; that
 is an acceptable result to report, and step 12 is where we try to improve it.
 
-### - [ ] Step 8. Corrector, version 1
+### - [x] Step 8. Corrector, version 1
 
 **In plain words:** train a small neural network that looks at the last half-second of
 shaky cursor movement and outputs where the cursor *should* be right now.
@@ -434,8 +434,8 @@ baselines, side by side, on test subjects only.
 
 Done on the builder's Mac (Sat 14 Nov): dilated causal 1-D CNN, 64-step input, 10,722
 weights; trained 6,000 steps (119 s). Test scoring in `evaluation/evaluate_corrector.py`
-(also scores One Euro switched by the detector gate). Waiting for the leader's Mac check
-before ticking.
+(also scores One Euro switched by the detector gate). Leader's Mac check passed (worst
+1.5 ms per update on the demo Mac).
 
 **Done when:** one live update takes well under 8 ms on the builder's Mac, the report exists, the
 loss-curve chart is saved, and the leader has loaded `weights.pt` and run the timing script

@@ -178,6 +178,8 @@ Newest entries go at the top of each list. Use local time and say who you are.
 
 ## Requests to another lane
 
+- DONE (Sat 14 Nov 15:40, builder): tracker gaps over 1 s now restart the laptop detector;
+  the tracking button shows whenever `/api/status` says the tracker is available.
 - Team leader -> builder (Sat 14 Nov 15:35): **Contract 1 is live.** `tracker/reader.py` is
   on `main`; after `git pull` and `python -m pip install -r requirements.txt`,
   `GET /api/status` shows the tracker as available. Your `whole_laptop` summary addition

@@ -257,10 +257,17 @@ def load_tracker():
 
 tracker = load_tracker()
 laptop_detector = LiveDetector(DETECTOR)
+_last_tracker_t = [None]
+TRACKER_GAP_SECONDS = 1.0    # the tracker goes quiet after 3 s of a still pointer
 
 
 def tracker_callback(sample):
     """Called by the tracker (on its own thread) for every whole-laptop pointer sample."""
+    # After a pause (no samples for over a second), start the detector afresh so it does not
+    # treat the gap as the pointer sitting perfectly still.
+    if _last_tracker_t[0] is not None and sample["t"] - _last_tracker_t[0] > TRACKER_GAP_SECONDS:
+        laptop_detector.reset()
+    _last_tracker_t[0] = sample["t"]
     result = laptop_detector.update(sample["x"], sample["y"], sample["t"])
     laptop_stats.add_sample(sample["t"], sample["x"], sample["y"], result)
 
