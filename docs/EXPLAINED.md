@@ -707,8 +707,22 @@ hand still gets no lag), in `models/corrector/live.py` (`smooth_output`). On tes
 (`vs_one_euro_test.md`): shake 2.64 px (One Euro 3.39, network alone 4.46), jerk 0.25 (One Euro
 0.30, network alone 0.78), distance 4.98 (One Euro 5.23). A still hand is now held better than
 One Euro; the price is One Euro-like lag while reaching, which with mild or medium tremor puts
-the cursor further from the path than no filter (`RESULTS.md`). Option B (retraining the network
-to aim at shake directly) is being tried next and is kept only if it beats this.
+the cursor further from the path than no filter (`RESULTS.md`).
+
+**Option B: a network trained to aim at what the eye sees.** Corrector v5 adds a training
+penalty on the cursor's error wobbling around its own average over the last 0.3 s, which is
+close to the "shake" a person sees (`models/corrector/train.py --shake 3`, about 21 minutes on
+the builder's Mac). The rule, fixed before training: with the app's smoothing on top, it must
+shake less AND be less jumpy than option A on validation people, and stray at most 5% further
+from the path (`python evaluation/option_b.py`). v5 with shake penalty 3 passed; on test people
+(once): shake 2.56 vs 2.64 px, jerk 0.24 vs 0.25, distance 5.22 vs 4.98 px (`option_b.md`). A
+small gain, but by the rule it replaced v4 as the app's network.
+
+**Less lag? A trade-off.** The page and server are fast (in the browser: median round trip
+about 1 ms, no stuttering frames). The lag comes from the smoothing. `python
+evaluation/tune_lag.py` tried 12 settings of it on validation people: every setting with less
+lag shook more (67 -> 52 ms lag raised shake 2.98 -> 3.18 px), beyond the 5% limit fixed in
+advance, so the settings stayed (`tune_lag.md`).
 
 **A first-use guide** (`web/tutorial.js`, Oleksandr's request): four short steps on the Practice
 tab (move in the box, click the target, switch on demo tremor, compare filters), each outlining

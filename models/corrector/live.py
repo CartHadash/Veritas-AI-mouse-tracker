@@ -35,12 +35,17 @@ from models.resample import Resampler  # noqa: E402
 # The version the app uses: v4 with smoothness penalty 2 (trained on plain distance like v3,
 # plus a penalty on a jumpy cursor). Penalty 0.5 was chosen first (evaluation/smoothness.py);
 # after the leader found it still jittery, evaluation/smoother_output.py chose penalty 2 on
-# validation (Sat 14 Nov 23:00). v1 is weights.pt, v3 is weights_v3.pt.
-VERSION = "v4_s2"
+# validation (Sat 14 Nov 23:00). Then option B (Sun 15 Nov 00:30): v5 with an extra penalty on
+# visible shake (train.py --shake 3), chosen by evaluation/option_b.py on validation, with the
+# gated One Euro smoothing of option A. v1 is weights.pt, v3 is weights_v3.pt.
+VERSION = "v5_k3"
 WEIGHTS = ROOT / "models" / "corrector" / f"weights_{VERSION}.pt"
 RATE = 100
 GATE_LOW = 0.05          # detector score at which the gate starts opening
 GATE_SECONDS = 0.3       # how quickly the gate follows the detector
+# Settings of the One Euro smoothing of the corrected cursor (option A). The defaults are One
+# Euro's original ones; evaluation/tune_lag.py tunes them on validation to reduce lag.
+SMOOTHING = {"min_cutoff": 1.0, "beta": 0.004}
 
 
 def gate_target(score, threshold):
@@ -58,7 +63,8 @@ def load_corrector(weights=WEIGHTS):
 
 
 class LiveCorrector:
-    def __init__(self, live_detector=None, use_gate=True, strength=1.0, model=None, smooth_output=True):
+    def __init__(self, live_detector=None, use_gate=True, strength=1.0, model=None, smooth_output=True,
+                 smoothing=None):
         """
         live_detector: a models.detector.predict.LiveDetector (created if None and use_gate).
         use_gate=False applies the full correction always (used to measure the model alone).
@@ -68,6 +74,7 @@ class LiveCorrector:
             evaluation/results/vs_one_euro_val.md). False = the network's correction only.
         """
         self.smooth_output = smooth_output
+        self.smoothing = dict(SMOOTHING if smoothing is None else smoothing)   # One Euro settings
         torch.set_num_threads(1)      # one tiny network: a single thread is fastest
         self.model = model or load_corrector()
         if use_gate and live_detector is None:
@@ -84,7 +91,7 @@ class LiveCorrector:
         self.gate = 0.0
         self.offset = None        # latest correction (dx, dy) from the network
         self.score = None
-        self.smoother = OneEuroFilter()
+        self.smoother = OneEuroFilter(**self.smoothing)
         if self.detector is not None:
             self.detector.reset()
 

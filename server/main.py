@@ -270,7 +270,7 @@ class CursorSession:
         self.detector.reset()
         if self.mode == "learned":
             self.filter = LiveCorrector(live_detector=self.detector, strength=self.strength, model=CORRECTOR_MODEL,
-                                        smooth_output=SMOOTH_OUTPUT["on"])
+                                        smooth_output=SMOOTH_OUTPUT["on"], smoothing=SMOOTH_OUTPUT.get("settings"))
         elif self.mode == "one_euro":
             self.filter = OneEuroFilter()
         elif self.mode == "low_sensitivity":

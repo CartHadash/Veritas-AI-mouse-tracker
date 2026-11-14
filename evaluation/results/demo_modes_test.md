@@ -6,23 +6,23 @@ Jerkiness = average size of the change in the shown cursor's velocity from one 1
 
 | Intended movement | Off the path: no filter / One Euro / our model (px) | Jerkiness: no filter / One Euro / our model (px) | Intended path jerkiness | Gate above 0.5 |
 |---|---|---|---|---|
-| reaches (100 Hz) | 6.08 / 7.77 / 7.38 | 1.10 / 0.43 / 0.47 | 0.49 | 88% |
-| glide (100 Hz) | 6.08 / 3.55 / 4.05 | 0.91 / 0.26 / 0.23 | 0.00 | 94% |
-| still (100 Hz) | 6.08 / 1.62 / 1.52 | 0.91 / 0.18 / 0.18 | 0.00 | 92% |
-| reaches (60 Hz, uneven) | 6.00 / 9.73 / 9.20 | 1.00 / 0.39 / 0.51 | 0.44 | 82% |
-| glide (60 Hz, uneven) | 6.00 / 3.79 / 4.45 | 0.85 / 0.21 / 0.25 | 0.00 | 93% |
+| reaches (100 Hz) | 6.08 / 7.77 / 7.38 | 1.10 / 0.43 / 0.46 | 0.49 | 88% |
+| glide (100 Hz) | 6.08 / 3.55 / 4.93 | 0.91 / 0.26 / 0.20 | 0.00 | 94% |
+| still (100 Hz) | 6.08 / 1.62 / 1.09 | 0.91 / 0.18 / 0.15 | 0.00 | 92% |
+| reaches (60 Hz, uneven) | 6.00 / 9.73 / 9.07 | 1.00 / 0.39 / 0.51 | 0.44 | 82% |
+| glide (60 Hz, uneven) | 6.00 / 3.79 / 5.34 | 0.85 / 0.21 / 0.22 | 0.00 | 93% |
 
 ## By replayed tremor strength (reaches and still hand, 100 Hz)
 
 | Replayed tremor | Movement | Off the path: no filter / One Euro / our model (px) | Our model vs no filter | Jerkiness: no filter / One Euro / our model (px) |
 |---|---|---|---|---|
-| mild | reaches | 1.55 / 7.04 / 6.43 | -314% closer | 0.60 / 0.26 / 0.27 |
-| mild | still | 1.55 / 0.29 / 0.45 | 71% closer | 0.30 / 0.04 / 0.05 |
-| medium | reaches | 6.08 / 7.77 / 7.38 | -21% closer | 1.10 / 0.43 / 0.47 |
-| medium | still | 6.08 / 1.62 / 1.52 | 75% closer | 0.91 / 0.18 / 0.18 |
-| strong | reaches | 13.12 / 9.87 / 9.66 | 26% closer | 1.94 / 0.85 / 0.39 |
-| strong | still | 13.12 / 4.16 / 1.33 | 90% closer | 1.82 / 0.56 / 0.13 |
+| mild | reaches | 1.55 / 7.04 / 6.53 | -320% closer | 0.60 / 0.26 / 0.28 |
+| mild | still | 1.55 / 0.29 / 0.43 | 73% closer | 0.30 / 0.04 / 0.04 |
+| medium | reaches | 6.08 / 7.77 / 7.38 | -21% closer | 1.10 / 0.43 / 0.46 |
+| medium | still | 6.08 / 1.62 / 1.09 | 82% closer | 0.91 / 0.18 / 0.15 |
+| strong | reaches | 13.12 / 9.87 / 9.74 | 26% closer | 1.94 / 0.85 / 0.39 |
+| strong | still | 13.12 / 4.16 / 0.97 | 93% closer | 1.82 / 0.56 / 0.11 |
 
-Replayed tremor OFF, reaches at 100 Hz: our model 1.75 px from the path (no filter 0.00 px); gate above 0.5 for 16% of the time.
+Replayed tremor OFF, reaches at 100 Hz: our model 1.74 px from the path (no filter 0.00 px); gate above 0.5 for 16% of the time.
 
 This project is a prototype and is not medical advice.

@@ -62,6 +62,15 @@ Time line: first full version by **Sun 15 Nov 22:00 CET**; no new features after
 
 ## Done (newest first)
 
+- Sun 15 Nov 00:55 CET, builder's agent: the model review the team asked for (Timofey 23:14). Measuring what
+  the eye sees (`evaluation/vs_one_euro.py`) showed our network's cursor almost as jumpy as no
+  filter. Option A: the app adds One Euro smoothing switched by our detector. Option B: corrector
+  v5 trained against visible shake; it beat A by the rule fixed before training and is now the
+  app's network. Test people (`vs_one_euro_test.md`): shake 2.56 px (One Euro 3.39, no filter
+  7.91), jerk 0.24 (0.30 / 1.00). Price: it lags while reaching like One Euro. Lag tuning
+  (`tune_lag.md`): less lag always meant more shake, so kept. Also a first-use guide
+  (`web/tutorial.js`). Oleksandr's notch-filter idea tested, not kept (`notch_canceller.md`).
+
 - Sat 14 Nov, leader's agent: `leader/ui` merged into `main` on the leader's word (the two
   entries below say "not merged": that was true when they were written). The only conflict
   was this file; both lanes' entries were kept.

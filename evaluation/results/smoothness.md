@@ -13,6 +13,7 @@ Produced by `python evaluation/smoothness.py --test`. Sequences with marked trem
 | v4, S=0.5 | 6.84 / 5.14 | 87% | 0 | 1.28 | 1.70 / 0.74 |
 | v4, S=2 | 7.16 / 5.40 | 87% | 0 | 1.07 | 1.75 / 0.71 |
 | v4, S=8 | 7.78 / 6.97 | 81% | 0 | 1.07 | 1.82 / 0.71 |
+| v5, shake penalty 3 (the app's network) | 7.26 / 4.65 | 88% | 0 | 1.22 | 1.68 / 0.74 |
 
 **Chosen: v4, S=0.5** - the smallest S whose jerkiness (1.28 px) is at most no filter's (1.65 px).
 
@@ -29,5 +30,6 @@ Sequences with marked tremor: 236; without marked tremor: 694; intended path jer
 | v4, S=0.5 | 6.94 / 4.86 | 87% | 0 | 1.37 | 1.85 / 0.78 |
 | v4, S=2 | 7.30 / 5.17 | 86% | 0 | 1.12 | 1.91 / 0.74 |
 | v4, S=8 | 7.79 / 6.44 | 83% | 0 | 1.12 | 2.00 / 0.74 |
+| v5, shake penalty 3 (the app's network) | 7.32 / 4.29 | 88% | 0 | 1.27 | 1.83 / 0.77 |
 
 This project is a prototype and is not medical advice.
