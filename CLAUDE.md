@@ -149,6 +149,14 @@ python -m pip install -r requirements.txt # after requirements change
 python scripts/download_data.py           # once; 1.5 GB into data/
 ```
 
+Builder lane (same on both systems; full list in `docs/RUNNING.md`):
+
+```bash
+python -m uvicorn server.main:app         # the app at http://127.0.0.1:8000
+python server/test_ws.py                  # with the server running: 500-sample check
+python -m pytest data_pipeline/test_split.py
+```
+
 (Each lane adds its own commands here as they come into existence.)
 
 ## Things we learned the hard way

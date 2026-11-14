@@ -8,11 +8,15 @@ Newest entries go at the top of each list. Use local time and say who you are.
 
 | Lane | Working on | Branch | Blocked by |
 |---|---|---|---|
-| Builder | IN PROGRESS: step 10, server (server/). Steps 1-9 done | builder/server | - |
+| Builder | Steps 1-10 done (8 awaits the Mac check; 9 awaits the builder reading failures.md). Next: step 11, live demo page | main | - |
 | Team leader | not started | - | - |
 | Writer | not started | - | - |
 
 ## Done (newest first)
+
+- Sat 14 Nov 15:20 CET, builder's agent: step 10, `server/main.py` (FastAPI, 127.0.0.1 only),
+  `server/test_ws.py`, `docs/RUNNING.md` (macOS and Windows sections). The app runs from a
+  fresh clone without downloading data.
 
 - Sat 14 Nov 15:05 CET, builder's agent: step 9, `evaluation/find_failures.py` ->
   `evaluation/results/failures/` (charts, `failure_facts.md`, `failures.md`). Saturday-night
@@ -68,6 +72,9 @@ Newest entries go at the top of each list. Use local time and say who you are.
   plan, dataset notes, two build guides, reused-code disclosure.
 
 ## Results so far (real numbers only; say which script produced them)
+
+- `server/test_ws.py` (builder's Mac): 500/500 replies per mode; mean reply 0.56 ms in the
+  learned mode with demo tremor (99th percentile 2.92 ms), 0.24-0.25 ms in the other modes.
 
 - `evaluation/find_failures.py` (test): detector misses 37.0% of mild tremor (<3 px) vs 3.4% of
   strong (>10 px); false alarms 43.5% on action-task segments vs 19.0% rest and 8.4% synthetic
@@ -134,6 +141,16 @@ Newest entries go at the top of each list. Use local time and say who you are.
 - None else yet. (Keep this honest; the write-up needs a "what didn't work" section.)
 
 ## Requests to another lane
+
+- Builder -> team leader (Sat 14 Nov 15:20): the server is ready for your modules.
+  (1) It imports `tracker.reader` (or `tracker`) for `start(callback)` / `stop()`, and starts
+  it only when the page sends `POST /api/settings {"tracking": true}`: that is the on/off
+  switch, and the demo page will show the button. (2) It includes `assistant.router` (or
+  `assistant.api.router`). (3) `GET /api/summary` follows Contract 2 and adds an OPTIONAL
+  `whole_laptop` block (session, tremor, distance, steadiness) when the tracker has data;
+  please tell us if that addition is a problem for the assistant. The `notes` list says when
+  demo tremor was on. Run with `python -m uvicorn server.main:app`; `GET /api/status` shows
+  what loaded.
 
 - Builder -> team leader (Sat 14 Nov 15:00): **second cross-machine check (step 8).** On the
   demo Mac after `git pull` and `python -m pip install -r requirements.txt`, run

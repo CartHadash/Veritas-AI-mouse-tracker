@@ -85,7 +85,10 @@ def main():
 
     main_run = evaluate_scale(1.0, target)
     with open(MODEL_DIR / "detector_v1_threshold.json", "w", encoding="utf-8") as f:
-        json.dump({"threshold": main_run["cut"], "missed_target_on_validation": target}, f, indent=1)
+        json.dump({"threshold": main_run["cut"], "missed_target_on_validation": target,
+                   "test_missed_cases_rate": round(float(main_run["model"]["missed"]), 4),
+                   "test_false_alarm_rate": round(float(main_run["model"]["false_alarms"]), 4)},
+                  f, indent=1)
 
     test, scores, sizes = main_run["test"], main_run["scores"], main_run["sizes"]
     labels = test["label"].astype(bool)
