@@ -925,3 +925,81 @@ that?" and "Will my tremor be worse tomorrow?": all safe.
 **Without a key.** If there is no API key, the panel says the AI is switched off and shows a
 plain summary built from the numbers by ordinary code (`fixed_explanation` in
 `assistant/core.py`). The rest of the app works the same.
+
+## The redesigned interface (team leader's lane, Sat 14 Nov 21:57 CET)
+
+**What it is.** The app is now one page with three tabs. **Practice** has the practice area
+(as tall as the window allows) with the filter choice and the "Demo tremor" switch above it,
+and a side column with the tremor meter, the adjustments and the target tally. **Analysis**
+is what used to be the separate summary page. **How it works** explains the three steps
+(read, detect, correct) in plain words. The assistant is a round button in the bottom-right
+corner that opens a window; the window stays open while you use the rest of the page.
+
+**Why tabs.** Before, the summary was a second page, so opening it meant leaving the practice
+area. With tabs nothing is reloaded: a hidden tab stays in the page, so the connection to the
+server, the tally and the assistant's conversation all survive a switch. `summary.html` still
+exists but only forwards to `index.html#analysis`, so old links keep working.
+
+**The components (ui-sdk).** The tabs, the filter choice, the switches, the slider, the meter
+and the pop-up window are *web components*: custom HTML tags such as `<ui-switch>` that the
+browser itself understands, with no framework and no build step. The library gives each one
+its behaviour (keyboard keys, focus, screen-reader labels); we wrote the look in
+`web/styles.css`. A component tells us about a change with an event, for example
+`checkedchange`, and the new value is in `event.detail.value`. To set a control from code
+(when the server confirms a setting) `setControl()` in `web/app.js` sets the control's
+property, which fires no event, so the page never reacts to its own update.
+
+**Why the files are copied.** The library's files sit in `web/vendor/ui-sdk/` (1.3 MB)
+instead of being loaded from its website, so the demo looks the same with no internet and
+cannot change if the library publishes a new version.
+
+**The trail.** Behind the two cursors the page now draws the last 0.7 seconds of movement as
+two fading lines: grey for the raw movement and green for the corrected cursor. They are the
+real positions the server sent, nothing is smoothed for show, so the difference between a
+shaky grey line and a calm green one is the correction itself.
+
+**What did not change.** The server, both models, the contracts and every number. The
+required lines ("Demo mode: replaying recorded tremor from a public dataset." and "This
+project is a prototype and is not medical advice.") are still shown. The path check page
+(`path_check.html`) is the team's own tool and was left as it was.
+
+**How we know it works.** Opened in a browser at 1440 px and 375 px wide: every tab, the
+filter choice, demo tremor, click freeze, the meter, and opening, keeping open and closing the
+assistant window, with no errors in the browser's console. `python server/test_ws.py` and the
+existing tests still pass. Not yet checked with a real hand on the trackpad: the calibration
+test, Pointer Lock in "Lower sensitivity", and clicking targets.
+
+### Making it interactive and the numbers visual (Sat 14 Nov 22:13 CET)
+
+**Feedback on every click.** When a click hits, a green ring grows out of the target and the
+time it took floats above it; a miss leaves a small orange cross where the click landed.
+Hits in a row are counted in a chip under the practice area ("3 in a row"); a miss sets it
+back to zero. These are drawn on the same canvas as the cursors (`drawEffects` in
+`web/app.js`) and last 0.7 seconds.
+
+**The live graph.** Under the tremor meter a small graph shows the detector's score over the
+last 20 seconds, with "now" at the right edge and the cut-off as a dashed line. The line is
+green below the cut-off and orange while the movement counts as tremor-like, so you can watch
+tremor appear and fade. The page keeps at most 10 points a second, and leaves a gap where the
+pointer was not moving, because the detector gives no score then.
+
+**Bars instead of a table.** "Your targets" shows one bar per filter you tried: the filled
+part is the share of your clicks that hit. It is the quickest way to see whether a filter
+helped. The counts and the time per target are written under each bar.
+
+**Rings and a gauge.** On the Analysis tab the two shares (time with tremor-like movement,
+clicks that hit) are rings: the coloured arc covers that share of the circle. The steadiness
+score is a bar from 0 to 1 with the meaning of each end written under it. Numbers count up
+to their value when the tab opens; this is only for feel and is switched off for people who
+ask their computer for less motion.
+
+**Pointing at the chart.** Moving the pointer over the minute-by-minute chart highlights that
+minute and shows its exact share and shaking size, so the chart can be read precisely.
+
+**"Show me" buttons.** Each step on the How-it-works tab has a button that opens Practice and
+draws an orange ring around the part the step talks about (the practice area, the meter, the
+filter choice).
+
+**Nothing new is measured.** Every figure shown this way is one the page already had; only
+the way it is drawn changed. Checked in a browser with simulated pointer events; not yet
+with a real hand on the trackpad.

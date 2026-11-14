@@ -9,7 +9,7 @@ Newest entries go at the top of each list. Use local time and say who you are.
 | Lane | Working on | Branch | Blocked by |
 |---|---|---|---|
 | Builder | Steps 1-15 built (4, 9, 11, 14, 15 await human or Mac checks) + click freeze + calibration test + step 4 path check. Next: see "Builder's plan" below | main | - |
-| Team leader | B1 (tracker) and B2 (assistant) DONE and merged. Next: Part A checks; B3 only if the leader decides | - | - |
+| Team leader | B1 (tracker), B2 (assistant) and the UI redesign DONE and merged. Next: try the new page with a real hand on the trackpad; the B3 real-cursor check on the demo Mac; Part A checks | - | - |
 | Writer | IN PROGRESS: drafting the write-up. Start from `docs/WRITER_BRIEF.md` (where everything is) | - | - |
 
 ### Builder's plan: what is left (written Sat 14 Nov 20:03 CET; tick or delete lines as they finish)
@@ -61,6 +61,35 @@ Time line: first full version by **Sun 15 Nov 22:00 CET**; no new features after
 - [ ] Step 16, the desktop window (cut first).
 
 ## Done (newest first)
+
+- Sat 14 Nov, leader's agent: `leader/ui` merged into `main` on the leader's word (the two
+  entries below say "not merged": that was true when they were written). The only conflict
+  was this file; both lanes' entries were kept.
+
+- Sat 14 Nov 22:13 CET, leader's agent: second pass on the redesign (`leader/ui`, pushed, not merged), after
+  the leader asked for more interaction and more visual statistics. Practice: a ring bursts
+  from a hit target with the time it took, a cross marks a miss, a "3 in a row" streak chip, a
+  live graph of the last 20 seconds of the detector's score with the cut-off line, and "Your
+  targets" as one bar per filter (share of clicks that hit). Analysis: ring charts for
+  tremor-like share and clicks hit, a 0-to-1 gauge for steadiness, numbers that count up, and
+  the minute-by-minute chart shows a minute's exact numbers under the pointer. How it works:
+  each step has a "Show me" button that opens Practice and rings the part it describes. No
+  new numbers: every figure is one the page already showed. Checked in the browser at 1440 px
+  with simulated pointer events (hits, a miss, hover, Show me), no console errors;
+  `python server/test_ws.py` still passes. Not checked with a real hand on the trackpad.
+
+- Sat 14 Nov 21:57 CET, leader's agent: interface redesign on branch `leader/ui` (pushed, not merged yet).
+  One page with three tabs (Practice with a larger practice area, Analysis = the old summary
+  page, How it works), the assistant as a floating button that opens a window, the same warm
+  look made tidier, and a fading trail behind the raw and corrected cursors. Controls are
+  ui-sdk web components, copied into `web/vendor/ui-sdk/` so the page needs no internet.
+  `summary.html` now only forwards to `index.html#analysis`. Checked in the browser at
+  1440 px and 375 px wide: tabs, filter choice, demo tremor, click freeze, meter, assistant
+  window open/stay open/close, no console errors. Re-run and still passing:
+  `python server/test_ws.py` (4 modes x 500 replies) and
+  `python -m pytest data_pipeline/test_split.py tracker/test_reader.py` (7 passed, 7 skipped).
+  Not checked: a real hand on the trackpad (calibration test, Pointer Lock in "Lower
+  sensitivity", target clicks), and a live question to the assistant in the new window.
 
 - Sat 14 Nov 22:02 CET, builder's agent: B3 built (`systemwide/`): safety first (auto-off after 60 s,
   Control + Option + X, Ctrl+C, filter failure -> cursor follows the hand, stays on screen,
@@ -372,6 +401,11 @@ Time line: first full version by **Sun 15 Nov 22:00 CET**; no new features after
   4.30 Hz, 99% of power in 3-12 Hz. TremorDB rofh/s6rof.let: peak 4.88 Hz, 98% in 3-12 Hz.
 
 ## Decisions made along the way (what, why, who decided)
+
+- Sat 14 Nov 21:57 CET, team leader (human): redesign choices. Look: keep style C (warm and friendly),
+  polished. Layout: tabs, a big practice area, the assistant as a floating window. Pages:
+  live demo, summary, assistant panel (not the path check tool). Components: ui-sdk web
+  components with no build step, files copied locally so the demo works offline.
 
 - Sat 14 Nov 21:59 CET, builder's agent (chosen on validation by rules fixed in advance): the app's corrector
   is now v4 with penalty 2 (`smoother_output.md`); no retraining on realistic movement
