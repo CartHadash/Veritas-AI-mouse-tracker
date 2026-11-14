@@ -552,7 +552,7 @@ movement. Waiting for the builder's own try and the leader's Mac/trackpad check 
 cursor visibly steadier than the raw one, switching between filter modes live; **and** the
 leader has run the same page on the Mac with the trackpad (third cross-machine check).
 
-### - [ ] Step 12. One measured improvement to each model (Sunday morning)
+### - [x] Step 12. One measured improvement to each model (Sunday morning)
 
 **In plain words:** the official schedule asks for "one improvement, measured". Change one
 thing, measure before and after on validation, keep it only if it helps, then score on test.
@@ -565,6 +565,13 @@ penalises lag; training with more no-tremor sequences.
 Record in `evaluation/results/improvements.md`: what was changed, why, validation score
 before and after, test score of the kept version. If the change did not help, **keep the
 record anyway**; "we tried X and it did not help" belongs in the write-up.
+
+Done (Sat 14 Nov): detector = "more look-alike negatives" (pause-free movement windows,
+`build_dataset.py --continuous`), kept as v2; corrector = trained on tremor 0.5x-2x (Godson's
+DPI point), not kept. `evaluation/improvements.py`; `evaluate_detector.py --version v2`;
+`evaluate_corrector.py --detector v2`. The live detector now runs on a background thread.
+Changed: the corrector change was size mixing rather than one of the three listed options,
+because it answered a teammate's question and could be measured at x0.5 / x1 / x2.
 
 **Done when:** `improvements.md` exists with real before/after numbers for both models, and
 the app loads whichever versions won.

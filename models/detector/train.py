@@ -14,6 +14,7 @@ Rules we follow here:
 Run from the repository folder (under a minute):
     python models/detector/train.py                     # normal pixel factor
     python models/detector/train.py --tremor-scale 0.5  # DECISION 1 check (needs the _x0.5 data)
+    python models/detector/train.py --version v2 --with-continuous   # step 12
 Saves models/detector/detector_v1.joblib (or detector_v1_x0.5.joblib) and writes the
 validation trade-off table to evaluation/results/detector_v1_validation.md.
 """
@@ -69,10 +70,18 @@ def tradeoff_table(scores, labels, moving):
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("--tremor-scale", type=float, default=1.0)
+    parser.add_argument("--version", default="v1")
+    parser.add_argument("--with-continuous", action="store_true",
+                        help="step 12: also learn from (and choose settings on) the pause-free windows")
     args = parser.parse_args()
     suffix = "" if args.tremor_scale == 1.0 else "_x%g" % args.tremor_scale
+    version = args.version
 
     train, val = load("train", suffix), load("val", suffix)
+    if args.with_continuous:
+        extra_train, extra_val = load("train_continuous", ""), load("val_continuous", "")
+        train = {k: np.concatenate([train[k], extra_train[k]]) for k in train}
+        val = {k: np.concatenate([val[k], extra_val[k]]) for k in val}
     print("Train windows: %d, validation windows: %d" % (len(train["label"]), len(val["label"])))
 
     # 1) Choose settings on validation by "average precision": how well the score ranks
@@ -96,11 +105,11 @@ def main():
     val_scores = classifier.predict_proba(val["features"])[:, 1]
     size_error = np.abs(np.expm1(regressor.predict(val["features"])) - val["strength_px"])
 
-    path = MODEL_DIR / f"detector_v1{suffix}.joblib"
+    path = MODEL_DIR / f"detector_{version}{suffix}.joblib"
     joblib.dump({"classifier": classifier, "size_regressor": regressor,
                  "feature_names": FEATURE_NAMES, "settings": best}, path, compress=3)
     print("Saved %s (%.2f MB)" % (path.relative_to(ROOT), path.stat().st_size / 1e6))
-    np.save(DERIVED / f"detector_v1_val_scores{suffix}.npy", val_scores)
+    np.save(DERIVED / f"detector_{version}_val_scores{suffix}.npy", val_scores)
 
     if suffix:
         return   # the half/double runs only need the saved model
@@ -111,9 +120,11 @@ def main():
                                         scoring="average_precision", n_repeats=5, random_state=0)
     order = np.argsort(importance.importances_mean)[::-1]
 
-    lines = ["# Detector v1: validation results (used to choose settings and the cut-off)", "",
-             "Produced by `python models/detector/train.py`. Validation people only; test people "
-             "are not used here.", "",
+    lines = ["# Detector %s: validation results (used to choose settings and the cut-off)" % version, "",
+             "Produced by `python models/detector/train.py%s`. Validation people only; test people "
+             "are not used here.%s" % (
+                 "" if version == "v1" else " --version %s%s" % (version, " --with-continuous" if args.with_continuous else ""),
+                 " Validation here = normal + pause-free windows." if args.with_continuous else ""), "",
              "Chosen settings: `%s`; validation average precision %.3f "
              "(1.0 = perfect ranking; the share of tremor windows, %.3f, = random guessing)." % (
                  best, best_ap, val["label"].mean()), "",
@@ -127,7 +138,7 @@ def main():
               "| Feature | Importance |", "|---|---|"]
     lines += ["| %s | %.3f |" % (FEATURE_NAMES[i], importance.importances_mean[i]) for i in order]
     lines += ["", "This project is a prototype and is not medical advice.", ""]
-    (RESULTS / "detector_v1_validation.md").write_text("\n".join(lines), encoding="utf-8")
+    (RESULTS / f"detector_{version}_validation.md").write_text("\n".join(lines), encoding="utf-8")
     print("\n".join(lines))
 
 

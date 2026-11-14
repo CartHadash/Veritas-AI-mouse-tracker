@@ -127,18 +127,33 @@ def zigzag(rng, here):
     return parts
 
 
+def glide(rng, here):
+    """Step 12: a long, smooth, continuous curve (1-3 s at 50-300 px/s), like dragging or
+    slowly following a line. It never stops, which our first detector found suspicious."""
+    seconds = rng.uniform(1.0, 3.0)
+    t = np.arange(int(seconds * RATE)) / RATE
+    speed = rng.uniform(50, 300)
+    heading = rng.uniform(0, 2 * np.pi) + rng.uniform(-1.5, 1.5) * np.sin(2 * np.pi * t / seconds)
+    steps = speed / RATE * np.stack([np.cos(heading), np.sin(heading)], axis=1)
+    path = here + np.cumsum(steps, axis=0)
+    return [(np.clip(path, MARGIN, [SCREEN_W - MARGIN, SCREEN_H - MARGIN]), DRIFT)]
+
+
 # How often each kind of event is chosen. Look-alikes are about a quarter of all events.
 EVENTS = [(reach, 0.40), (pause, 0.20), (drift, 0.12), (wiggle, 0.10), (circle, 0.09), (zigzag, 0.09)]
 
+# Step 12: movement that never pauses (reaches straight into glides and drifts).
+CONTINUOUS_EVENTS = [(reach, 0.40), (glide, 0.45), (drift, 0.15)]
 
-def generate_path(rng, n_samples, jitter_px=None):
+
+def generate_path(rng, n_samples, jitter_px=None, events=EVENTS):
     """
     One synthetic path of n_samples. Returns:
       xy   - (n_samples, 2) positions in pixels, float32
       kind - (n_samples,) what each sample is part of (STILL, REACH, ... see top of file)
     """
-    functions = [f for f, _ in EVENTS]
-    weights = np.array([w for _, w in EVENTS])
+    functions = [f for f, _ in events]
+    weights = np.array([w for _, w in events])
     here = np.array([rng.uniform(MARGIN, SCREEN_W - MARGIN), rng.uniform(MARGIN, SCREEN_H - MARGIN)])
     xy_parts, kind_parts, total = [], [], 0
     while total < n_samples:

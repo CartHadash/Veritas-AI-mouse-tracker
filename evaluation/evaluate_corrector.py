@@ -8,10 +8,12 @@ Because the detector needs 2.56 s of history, the first 2.56 s of every 5.12 s s
 ignored for ALL methods (so every row is scored on the same samples).
 
 Run from the repository folder (about a minute):
-    python evaluation/evaluate_corrector.py
-Writes evaluation/results/corrector_v1.md.
+    python evaluation/evaluate_corrector.py                  # gate = detector v1 (step 8)
+    python evaluation/evaluate_corrector.py --detector v2     # gate = detector v2 (step 12, the app)
+Writes evaluation/results/corrector_v1.md (or corrector_v1_gate_v2.md).
 """
 
+import argparse
 import math
 import sys
 from pathlib import Path
@@ -26,10 +28,10 @@ from evaluation.metrics import corrector_scores, run_filter  # noqa: E402
 from models.corrector.live import GATE_SECONDS, gate_target, load_corrector  # noqa: E402
 from models.corrector.model import HISTORY  # noqa: E402
 from models.detector.features import compute_features  # noqa: E402
-from models.detector.predict import Detector  # noqa: E402
+from models.detector.predict import MODEL_FILE, Detector  # noqa: E402
 
 DERIVED = ROOT / "data" / "derived"
-RESULT = ROOT / "evaluation" / "results" / "corrector_v1.md"
+RESULTS = ROOT / "evaluation" / "results"
 SKIP = 256            # detector warm-up: score only after 2.56 s
 WINDOW = 256
 
@@ -81,13 +83,17 @@ def row(name, output, clean, shaky, tremor, note=""):
 
 
 def main():
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--detector", default="v1", help="which detector version gates the corrector")
+    args = parser.parse_args()
     data = np.load(DERIVED / "corrector_test.npz")
     shaky, clean = data["shaky"], data["clean"]
     tremor = data["tremor"].astype(bool)
     print("Test sequences: %d (%d with marked tremor)" % (len(shaky), tremor.sum()))
 
     offsets = corrector_offsets(load_corrector(), shaky)
-    detector = Detector()
+    detector = Detector(MODEL_FILE.with_name(f"detector_{args.detector}.joblib"),
+                        MODEL_FILE.with_name(f"detector_{args.detector}_threshold.json"))
     gate = detector_gate(detector, shaky)[..., None]
     print("Running classical filters...")
     one_euro = run_filter(OneEuroFilter, shaky)
@@ -129,16 +135,18 @@ def main():
             name, m.sum(), a["distance_still"], b["distance_still"], c["distance_still"],
             100 * b["tremor_removed"], 100 * c["tremor_removed"]))
 
-    lines = ["# Corrector v1: results on TEST people", "",
-             "Produced by `python evaluation/evaluate_corrector.py`. Test sequences: %d (%d with "
+    lines = ["# Corrector v1 (gate: detector %s): results on TEST people" % args.detector, "",
+             "Produced by `python evaluation/evaluate_corrector.py%s`. Test sequences: %d (%d with "
              "marked tremor, %d without). Scored after the first 2.56 s of each 5.12 s sequence "
              "(the detector's warm-up), the same samples for every method. Distances, tremor "
              "removed and lag are on sequences with marked tremor; the steady-hand column is the "
              "average distance on sequences without marked tremor." % (
+                 "" if args.detector == "v1" else " --detector " + args.detector,
                  len(shaky), tremor.sum(), (~tremor).sum()), ""] + header + rows + [
              "", "## By tremor size (sequences with marked tremor)", ""] + size_rows + [
              "", "This project is a prototype and is not medical advice.", ""]
-    RESULT.write_text("\n".join(lines), encoding="utf-8")
+    name = "corrector_v1.md" if args.detector == "v1" else f"corrector_v1_gate_{args.detector}.md"
+    (RESULTS / name).write_text("\n".join(lines), encoding="utf-8")
     print("\n".join(lines))
 
 

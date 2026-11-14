@@ -8,11 +8,15 @@ Newest entries go at the top of each list. Use local time and say who you are.
 
 | Lane | Working on | Branch | Blocked by |
 |---|---|---|---|
-| Builder | IN PROGRESS: step 12, one measured improvement per model. Steps 1-11 built (8, 9, 11 await checks) | builder/improvements | - |
+| Builder | Steps 1-12 built (8, 9, 11 await checks below). Next: step 13 summary page, then 14 results package | main | - |
 | Team leader | not started | - | - |
 | Writer | not started | - | - |
 
 ## Done (newest first)
+
+- Sat 14 Nov 15:30 CET, builder's agent: step 12. Detector v2 kept (app now uses it, on a
+  background thread); corrector v2 not kept. `evaluation/results/improvements.md`,
+  `detector_v2.md`, `corrector_v1_gate_v2.md`.
 
 - Sat 14 Nov 15:10 CET, builder's agent: step 11, live demo page (`web/`), style C (warm and
   friendly), plain JavaScript. All "must do" steps (1-9 and 11) are now built.
@@ -76,6 +80,14 @@ Newest entries go at the top of each list. Use local time and say who you are.
 
 ## Results so far (real numbers only; say which script produced them)
 
+- `evaluation/improvements.py --test`: detector v2 vs v1 on pause-free test movement: false
+  alarms 20.4% vs 45.3% (missed 11.2% vs 8.1%); normal test windows: v2 missed 12.9%, false
+  alarms 27.1% (v1 14.3% / 27.0%). Corrector v2 (size-mixed training) vs v1 on validation:
+  2.32 / 3.11 / 4.54 px vs 2.21 / 3.05 / 4.55 px at tremor x0.5 / x1 / x2 -> not kept.
+- `evaluation/evaluate_corrector.py --detector v2` (final system, test): 84% tremor removed,
+  0 ms lag, 7.15 / 5.93 px moving / still, steady hand 2.00 px. `models/corrector/time_live.py`:
+  worst 4.4-4.8 ms per update (detector on a background thread).
+
 - `server/test_ws.py` (builder's Mac): 500/500 replies per mode; mean reply 0.56 ms in the
   learned mode with demo tremor (99th percentile 2.92 ms), 0.24-0.25 ms in the other modes.
 
@@ -121,6 +133,8 @@ Newest entries go at the top of each list. Use local time and say who you are.
 
 ## Decisions made along the way (what, why, who decided)
 
+- Sat 14 Nov, builder's agent (step 12, chosen on validation): keep detector v2, keep
+  corrector v1. The app uses detector v2 + corrector v1.
 - Sat 14 Nov, builder (human): DECISION 5 = A (models run in Python on the server);
   DECISION 6 = C (warm and friendly look); DECISION 7 = plain JavaScript.
 
@@ -144,6 +158,8 @@ Newest entries go at the top of each list. Use local time and say who you are.
 - Sat 14 Nov, builder's agent: the same slip again at step 8 (merged before STATUS, guide and
   SOURCES were updated); fixed in the next commit. Git commands now only run after every
   scripted edit has succeeded.
+- Sat 14 Nov, builder's agent: corrector v2 (trained on tremor 0.5x-2x as large) did not
+  beat v1 on validation; dropped. Detector v2's half/double pixel-factor check was not re-run.
 - None else yet. (Keep this honest; the write-up needs a "what didn't work" section.)
 
 ## Requests to another lane

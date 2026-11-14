@@ -1,4 +1,4 @@
-# Corrector v1: results on TEST people
+# Corrector v1 (gate: detector v1): results on TEST people
 
 Produced by `python evaluation/evaluate_corrector.py`. Test sequences: 930 (236 with marked tremor, 694 without). Scored after the first 2.56 s of each 5.12 s sequence (the detector's warm-up), the same samples for every method. Distances, tremor removed and lag are on sequences with marked tremor; the steady-hand column is the average distance on sequences without marked tremor.
 

@@ -10,13 +10,14 @@ predict.py - use the trained detector: on stored windows, or live, sample by sam
     result = live.update(x, y, t)            # call for every pointer sample; None until full
 
 The score is 0-1 (how tremor-like the last 2.56 s were). "tremor" applies the cut-off chosen
-in DECISION 4 (models/detector/detector_v1_threshold.json). It flags tremor-LIKE movement;
+in DECISION 4 (models/detector/detector_<version>_threshold.json). It flags tremor-LIKE movement;
 it does not diagnose anything.
 """
 
 import json
 import sys
 from collections import deque
+from concurrent.futures import ThreadPoolExecutor
 from pathlib import Path
 
 import joblib
@@ -27,8 +28,11 @@ ROOT = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(ROOT))
 from models.detector.features import FEATURE_NAMES, compute_features  # noqa: E402
 
-MODEL_FILE = ROOT / "models" / "detector" / "detector_v1.joblib"
-THRESHOLD_FILE = ROOT / "models" / "detector" / "detector_v1_threshold.json"
+# The version the app uses. Step 12 kept v2 (better on pause-free movement); see
+# evaluation/results/improvements.md.
+VERSION = "v2"
+MODEL_FILE = ROOT / "models" / "detector" / f"detector_{VERSION}.joblib"
+THRESHOLD_FILE = ROOT / "models" / "detector" / f"detector_{VERSION}_threshold.json"
 WINDOW = 256
 RATE = 100
 
@@ -57,11 +61,19 @@ class Detector:
 
 
 class LiveDetector:
-    """Feeds pointer samples (any rate) into the detector at 100 samples per second."""
+    """
+    Feeds pointer samples (any rate) into the detector at 100 samples per second.
 
-    def __init__(self, detector=None, every=10):
+    background=True (the default for live use): the detector runs on a separate thread, so a
+    pointer update NEVER waits for it. One detector call usually takes about 4 ms but can
+    spike to 15+ ms when the computer is busy; the cursor keeps using the latest finished
+    result meanwhile (at most a few ms old). background=False runs it in line (for tests).
+    """
+
+    def __init__(self, detector=None, every=10, background=True):
         self.detector = detector or Detector()
         self.every = every                  # re-run the model every 10 samples (0.1 s)
+        self.pool = ThreadPoolExecutor(max_workers=1) if background else None
         self.reset()
 
     def reset(self):
@@ -70,8 +82,13 @@ class LiveDetector:
         self.last = None
         self.count = 0
         self.result = None
+        self.pending = None
 
     def update(self, x, y, t):
+        # Pick up a finished background result, if there is one.
+        if self.pending is not None and self.pending.done():
+            self.result = self.pending.result()
+            self.pending = None
         # Resample to exactly 100 per second by taking the latest position at each tick.
         if self.next_t is None:
             self.next_t = t
@@ -80,6 +97,11 @@ class LiveDetector:
             self.next_t += 1.0 / RATE
             self.count += 1
         if len(self.samples) == WINDOW and self.count >= self.every:
-            self.count = 0
-            self.result = self.detector.predict(np.array(self.samples))
+            window = np.array(self.samples)
+            if self.pool is None:
+                self.count = 0
+                self.result = self.detector.predict(window)
+            elif self.pending is None:          # never queue up more than one job
+                self.count = 0
+                self.pending = self.pool.submit(self.detector.predict, window)
         return self.result

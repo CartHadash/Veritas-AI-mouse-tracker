@@ -11,9 +11,13 @@ so it loads on any computer). Test people are never used here.
 
 Run from the repository folder:
     python models/corrector/train.py
+    python models/corrector/train.py --version v2 --scale-augment   # step 12
+      (v2: each training sequence's tremor is randomly made 0.5x-2x as large, so the network
+       sees the range of sizes different mouse settings (DPI) would produce)
 Also saves the loss-curve chart to evaluation/results/figures/corrector_v1_loss.png.
 """
 
+import argparse
 import sys
 import time
 from pathlib import Path
@@ -49,12 +53,18 @@ def load(name):
     return steps, shaky, clean
 
 
-def gather(steps, shaky, clean, seq, t):
-    """For each (sequence, time) pair: the 64 steps ending at t, and the target offset at t."""
-    offsets = torch.arange(-HISTORY + 1, 1)
-    history = steps[seq[:, None], t[:, None] + offsets[None, :]]      # (batch, 64, 2)
-    target = clean[seq, t] - shaky[seq, t]                             # where it should be
-    return history, target
+def gather(steps, shaky, clean, seq, t, scale=None):
+    """For each (sequence, time) pair: the 64 steps ending at t, and the target offset at t.
+    scale (optional, one number per example) multiplies the tremor part (shaky - clean)."""
+    if scale is None:
+        offsets = torch.arange(-HISTORY + 1, 1)
+        history = steps[seq[:, None], t[:, None] + offsets[None, :]]      # (batch, 64, 2)
+        target = clean[seq, t] - shaky[seq, t]                             # where it should be
+        return history, target
+    index = t[:, None] + torch.arange(-HISTORY, 1)[None, :]                # 65 positions
+    c = clean[seq[:, None], index]
+    s = c + scale[:, None, None] * (shaky[seq[:, None], index] - c)       # bigger / smaller tremor
+    return s[:, 1:] - s[:, :-1], c[:, -1] - s[:, -1]
 
 
 def validation_distance(model, data, device, stride=4):
@@ -76,6 +86,12 @@ def validation_distance(model, data, device, stride=4):
 
 
 def main():
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--version", default="v1")
+    parser.add_argument("--scale-augment", action="store_true")
+    args = parser.parse_args()
+    weights = WEIGHTS if args.version == "v1" else WEIGHTS.with_name(f"weights_{args.version}.pt")
+    figure = FIGURE.with_name(f"corrector_{args.version}_loss.png")
     torch.manual_seed(SEED)
     rng = np.random.default_rng(SEED)
     device = best_device()
@@ -89,7 +105,10 @@ def main():
     for step in range(1, STEPS + 1):
         seq = torch.tensor(rng.integers(0, n_seq, BATCH))
         t = torch.tensor(rng.integers(HISTORY, length, BATCH))
-        h, target = gather(*train, seq, t)
+        scale = None
+        if args.scale_augment:      # log-uniform between 0.5 and 2: as often smaller as bigger
+            scale = torch.tensor(np.exp(rng.uniform(np.log(0.5), np.log(2.0), BATCH)), dtype=torch.float32)
+        h, target = gather(*train, seq, t, scale)
         loss = ((model(h.to(device)) - target.to(device)) ** 2).sum(dim=1).mean()
         optimiser.zero_grad()
         loss.backward()
@@ -101,23 +120,23 @@ def main():
             marker = ""
             if best is None or dist < best:
                 best = dist
-                torch.save({k: v.cpu() for k, v in model.state_dict().items()}, WEIGHTS)
+                torch.save({k: v.cpu() for k, v in model.state_dict().items()}, weights)
                 marker = "  <- best so far, saved"
             print("step %5d  train loss %.2f  validation distance %.2f px  (%.0f s)%s" % (
                 step, loss.item(), dist, time.time() - start_time, marker))
 
     print("Training took %.0f s. Best validation distance %.2f px. Saved %s (%.3f MB)" % (
-        time.time() - start_time, best, WEIGHTS.relative_to(ROOT), WEIGHTS.stat().st_size / 1e6))
+        time.time() - start_time, best, weights.relative_to(ROOT), weights.stat().st_size / 1e6))
 
     steps_done, losses, dists = zip(*history_log)
     fig, ax = plt.subplots(figsize=(8, 4))
     ax.plot(steps_done, np.sqrt(losses), label="training (RMS error, one batch)")
     ax.plot(steps_done, dists, label="validation (average distance)")
-    ax.set(xlabel="training step", ylabel="px off the intended path", title="Corrector v1 training")
+    ax.set(xlabel="training step", ylabel="px off the intended path", title="Corrector %s training" % args.version)
     ax.legend()
     fig.tight_layout()
-    fig.savefig(FIGURE, dpi=100)
-    print("Saved", FIGURE.relative_to(ROOT))
+    fig.savefig(figure, dpi=100)
+    print("Saved", figure.relative_to(ROOT))
 
 
 if __name__ == "__main__":
