@@ -381,6 +381,15 @@ Time line: first full version by **Sun 15 Nov 22:00 CET**; no new features after
 
 ## Requests to another lane
 
+- Team leader -> builder (Sat 14 Nov 21:35): **step 11 trackpad check, first result (built-in
+  app browser, demo Mac, corrector v4, demo tremor on).** "Our model" stays closer to the
+  real movement than One Euro, but its movement still looks fast and jittery, not smooth
+  enough. This matches `evaluation/smoothness.py --test`: v4 jerkiness 1.37 px vs One Euro
+  0.64 px, so v4 is about twice as jerky as One Euro, although smoother than no filter (1.69).
+  Request (if time allows, decided on validation like v4): try a higher smoothness penalty, or
+  a light smoothing of v4's output with a lag limit, and show both distance and jerkiness.
+  Safari and Chrome checks still to come.
+
 - DONE (Sat 14 Nov 20:15 CET, builder: table on the summary page; "New session" saves first) Team leader -> builder (Sat 14 Nov 21:00): **please show the session history on the summary
   page.** `GET /api/assistant/history` returns `{"current_started": ..., "sessions": [...]}`, the
   earlier sessions saved on this laptop, newest first (fields: `day`, `minutes_active`,
