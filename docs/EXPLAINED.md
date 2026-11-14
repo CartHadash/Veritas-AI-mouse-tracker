@@ -701,6 +701,20 @@ rhythm the detector measures; `python evaluation/notch_canceller.py` -> `notch_c
 With our corrector it held a still hand steadier (3.62 vs 5.40 px) but strayed further while
 moving (8.47 vs 7.16 px), so by the rule fixed in advance it was not kept.
 
+**What we did: option A (team's choice).** The app's "Our model" now adds One Euro smoothing
+to the network's corrected cursor, switched on only as much as the detector's gate (so a steady
+hand still gets no lag), in `models/corrector/live.py` (`smooth_output`). On test people
+(`vs_one_euro_test.md`): shake 2.64 px (One Euro 3.39, network alone 4.46), jerk 0.25 (One Euro
+0.30, network alone 0.78), distance 4.98 (One Euro 5.23). A still hand is now held better than
+One Euro; the price is One Euro-like lag while reaching, which with mild or medium tremor puts
+the cursor further from the path than no filter (`RESULTS.md`). Option B (retraining the network
+to aim at shake directly) is being tried next and is kept only if it beats this.
+
+**A first-use guide** (`web/tutorial.js`, Oleksandr's request): four short steps on the Practice
+tab (move in the box, click the target, switch on demo tremor, compare filters), each outlining
+the part it is about. Shown once, remembered in the browser only; "How to use" in the top bar
+brings it back.
+
 ## Correcting the real cursor everywhere (B3, `systemwide/`, macOS only)
 
 **What it is.** A small program that makes the actual macOS cursor steadier in every app, not

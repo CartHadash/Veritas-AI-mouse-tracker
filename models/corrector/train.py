@@ -16,6 +16,7 @@ Run from the repository folder:
       (v3: learns to minimise the plain distance instead of the squared distance; squaring
        makes strong tremor's big errors dominate, so v1 helps medium tremor much less)
     python models/corrector/train.py --version v4_s2 --loss distance --smooth 2
+    python models/corrector/train.py --version v5_k1 --loss distance --smooth 2 --shake 1   # option B
       (v4: also penalises a jerky corrected cursor: the change in its velocity from one 10 ms
        tick to the next, compared with the intended path's. The team leader saw v1 look jumpy.)
       (v2: each training sequence's tremor is randomly made 0.5x-2x as large, so the network
@@ -98,6 +99,9 @@ def main():
     parser.add_argument("--loss", choices=["squared", "distance"], default="squared")
     parser.add_argument("--smooth", type=float, default=0.0,
                         help="weight of the jerkiness penalty on the corrected cursor (0 = off)")
+    parser.add_argument("--shake", type=float, default=0.0,
+                        help="option B (Sat 14 Nov): weight of the penalty on the error wobbling around "
+                             "its own average over the last 0.3 s, i.e. the shake the eye sees (0 = off)")
     args = parser.parse_args()
     weights = WEIGHTS if args.version == "v1" else WEIGHTS.with_name(f"weights_{args.version}.pt")
     figure = FIGURE.with_name(f"corrector_{args.version}_loss.png")
@@ -113,7 +117,9 @@ def main():
     history_log, best, start_time = [], None, time.time()
     for step in range(1, STEPS + 1):
         seq = torch.tensor(rng.integers(0, n_seq, BATCH))
-        t = torch.tensor(rng.integers(HISTORY + 2, length, BATCH))
+        # (the shake term looks 0.3 s further back; only then is the earliest time later, so the
+        # earlier versions still draw exactly the same random numbers as when they were trained)
+        t = torch.tensor(rng.integers(HISTORY + (32 if args.shake > 0 else 2), length, BATCH))
         scale = None
         if args.scale_augment:      # log-uniform between 0.5 and 2: as often smaller as bigger
             scale = torch.tensor(np.exp(rng.uniform(np.log(0.5), np.log(2.0), BATCH)), dtype=torch.float32)
@@ -131,6 +137,16 @@ def main():
             e0, e1, e2 = prediction - target.to(device), p1 - g1.to(device), p2 - g2.to(device)
             jerk = torch.sqrt(((e0 - 2 * e1 + e2) ** 2).sum(dim=1) + 1e-6).mean()
             loss = loss + args.smooth * jerk
+        if args.shake > 0:
+            # Option B: the error at 16 ticks 20 ms apart (the last 0.3 s). A steady offset is
+            # allowed; its wobble around the window's own average is what looks like shaking.
+            errors = [prediction - target.to(device)]
+            for back in range(2, 32, 2):
+                hb, gb = gather(*train, seq, t - back, scale)
+                errors.append(model(hb.to(device)) - gb.to(device))
+            errors = torch.stack(errors)                                   # (16, batch, 2)
+            wobble = torch.sqrt(((errors - errors.mean(dim=0)) ** 2).sum(dim=2) + 1e-6).mean()
+            loss = loss + args.shake * wobble
         optimiser.zero_grad()
         loss.backward()
         optimiser.step()

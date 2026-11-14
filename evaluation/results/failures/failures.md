@@ -111,13 +111,15 @@ spread out: it takes 25 of 72 people to cause half, and every person has at leas
 reading: misses depend on the person (some people's tremor is small or comes and goes), while
 false alarms come from movement that occurs for everyone (purposeful tasks, look-alikes).
 
-## The demo page's weak spot: a hand held still
+## The demo page's weak spot: a hand held still (fixed by the app's smoothing)
 
-`demo_still_hand.png` (medium replayed tremor of test people, server code): no filter 6.08 px
-from the hold point, One Euro 1.62 px, our model 4.07 px, with our correction more than half on
-92% of the time. When the hand is still, a smoothing filter has nothing to lag behind, so it is
-the best tool there; our corrector predicts and subtracts the tremor, which leaves a few pixels
-of error. Our advantage is during movement, where smoothing lags (`RESULTS.md`).
+`demo_still_hand.png` and `extras.md` (medium replayed tremor of test people, server code). With
+our network alone the still hand was its weak spot (One Euro was closer). Since the app adds
+One Euro smoothing switched by our detector (Sat 14 Nov, late), a still hand is held best by our
+model: no filter 6.08 px from the hold point, One Euro 1.62 px, our model 1.52 px, with our
+correction more than half on 92% of the time. The new weak spot is the other side: that
+smoothing lags behind a moving hand, so while reaching with mild or medium tremor our cursor is
+further from the path than no filter (`RESULTS.md`, "On the demo page").
 
 ## The patterns in one paragraph
 

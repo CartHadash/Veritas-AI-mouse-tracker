@@ -32,6 +32,6 @@ Worse than no filter, by tremor size: mild (under 3 px) 7 of 47; medium (3-10 px
 
 ## D. The demo page's weak spot: a hand held perfectly still
 
-Medium replayed tremor of test people, hand still, after a 3 s warm-up (server code, as `compare_modes.py`): average distance from the hold point: no filter 6.08 px, One Euro 1.62 px, our model 4.07 px; our correction was more than half on for 92% of the time. Chart: `demo_still_hand.png` (seconds 3-13).
+Medium replayed tremor of test people, hand still, after a 3 s warm-up (server code, as `compare_modes.py`): average distance from the hold point: no filter 6.08 px, One Euro 1.62 px, our model 1.52 px; our correction was more than half on for 92% of the time. Chart: `demo_still_hand.png` (seconds 3-13).
 
 This project is a prototype and is not medical advice.

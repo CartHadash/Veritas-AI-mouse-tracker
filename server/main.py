@@ -82,6 +82,9 @@ async def only_local_pages(request: Request, call_next):
 # Demo tremor starts at "strong": with medium tremor the correction is hard to see by eye
 # (Oleksandr's hand check, Sat 14 Nov; evaluation/results/demo_modes_test.md, medium, reaching).
 settings = {"mode": "learned", "strength": 1.0, "demo_tremor": False, "demo_level": "strong", "tracking": False}
+# Whether "Our model" adds gated One Euro smoothing (option A). Not a user setting: evaluations
+# switch it off to measure the network alone (evaluation/vs_one_euro.py).
+SMOOTH_OUTPUT = {"on": True}
 DEMO_LEVELS = ["mild", "medium", "strong"]
 # The filters the calibration test tries on the user's own movement: (mode, strength).
 CANDIDATES = [("none", 1.0), ("one_euro", 1.0), ("learned", 0.5), ("learned", 1.0)]
@@ -266,7 +269,8 @@ class CursorSession:
             self.demo = DemoTremor(conf["demo_level"])
         self.detector.reset()
         if self.mode == "learned":
-            self.filter = LiveCorrector(live_detector=self.detector, strength=self.strength, model=CORRECTOR_MODEL)
+            self.filter = LiveCorrector(live_detector=self.detector, strength=self.strength, model=CORRECTOR_MODEL,
+                                        smooth_output=SMOOTH_OUTPUT["on"])
         elif self.mode == "one_euro":
             self.filter = OneEuroFilter()
         elif self.mode == "low_sensitivity":

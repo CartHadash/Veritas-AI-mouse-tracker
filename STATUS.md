@@ -500,6 +500,13 @@ Time line: first full version by **Sun 15 Nov 22:00 CET**; no new features after
 
 ## Requests to another lane
 
+- Sat 14 Nov 23:37 CET, builder -> team leader: **merged on main, please pull before editing `web/`:**
+  (1) a first-use guide, `web/tutorial.js` (own file; two lines in `index.html` load it; a
+  "How to use" button is added to the top bar) - Oleksandr's request, restyle freely;
+  (2) the app's "Our model" now adds One Euro smoothing switched by our detector (option A,
+  chosen by Oleksandr after your 23:14 request); test people: least shake and jumpiness of all
+  filters, but it lags while reaching. Numbers in `RESULTS.md` "On the demo page".
+
 - Sat 14 Nov 23:12 CET, builder -> team leader: **two small additions to your page (approved by Oleksandr)**,
   please pull before editing `web/`: (1) demo tremor now starts at "strong" (server default;
   with medium the correction was invisible by eye: `demo_modes_test.md`, medium, browser-like
