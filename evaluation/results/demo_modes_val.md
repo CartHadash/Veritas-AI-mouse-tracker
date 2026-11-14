@@ -1,6 +1,6 @@
 # Filter modes on the demo page: replayed tremor of VALIDATION people (development)
 
-Produced by `python evaluation/compare_modes.py --people val`. Average distance (px) between the shown cursor and the intended path after a 3 s warm-up, over 41 s so all 4 recordings of a strength level play once. Uses the server's own session code. First table: medium replayed tremor (the page's default).
+Produced by `python evaluation/compare_modes.py --people val`. Average distance (px) between the shown cursor and the intended path after a 3 s warm-up, over 41 s so all 4 recordings of a strength level play once. Uses the server's own session code. First table: medium replayed tremor (the page's default until Sat 14 Nov; now strong).
 
 Jerkiness = average size of the change in the shown cursor's velocity from one 10 ms step to the next, on an even 100 Hz time grid (px).
 

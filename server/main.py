@@ -79,7 +79,9 @@ async def only_local_pages(request: Request, call_next):
 
 # ---------------------------------------------------------------- shared state
 
-settings = {"mode": "learned", "strength": 1.0, "demo_tremor": False, "demo_level": "medium", "tracking": False}
+# Demo tremor starts at "strong": with medium tremor the correction is hard to see by eye
+# (Oleksandr's hand check, Sat 14 Nov; evaluation/results/demo_modes_test.md, medium, reaching).
+settings = {"mode": "learned", "strength": 1.0, "demo_tremor": False, "demo_level": "strong", "tracking": False}
 DEMO_LEVELS = ["mild", "medium", "strong"]
 # The filters the calibration test tries on the user's own movement: (mode, strength).
 CANDIDATES = [("none", 1.0), ("one_euro", 1.0), ("learned", 0.5), ("learned", 1.0)]

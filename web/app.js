@@ -67,6 +67,31 @@ function onTarget(p) { return Math.hypot(p.x - target.x, p.y - target.y) <= TARG
 // went (raw) and where the corrected cursor went. Only real positions from the server.
 const TRAIL_MS = 700;               // how much of the past the lines show
 let trail = [];                     // [{at, rawX, rawY, x, y}, ...], oldest first
+// "Shake" readout: the last 2.5 s of replies. The intended path is estimated as the raw path
+// averaged over 0.25 s (that irons out 3-12 Hz shaking); shake = average distance of a cursor
+// from it. For display only: it never affects the correction.
+const SHAKE_MS = 2500, SMOOTH_MS = 125;
+let shakeLog = [];                  // [{at, rawX, rawY, x, y}, ...], oldest first
+let shakeMode = null, shakeShownAt = 0;
+
+function shakeNow() {
+  const now = performance.now();
+  while (shakeLog.length && now - shakeLog[0].at > SHAKE_MS) shakeLog.shift();
+  if (shakeLog.length < 30 || now - shakeLog[0].at < 1500) return null;      // too little yet
+  let raw = 0, shown = 0, n = 0;
+  for (const s of shakeLog) {
+    if (s.at - shakeLog[0].at < SMOOTH_MS || now - s.at < SMOOTH_MS) continue;  // need both sides
+    let rx = 0, ry = 0, k = 0;
+    for (const q of shakeLog) {
+      if (Math.abs(q.at - s.at) <= SMOOTH_MS) { rx += q.rawX; ry += q.rawY; k += 1; }
+    }
+    rx /= k; ry /= k;
+    raw += Math.hypot(s.rawX - rx, s.rawY - ry);
+    shown += Math.hypot(s.x - rx, s.y - ry);
+    n += 1;
+  }
+  return n ? { raw: raw / n, shown: shown / n } : null;
+}
 
 // Short-lived marks drawn on the practice area after a click: a ring that bursts out of a hit
 // target (with the time it took), or a small cross where a miss landed.
@@ -99,6 +124,7 @@ function connect() {
     latest = message;
     if (inside) {
       trail.push({ at: performance.now(), rawX: message.raw_x, rawY: message.raw_y, x: message.x, y: message.y });
+      shakeLog.push({ at: performance.now(), rawX: message.raw_x, rawY: message.raw_y, x: message.x, y: message.y });
       if (trail.length > 400) trail.shift();          // never grows without limit
     }
     updateMeter();
@@ -184,6 +210,7 @@ area.addEventListener("pointermove", (event) => {
 area.addEventListener("pointerleave", () => {
   inside = false;
   trail = [];
+  shakeLog = [];
   if (calib && calib.phase !== "scoring") {                 // left the area: the test is void
     if (calib.phase === "running") send({ type: "calibrate_cancel" });
     calib = null;
@@ -192,13 +219,14 @@ area.addEventListener("pointerleave", () => {
 });
 // Coming back into the area (maybe somewhere else): start the filter afresh, so the
 // cursor never jumps across from where the pointer left.
-area.addEventListener("pointerenter", () => { trail = []; send({ type: "reset" }); });
+area.addEventListener("pointerenter", () => { trail = []; shakeLog = []; send({ type: "reset" }); });
 
 document.addEventListener("pointerlockchange", () => {
   locked = document.pointerLockElement === area;
   if (locked) lockRefusals = 0;
   inside = locked;
   trail = [];
+  shakeLog = [];
   send({ type: "reset" });                // start the filter afresh where the pointer is
 });
 document.addEventListener("pointerlockerror", () => {
@@ -293,6 +321,14 @@ function showTally() {
 
 function updateMeter() {
   if (!latest) return;
+  if (latest.mode !== shakeMode) { shakeLog = []; shakeMode = latest.mode; }   // a new filter: start over
+  if (performance.now() - shakeShownAt > 250) {                                   // 4 times a second is plenty
+    shakeShownAt = performance.now();
+    const shake = shakeNow();
+    document.getElementById("shake").textContent = !shake ? "-"
+    : latest.mode === "none" ? shake.raw.toFixed(1)
+    : `${shake.raw.toFixed(1)} → ${shake.shown.toFixed(1)}`;
+  }
   const word = document.getElementById("tremor-word");
   if (latest.score === null) {
     word.textContent = "Collecting 2.56 s of movement...";

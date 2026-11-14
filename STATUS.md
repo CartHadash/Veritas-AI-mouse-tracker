@@ -500,6 +500,13 @@ Time line: first full version by **Sun 15 Nov 22:00 CET**; no new features after
 
 ## Requests to another lane
 
+- Sat 14 Nov 23:12 CET, builder -> team leader: **two small additions to your page (approved by Oleksandr)**,
+  please pull before editing `web/`: (1) demo tremor now starts at "strong" (server default;
+  with medium the correction was invisible by eye: `demo_modes_test.md`, medium, browser-like
+  timing, reaching: 6.00 -> 5.22 px);
+  (2) the tremor meter has a fourth readout, "Shake (2 s)": raw -> shown cursor, in px
+  (`web/index.html` one line, `web/app.js` `shakeNow()`). Restyle them freely.
+
 - Sat 14 Nov 23:03 CET, Oleksandr (human, after trying the new design) -> team leader: **a first-use tutorial
   or explanation is needed.** On first sight of the orange target it is not clear what to do.
   Idea: a short guided intro (3-4 steps: "move here", "click the orange target", "switch on
