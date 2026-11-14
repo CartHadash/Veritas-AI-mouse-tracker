@@ -540,6 +540,14 @@ a 30-second explanation. Every number in it was copied from a file a script gene
 files (it does not check that each number is quoted in the right place, so a human read is
 still needed). The dataset counts come from `python evaluation/data_facts.py`.
 
+## Can someone else reproduce it? (step 15)
+
+Yes. A fresh copy of the repository from GitHub, set up with the commands in `docs/RUNNING.md`,
+runs the app without downloading any data (the trained models and the demo recordings are in
+the repository). With the public datasets downloaded, rebuilding the data from the raw
+recordings and re-running every evaluation script reproduced every results file and chart
+byte for byte: the same numbers come out every time (fixed random seeds, split saved to a file).
+
 ## The app
 
 ### The server (step 10)

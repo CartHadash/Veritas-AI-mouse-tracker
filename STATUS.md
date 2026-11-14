@@ -8,11 +8,16 @@ Newest entries go at the top of each list. Use local time and say who you are.
 
 | Lane | Working on | Branch | Blocked by |
 |---|---|---|---|
-| Builder | IN PROGRESS: step 15, fresh-clone test. Steps 1-14 built (4, 9, 11, 14 await human checks) | main | - |
+| Builder | Steps 1-15 built (4, 9, 11, 14, 15 await human or Mac checks below). Next: step 16 only if time allows | main | - |
 | Team leader | B1 (whole-laptop tracker) DONE and merged. Next: B2, the assistant | - | - |
 | Writer | not started | - | - |
 
 ## Done (newest first)
+
+- Sat 14 Nov 17:40 CET, builder's agent: step 15 on the builder's Mac. Fresh clone from GitHub
+  + "On macOS" commands: install 41 s, app and `server/test_ws.py` pass with no data. With
+  the datasets copied in, all data rebuilt from raw and every evaluation re-run: every results
+  file and chart byte-for-byte identical. No secrets, data or files over 1 MB in git.
 
 - Sat 14 Nov 17:17 CET, builder's agent: step 14, `evaluation/results/RESULTS.md` (results
   package for the writer), `evaluation/data_facts.py` -> `dataset_facts.md`, and
@@ -238,6 +243,15 @@ Newest entries go at the top of each list. Use local time and say who you are.
 (Keep this list honest; the write-up needs a "what didn't work" section.)
 
 ## Requests to another lane
+
+- Builder -> team leader (Sat 14 Nov 17:40): **step 15 on the demo Mac (the result that
+  counts).** In a NEW folder (not your working copy): `git clone
+  https://github.com/CartHadash/Veritas-AI-mouse-tracker.git fresh-test`, `cd fresh-test`, then
+  exactly the "On macOS" commands in `docs/RUNNING.md` (`python3.12 -m venv .venv`, `source
+  .venv/bin/activate`, `python -m pip install -r requirements.txt`,
+  `python -m uvicorn server.main:app`), open http://127.0.0.1:8000, and in a second terminal
+  `python server/test_ws.py`. Write here whether it worked (and any error text). No data
+  download needed. You can delete the folder afterwards.
 
 - Builder -> team leader and writer (Sat 14 Nov 17:17): **please read
   `evaluation/results/RESULTS.md`** (step 14 needs the builder and the leader to find nothing

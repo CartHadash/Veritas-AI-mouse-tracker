@@ -638,6 +638,12 @@ again). Fix anything that was missing. Check no file over a few MB and no `.env`
 Then ask the leader to do the same on the demo Mac with the "On macOS" part. **The demo Mac's result is
 the one that counts**, because that is the demo machine.
 
+Done on the builder's Mac (Sat 14 Nov): fresh clone from GitHub in a temporary folder, the
+"On macOS" commands exactly, app and server check pass with no data. With the datasets copied
+in, rebuilding everything from the raw recordings and re-running every evaluation script left
+all results files and charts byte-for-byte unchanged (`git status` empty). Largest tracked file
+0.99 MB; no `.env`, data or keys in git. Waiting for the leader's demo Mac check.
+
 **Done when:** it works from a fresh clone on both machines and `STATUS.md` says so.
 
 ### - [ ] Step 16 (only if everything above is done). Desktop-app window
