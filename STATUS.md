@@ -338,6 +338,10 @@ Time line: first full version by **Sun 15 Nov 22:00 CET**; no new features after
 
 ## Decisions made along the way (what, why, who decided)
 
+- Sat 14 Nov 22:10, team leader (human): README shows no team names or schools (round 1 is
+  reviewed blind); the "Team:" line reads "Names on the submission form". Recorded in
+  `docs/WRITER_BRIEF.md`.
+
 - Sat 14 Nov 21:20, team leader (human): (1) YES, the builder rewrites
   `scripts/download_data.py` and `baselines/classical_filters.py` from scratch (removes any
   rule-2 risk). (2) Step 9 additions: per-person uncertainty ranges, failures (per person,

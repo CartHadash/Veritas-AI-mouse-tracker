@@ -28,8 +28,8 @@ named below, never from this brief, from memory, from chat, or from an older dra
 8. **`README.md` is not edited until the team leader says the write-up phase has started.**
    Draft somewhere else (a shared doc) until then.
 9. **Round 1 is reviewed blind**: reviewers do not see names or schools. Team names go on the
-   submission form. QUESTION FOR THE LEADER: the official template has a "Team:" line; decide
-   whether README shows names or says "names on the submission form".
+   submission form. DECIDED by the leader (Sat 14 Nov): README shows no names or schools; the
+   template's "Team:" line reads "Names on the submission form".
 10. **About one page.** Judges must understand it in two minutes. One main takeaway.
 
 ## 2. Where each part of the write-up comes from
