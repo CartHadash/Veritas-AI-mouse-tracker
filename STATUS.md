@@ -8,7 +8,7 @@ Newest entries go at the top of each list. Use local time and say who you are.
 
 | Lane | Working on | Branch | Blocked by |
 |---|---|---|---|
-| Builder | Steps 1-11 built (8, 9, 11 await checks below). Next: step 12, one measured improvement per model | main | - |
+| Builder | IN PROGRESS: step 12, one measured improvement per model. Steps 1-11 built (8, 9, 11 await checks) | builder/improvements | - |
 | Team leader | not started | - | - |
 | Writer | not started | - | - |
 
