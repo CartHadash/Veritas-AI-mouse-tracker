@@ -1,0 +1,477 @@
+# Build guide: BUILDER lane
+
+For the builder and their AI agent (Claude Code on a Mac). This lane builds the heart of
+the project: the data, the two models, their evaluation, the server and the main interface.
+
+**Agent:** read `CLAUDE.md` first. Work through the steps in order. Tick each box when its
+"Done when" is true. Keep this file accurate: if you do a step differently, rewrite the
+step (rules in `CLAUDE.md`, "Keeping the instructions up to date").
+
+**Builder (human):** you do not need to understand code to steer this. Your jobs are:
+(1) do the short "Human setup" below, (2) answer the agent's **DECISION** questions (each
+comes with a recommendation; "go with your recommendation" is a fine answer),
+(3) read `docs/EXPLAINED.md` as it grows, and ask the agent to re-explain anything unclear.
+You will have to explain this project to judges, so do not skip (3).
+
+Not in this lane (the team leader builds these, in parallel): reading the pointer across
+the whole laptop (`tracker/`), the Claude assistant (`assistant/`, `web/assistant/`), and
+correcting the real cursor everywhere (`systemwide/`). Do not build them. You connect to
+them through the three contracts in `docs/PROJECT_PLAN.md`.
+
+---
+
+## Human setup (about 20 minutes plus the download)
+
+1. Install Git, Python 3.12 and Claude Code if you do not have them.
+2. In a terminal:
+
+   ```bash
+   git clone https://github.com/CartHadash/Veritas-AI-mouse-tracker.git
+   cd Veritas-AI-mouse-tracker
+   python3 -m venv .venv
+   source .venv/bin/activate
+   python scripts/download_data.py
+   ```
+
+   The last line downloads 1.5 GB and can take 10–30 minutes. Start it first and let it
+   run. It finishes with "PADS: done, all files OK."
+3. Keep the Mac awake while the agent works: open a second terminal window, run
+   `caffeinate -dims`, and leave that window open.
+4. Start Claude Code inside the `Veritas-AI-mouse-tracker` folder. Allow it to edit files
+   and run commands in this folder without asking each time, otherwise it stops at every step.
+5. Give it this first message:
+
+   > You are the BUILDER agent. Read CLAUDE.md, then the files it lists, then follow
+   > BUILD_GUIDE_BUILDER.md from the first unticked step. Explain each step to me in simple
+   > words before you do it, and stop to ask me at every DECISION.
+
+When you come back after a break, say: *"Read STATUS.md and BUILD_GUIDE_BUILDER.md and
+continue from the first unticked step."*
+
+---
+
+## How every step works (agent)
+
+For each step: (1) tell your human in plain words what it is and why; (2) do it on a
+branch if it is a big addition; (3) **run it** and check the "Done when"; (4) write the
+plain-language entry in `docs/EXPLAINED.md`; (5) update `STATUS.md`, tick the box here,
+push, and merge to `main` if the merge conditions in `CLAUDE.md` hold.
+
+Time targets are in `docs/PROJECT_PLAN.md`. If a step is stuck for 30 minutes, choose the
+simpler fallback written in the step, note it in `STATUS.md`, and move on.
+
+---
+
+## Phase 1: foundations (target: Saturday 16:00 CET)
+
+### - [ ] Step 1. Environment
+
+**In plain words:** install the Python libraries the project needs and write them down so
+teammates get the same ones.
+
+**Do:** create `requirements.txt` with: `numpy`, `pandas`, `scipy`, `scikit-learn`,
+`matplotlib`, `torch`, `fastapi`, `uvicorn[standard]`, `anthropic`, `python-dotenv`,
+`pytest`. Install them. Add each to `docs/SOURCES.md` with its link. Check
+`torch.backends.mps.is_available()` and note the result (it decides whether training uses
+the Apple GPU or the CPU; either is fine for models this small).
+
+**Done when:** `python -c "import numpy, pandas, scipy, sklearn, torch, fastapi, anthropic"`
+prints nothing and exits cleanly.
+
+### - [ ] Step 2. Look at the data with your own eyes
+
+**In plain words:** before training anything, open a few recordings and plot them. The
+hackathon guide says this is the easiest way to catch bad data, and it gives us a chart
+that proves the tremor is really there.
+
+**Do:** read `docs/DATASETS.md`. Write `data_pipeline/look_at_data.py` that:
+
+- counts PADS subjects per diagnosis, and by age band (under 60, 60–69, 70 and over) and sex;
+- loads PADS subject 060, right wrist, task `Relaxed`, and TremorDB `rofh/s6rof.let`;
+- for each, saves a chart with the signal over time (plus a 3-second zoom) and its
+  **frequency spectrum** (use `scipy.signal.welch`), into `evaluation/results/figures/`.
+
+A frequency spectrum shows how much of the movement happens at each speed of repetition;
+a tremor shows up as a tall narrow peak between 3 and 12 times per second.
+
+**Done when:** the script prints 469 subjects (276 Parkinson's, 79 healthy, 28 essential
+tremor), and the two charts show peaks near 4.3 Hz and 4.9 Hz. If the numbers differ, stop
+and tell your human: the data may be incomplete.
+
+---
+
+## Phase 2: turning the datasets into training data (target: Saturday 20:00 CET)
+
+Background for the human, because judges will ask: **nobody has published mouse recordings
+from people with tremor.** So we build our examples: we take *real tremor* measured on
+patients' wrists and fingertips, and add it on top of *computer-generated* mouse movement.
+Because we built each example ourselves, we know the correct answer for it (how much
+tremor is in it, and what the clean movement was). That is what lets us train and score
+models. The weakness is that it is a construction, and we say so openly.
+
+### - [ ] Step 3. The tremor library
+
+**In plain words:** go through both datasets, pull out the shaking part of each recording,
+and store it in one tidy file, together with who it came from.
+
+**Do:** write `data_pipeline/tremor_library.py`, producing `data/derived/tremor_library.npz`.
+
+- **PADS:** use the gyroscope (rotation), which is less disturbed by gravity than the
+  accelerometer. Two of its three axes become the cursor's left-right and up-down.
+  Use every diagnosis group, including healthy controls; keep the `condition`, `age`,
+  `gender`, task and subject id with each segment.
+- **TremorDB:** the signal is velocity; add it up over time (integrate) to get position.
+  It has one axis, so pair each recording with a copy of itself shifted by a few seconds.
+- **Isolate the tremor band:** keep only movement between 3 and 12 Hz (a band-pass filter;
+  `scipy.signal.butter` with `filtfilt` is fine here because this is offline preparation).
+- **Keep real size differences.** Do **not** rescale every segment to the same size. Use
+  **one conversion factor for the whole dataset** from sensor units to pixels, so a patient
+  with strong tremor stays stronger than a healthy person's tiny natural tremor.
+- **Mark which segments "contain tremor"** using a fixed rule on the original recording
+  (for example: a clear spectral peak in 3–12 Hz and enough power there). Decide the rule
+  **now, before any model is trained, and never change it after seeing model results.**
+  Report how many segments, subjects and seconds are marked, per diagnosis.
+- Save a chart of 8 example segments with their spectra.
+
+**DECISION 1: the pixel conversion factor.** There is no "true" value, because a wrist
+sensor is not a mouse. Recommended: choose the factor so that the middle (median)
+tremor-marked Parkinson's segment has an on-screen size of about 6 pixels, and later test
+everything again at half and at double that factor to show the results do not depend on
+the choice. The alternative is to rescale every segment into a fixed pixel range, which is
+simpler but throws away the real differences between people.
+
+**DECISION 2: which task types to include.** Recommended: all of them, labelled by type
+(rest / postural / action), so we can report results per type. Action tasks are closest to
+using a mouse, but in those the patient's deliberate arm movement is mixed in; the
+band-pass removes most of it.
+
+**Done when:** the script runs in one command, prints the counts, and the example chart
+shows clearly rhythmic segments for tremor-marked patients and nearly flat ones for healthy
+controls. Write the rule, the factor and the counts in `docs/EXPLAINED.md`.
+
+### - [ ] Step 4. Synthetic "intended" mouse movement
+
+**In plain words:** generate realistic-looking mouse movement with no tremor in it: reaches
+toward targets, pauses, small corrections. This plays the role of "what the person meant to do".
+
+**Do:** write `data_pipeline/synthetic_paths.py`.
+
+- Reaches between random points using a smooth speed-up-then-slow-down shape (a
+  "minimum-jerk" profile, which matches how people really point), distances 50–900 px,
+  durations 0.3–1.2 s.
+- Pauses, slow drifts, small corrective movements near the target, curved paths.
+- **Tremor look-alikes with no tremor**, so the detector cannot cheat: deliberate quick
+  back-and-forth wiggles, fast small circles, sudden direction changes, and a little random
+  sensor jitter. These are the cases we expect false alarms on.
+- 100 samples per second, in pixels. A fixed random seed so it is repeatable.
+- Save a chart of a few generated paths.
+
+**Done when:** a human looking at the chart finds the paths plausible, and variety is
+obvious (not all straight lines of the same length).
+
+### - [ ] Step 5. The training, validation and test sets
+
+**In plain words:** combine steps 3 and 4 into labelled examples, and split the *people*
+into three groups: one to learn from, one to tune on, one locked away for the final score.
+Splitting by person matters: if the same patient appears in both learning and testing, the
+model can recognise the person instead of the tremor, and the score is fake.
+
+**Do:** write `data_pipeline/build_dataset.py`.
+
+- Split subjects 70% / 15% / 15% (train / validation / test), keeping each diagnosis group
+  proportionally represented. Fixed seed. Save the lists to `data_pipeline/split.json` and
+  commit that file (it contains only subject numbers).
+- **Detector examples:** windows of 2.56 seconds (256 samples).
+  - *Positive* (tremor present) = synthetic movement + a tremor-marked segment.
+  - *Negative* (no tremor) = synthetic movement alone; synthetic movement + a healthy
+    control's segment (their tiny natural tremor); synthetic movement + a patient segment
+    that was *not* marked as tremor.
+  - Each example keeps: label, tremor size in pixels, tremor frequency, subject id,
+    diagnosis, age band, sex, task type, and whether the hand was mostly moving or still.
+- **Corrector examples:** longer sequences of (shaky input → clean target), mixing all
+  tremor sizes and also sequences with no tremor at all (the corrector must leave a steady
+  hand alone).
+- Print a table: number of examples per split, per label, per group.
+
+**Done when:** no subject id appears in more than one split (write a test in
+`data_pipeline/test_split.py` that fails if one does, and run it), and the table is in
+`docs/EXPLAINED.md`.
+
+**Tell your human:** how many test subjects there are in each age band and sex. If a group
+has fewer than about 10, say so now; results for that group will be unreliable and the
+write-up must say that.
+
+---
+
+## Phase 3: baselines and first models (target: Saturday midnight CET)
+
+A **baseline** is the simplest possible way to do the job. Judges want our model's score
+shown next to it, so they can see how much the AI adds.
+
+### - [ ] Step 6. Measure the baselines
+
+**Do:** write `evaluation/metrics.py` (shared scoring functions) and
+`evaluation/run_baselines.py`. Results go to `evaluation/results/baselines.md`.
+
+**Detector baselines**, scored on validation and test:
+
+1. *Always "no tremor".* Its accuracy will look decent if most examples are negative,
+   while it misses every single case. This is the baseline the briefs describe.
+2. *Frequency rule.* Says "tremor" when enough of the window's movement power lies between
+   3 and 12 Hz. Choose its threshold on validation only.
+
+For each, report: **missed cases** (share of real tremor windows called "no tremor"),
+**false alarms** (share of no-tremor windows called "tremor"), and overall accuracy, in
+that order.
+
+**Corrector baselines**, scored on test sequences:
+
+1. No filter.
+2. Lower pointer sensitivity (cursor moves half as far as the hand; also try a quarter).
+   Compare fairly: measure error relative to the intended movement scaled the same way,
+   and count the extra hand travel as its cost.
+3. The three classical filters in `baselines/classical_filters.py`.
+
+For each, report: average distance between the output and the intended path (while moving
+and while still, separately), how much of the 3–12 Hz shake is removed, and **lag** (how
+many milliseconds the output trails the intended movement).
+
+**Done when:** both tables exist, produced by one command. The frequency rule should do
+well on still windows and worse on moving ones; if it scores near-perfect everywhere, the
+task is too easy: tell your human and add harder look-alikes in step 4 before going on.
+
+### - [ ] Step 7. Detector, version 1
+
+**In plain words:** train the first model that decides "tremor or not" for a 2.56-second
+window of cursor movement, and estimates its strength.
+
+**DECISION 3: what kind of model first.**
+Option A (recommended): a classic machine-learning model from scikit-learn (for example
+gradient boosting or a random forest) fed with about 20 hand-made measurements of each
+window: power in several frequency bands, peak frequency and sharpness, speed statistics,
+how often direction reverses. Trains in seconds, and we can show *which measurements
+mattered*, which makes it easy to explain to judges.
+Option B: a small neural network that reads the raw movement directly. More "AI-looking",
+but slower to get right and harder to explain. We try this as version 2 in step 12.
+
+**Do:** `models/detector/features.py`, `models/detector/train.py`,
+`models/detector/predict.py`. Train on train, choose settings and the decision threshold
+on validation, then score **once** on test.
+
+**DECISION 4: where to set the alarm threshold.** The model outputs a score from 0 to 1;
+we choose the cut-off. A low cut-off catches more tremor but raises more false alarms. For
+our user a false alarm only means slightly more smoothing than needed, while a missed case
+means the cursor stays shaky. Recommended: choose the cut-off that keeps missed cases under
+about 10% on validation and report the false alarms that result. Show your human the
+trade-off table and let them pick.
+
+**Report** (`evaluation/results/detector_v1.md`): missed cases and false alarms on test,
+next to both baselines; the same broken down by age band, sex, diagnosis (Parkinson's vs
+essential tremor), tremor size (mild / medium / strong), task type, and moving vs still;
+and the error of the strength estimate in pixels. Repeat the headline numbers at half and
+double the pixel factor from DECISION 1.
+
+**Done when:** the report exists and the model beats the frequency rule on at least the
+moving windows. **If it does not beat the baseline, say so plainly** in `STATUS.md`; that
+is an acceptable result to report, and step 12 is where we try to improve it.
+
+### - [ ] Step 8. Corrector, version 1
+
+**In plain words:** train a small neural network that looks at the last half-second of
+shaky cursor movement and outputs where the cursor *should* be right now.
+
+**Do:** `models/corrector/model.py`, `train.py`, `live.py`.
+
+- Input: the last 48–64 samples (about half a second) as movement steps (dx, dy), not
+  screen positions, so it works anywhere on the screen.
+- Output: the corrected current position, expressed as an offset from the raw position.
+- **Causal:** it may never see future samples. This is what makes it usable live.
+- Small: a few 1D convolution layers or a small GRU, a few tens of thousands of weights.
+  Training must finish in under 20 minutes on the laptop.
+- Train to minimise the distance to the clean path. Save the best version by validation
+  score to `models/corrector/weights.pt` (must be under 2 MB).
+- `live.py` wraps it with the same `reset()` / `update(x, y, t)` shape as the classical
+  filters, resampling the incoming samples to 100 per second.
+- **Use the detector to control it:** when the detector's tremor score is low, blend back
+  toward the raw cursor, so a steady hand gets no added lag. This is the point where the
+  two models work as one system.
+- Measure how long one live update takes on the CPU.
+
+**Report** (`evaluation/results/corrector_v1.md`): the same measures as the corrector
+baselines, side by side, on test subjects only.
+
+**Done when:** one live update takes well under 8 ms, the report exists, and the loss-curve
+chart is saved. Beating One Euro is the hope, not the requirement; report whatever is true.
+
+### - [ ] Step 9. Where it fails
+
+**In plain words:** the briefs require at least one example the model gets wrong, with our
+best explanation. Good failure analysis scores higher than a suspiciously perfect result.
+
+**Do:** `evaluation/find_failures.py`. Save to `evaluation/results/failures/`:
+
+- 3 missed cases and 3 false alarms from the detector, each as a chart of the window and
+  its spectrum, with one or two sentences on the likely reason (for example: mild tremor
+  hidden under a fast reach; a deliberate wiggle that looks rhythmic).
+- 2 sequences where the corrector does worse than no filter or than One Euro.
+- A short `failures.md` summarising the patterns.
+
+**Done when:** the files exist and your human has read `failures.md`.
+
+**Checkpoint (Saturday night):** update `STATUS.md` with the real numbers. This is the
+official "baseline and first model work" milestone. Then sleep.
+
+---
+
+## Phase 4: the app (target: Sunday 13:00 CET for the live demo, 18:00 for the rest)
+
+### - [ ] Step 10. The server
+
+**In plain words:** a small Python program that runs on the laptop, keeps the two models
+loaded, and talks to the interface in the browser.
+
+**Do:** `server/main.py` using FastAPI. Run with `uvicorn server.main:app`.
+
+- Serves the interface files from `web/` at `http://127.0.0.1:8000`. Local only: bind to
+  `127.0.0.1`, never `0.0.0.0`.
+- **`/ws/cursor`** (a WebSocket, which is a connection that stays open so messages flow
+  both ways quickly): the browser sends pointer samples from the demo page; the server
+  replies to each with the corrected position, the detector's tremor score, and the
+  estimated strength and frequency.
+- **`GET /api/summary`**: returns the session summary exactly as in Contract 2 of
+  `docs/PROJECT_PLAN.md`. Until the leader's tracker exists, build it from the demo page's
+  samples.
+- **Leader's modules, if present:** try to import `tracker` and `assistant`. If `tracker`
+  is there, start it and feed its samples (Contract 1) into the detector and the summary.
+  If `assistant.router` is there, include it. If either is missing, carry on without it and
+  say so on the page. Never edit files inside `tracker/` or `assistant/`.
+- `POST /api/settings` for the filter mode (none / low sensitivity / One Euro / learned),
+  filter strength, and demo tremor on/off.
+- Write `docs/RUNNING.md`: the exact commands to start the app from a fresh clone.
+
+**DECISION 5: where the corrector runs.** Option A (recommended): in Python on the server,
+with each sample making a round trip over the WebSocket; on one laptop this adds about a
+millisecond and keeps one copy of the model. Option B: convert the model to run inside the
+browser (ONNX); no round trip, but an extra conversion step that can eat hours.
+
+**Done when:** a small test script can connect to `/ws/cursor`, send 500 samples and get
+500 replies, and the average reply time is printed and noted in `STATUS.md`.
+
+### - [ ] Step 11. The interface: live demo page
+
+**In plain words:** the page judges will actually see. One look should show a shaky cursor
+on one side and a steady one on the other.
+
+**Do:** `web/index.html`, `web/app.js`, `web/styles.css`. Plain HTML, CSS and JavaScript,
+no build tools.
+
+- A practice area with small targets to click. The system cursor is hidden inside it; we
+  draw two: a faint "raw" cursor and a solid "corrected" one.
+- **Demo tremor switch:** since none of us has tremor, this adds a real patient's tremor
+  (from the *test* subjects in the library) to the user's live movement. The page must say
+  clearly, whenever it is on: "Demo mode: replaying recorded tremor from a public dataset."
+- Filter mode buttons: none / lower sensitivity / One Euro / our learned model.
+- A live tremor meter from the detector: tremor score, estimated frequency, strength.
+- A running tally: targets hit, misses, average time per target, per filter mode.
+- The footer line: "This project is a prototype and is not medical advice."
+- Leave an empty container `<div id="assistant-panel"></div>` and, if the file exists,
+  load `web/assistant/assistant.js`. That panel belongs to the leader.
+
+**DECISION 6: the look.** Show your human two or three quick style directions (for example
+calm and clinical, dark and technical, warm and friendly) as small mock-ups and let them
+choose. The user is someone with tremor, often older: large text, large buttons, strong
+contrast, nothing that requires precise clicking outside the practice area.
+
+**DECISION 7: plain JavaScript or a framework.** Recommended: plain JavaScript; it needs
+no installation and the builder can read it. A framework (React) only if your human
+already knows it.
+
+**Done when:** your human can open the page, switch demo tremor on, and see the corrected
+cursor visibly steadier than the raw one, switching between filter modes live.
+
+### - [ ] Step 12. One measured improvement to each model (Sunday morning)
+
+**In plain words:** the official schedule asks for "one improvement, measured". Change one
+thing, measure before and after on validation, keep it only if it helps, then score on test.
+
+**Do, detector:** pick the most promising of: the small neural network from DECISION 3
+option B; better features aimed at the failure patterns from step 9; more look-alike
+negatives. **Do, corrector:** pick one of: a longer input window; a loss that also
+penalises lag; training with more no-tremor sequences.
+
+Record in `evaluation/results/improvements.md`: what was changed, why, validation score
+before and after, test score of the kept version. If the change did not help, **keep the
+record anyway**; "we tried X and it did not help" belongs in the write-up.
+
+**Done when:** `improvements.md` exists with real before/after numbers for both models, and
+the app loads whichever versions won.
+
+### - [ ] Step 13. The summary page
+
+**In plain words:** turn a session's measurements into a few clear charts.
+
+**Do:** `web/summary.html` (or a tab), fed by `GET /api/summary`.
+
+- Tremor over the session (share of time detected, strength), typical frequency.
+- Steadiness score, distance moved, clicks and click accuracy in the practice area.
+- When the leader's tracker is running: the same from whole-laptop movement, labelled as such.
+- Wording for a general reader. No medical language: "tremor-like movement was detected in
+  about a third of your active time", never "your condition is worsening".
+- Draw charts with the browser's canvas, or include one small chart library **as a file in
+  the repo** (not from the internet), so the demo works offline. Cite it in `SOURCES.md`.
+
+**Done when:** the page shows real values from a live session and the numbers match what
+`/api/summary` returns.
+
+---
+
+## Phase 5: hand-over and finish (feature freeze Sunday 21:00 CET)
+
+### - [ ] Step 14. Results package for the writer
+
+**Do:** write `evaluation/results/RESULTS.md`, generated or checked against script output:
+
+- One table for the detector: baselines vs our model: missed cases, false alarms, accuracy.
+- The same per group (age band, sex, diagnosis), with the number of test subjects in each.
+- One table for the corrector: no filter, lower sensitivity, classical filters, our model.
+- The pixel-factor sensitivity check.
+- Dataset facts: how many subjects and examples in each split, how the data was cleaned.
+- Links to the 3 best charts and to the failure examples.
+- A "what did not work" list.
+- Five plain sentences a judge could be told in 30 seconds.
+
+**Done when:** your human and the team leader have read it and found nothing they cannot
+explain. If they cannot explain something, fix `docs/EXPLAINED.md` until they can.
+
+### - [ ] Step 15. Fresh-clone test
+
+**In plain words:** judges will open our link. Make sure someone starting from nothing can
+run it.
+
+**Do:** clone the repository into a temporary folder, follow `docs/RUNNING.md` exactly, and
+confirm the app starts and the evaluation scripts run (the data download can be pointed at
+the existing `data/` folder to save time). Fix anything that was missing. Check no file
+over a few MB and no `.env` is in git.
+
+**Done when:** it works from the fresh clone and `STATUS.md` says so.
+
+### - [ ] Step 16 (only if everything above is done). Desktop-app window
+
+**In plain words:** make the interface open in its own window instead of a browser tab.
+
+**Do:** add `pywebview`; a short `desktop.py` starts the server in the background and opens
+the page in a native window. Do not attempt to build an installable `.app`.
+
+**Done when:** `python desktop.py` opens the app in its own window.
+
+---
+
+## If things go wrong
+
+| Problem | What to do |
+|---|---|
+| PADS will not download | Use TremorDB only (16 subjects). Results will be weak for group checks; say so. Tell the team leader at once |
+| The detector cannot beat the frequency rule | Report it honestly. Focus the story on moving windows and on the strength estimate, and on what we learned |
+| The corrector is worse than One Euro | Ship One Euro controlled by the detector as the live filter, and present the learned corrector as an experiment with its real numbers |
+| WebSocket feels laggy | Send samples in small batches, or lower the rate to 60 per second. Measure before and after |
+| Out of time on Sunday evening | Stop at the feature freeze. A working detector with an honest evaluation and a plain page beats a half-finished app |

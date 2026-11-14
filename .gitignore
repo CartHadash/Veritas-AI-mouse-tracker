@@ -1,0 +1,23 @@
+# Python
+.venv/
+__pycache__/
+*.pyc
+.ipynb_checkpoints/
+
+# Secrets - NEVER commit API keys
+.env
+.env.*
+!.env.example
+
+# Datasets and everything built from them (get them with scripts/download_data.py)
+data/
+
+# Local mouse logs recorded by the app (personal data, stays on the laptop)
+local_logs/
+
+# Front-end build output / packages
+node_modules/
+dist/
+
+# macOS
+.DS_Store

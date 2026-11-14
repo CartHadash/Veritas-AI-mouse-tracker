@@ -1,0 +1,11 @@
+# Instructions for AI coding assistants
+
+Everything is in [CLAUDE.md](CLAUDE.md). Read it first; it applies to every AI assistant,
+whichever company made it.
+
+Then follow the guide for your lane:
+
+- Builder: [BUILD_GUIDE_BUILDER.md](BUILD_GUIDE_BUILDER.md)
+- Team leader: [BUILD_GUIDE_LEADER.md](BUILD_GUIDE_LEADER.md)
+- Writer (write-up and video): start from [STATUS.md](STATUS.md) and
+  [docs/COMPETITION_RULES.md](docs/COMPETITION_RULES.md); the write-up template is there.

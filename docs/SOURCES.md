@@ -1,0 +1,48 @@
+# Sources and credits (running list)
+
+The rules require citing **every** dataset, pretrained model, library, tutorial and AI tool.
+Add to this file the moment you start using something; the write-up's "Sources" section is
+copied from here at the end.
+
+## Datasets
+
+- PADS - Parkinsons Disease Smartwatch dataset v1.0.0, PhysioNet,
+  https://doi.org/10.13026/m0w9-zx22 (CC BY-NC-SA 4.0). Full citation in `DATASETS.md`.
+- Effect of Deep Brain Stimulation on Parkinsonian Tremor (TremorDB), PhysioNet,
+  https://doi.org/10.13026/C2D097 (ODC-By 1.0). Full citation in `DATASETS.md`.
+- PhysioNet platform citation: see `DATASETS.md`.
+
+## Pretrained models
+
+- None so far. (If one is used, add name, link and licence here.)
+
+## AI services used inside the product
+
+- Claude API (Anthropic) for the in-app assistant. Model: to be filled in when built.
+
+## Libraries
+
+- Add each one when first installed, with its link. Expected: NumPy, pandas, SciPy,
+  scikit-learn, PyTorch, Matplotlib, FastAPI, Uvicorn, Anthropic Python SDK.
+
+## AI tools used while building
+
+- Claude Code (Anthropic): planning, writing and testing most of the code.
+- ChatGPT (OpenAI): write-up and video script drafting.
+- Add any others here.
+
+## Papers and algorithms
+
+- One Euro filter: Casiez, Roussel, Vogel (2012), "1€ Filter: A Simple Speed-based Low-pass
+  Filter for Noisy Input in Interactive Systems", CHI 2012. Used as a baseline.
+- Kalman filter: Kalman (1960). Used as a baseline.
+- Microsoft Research work on tremor from cursor movement: NOT YET VERIFIED (see `DATASETS.md`
+  section 5). Fill in authors, year, title and link, or delete this line.
+
+## Our own pre-hackathon work
+
+- See `REUSED_CODE.md`.
+
+## Tutorials and other code
+
+- None so far.
