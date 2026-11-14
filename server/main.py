@@ -89,7 +89,7 @@ class SessionStats:
                 dt = t - self.last[0]
                 step = float(np.hypot(x - self.last[1], y - self.last[2]))
                 self.distance_px += step
-                if 0 < dt < 0.5 and step > 0.5:      # moving: counts as active time
+                if 0 < dt < 0.5 and step > 0:        # moved since the last sample: active time
                     self.active_seconds += dt
             self.last = (t, x, y)
             # Record each NEW detector result once (the detector updates every 0.1 s).

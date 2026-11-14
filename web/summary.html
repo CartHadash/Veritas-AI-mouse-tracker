@@ -1,0 +1,49 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Session Summary</title>
+  <link rel="stylesheet" href="styles.css">
+  <link rel="stylesheet" href="summary.css">
+</head>
+<body>
+  <header>
+    <h1>Your session summary</h1>
+    <p class="subtitle">What the pointer assistant noticed in this session. <a href="index.html">Back to the practice area</a></p>
+  </header>
+
+  <div id="notes"></div>
+
+  <section class="tiles" id="tiles"></section>
+
+  <section class="panel chart-panel">
+    <h2>Tremor-like movement, minute by minute</h2>
+    <p class="small">Bars: share of analysed time with tremor-like movement. Line: typical size of the shaking (px).</p>
+    <canvas id="by-time" aria-label="Chart of tremor-like movement per minute"></canvas>
+    <p class="small" id="by-time-empty" hidden>No minutes analysed yet. Move in the practice area for a while, then reload this page.</p>
+  </section>
+
+  <section class="panel" id="laptop" hidden>
+    <h2>Across the whole laptop</h2>
+    <p class="small">From the whole-laptop tracker (positions only; nothing leaves this computer).</p>
+    <div class="tiles" id="laptop-tiles"></div>
+  </section>
+
+  <section class="panel">
+    <h2>About these numbers</h2>
+    <p id="model-info" class="small"></p>
+    <p class="small">"Tremor-like movement" means the pointer shook in a steady rhythm of 3 to 12 times a
+      second. It does not mean a diagnosis, and changes from day to day can have many causes.</p>
+  </section>
+
+  <div id="assistant-panel"></div>
+
+  <footer>
+    <p><b>This project is a prototype and is not medical advice.</b></p>
+    <p class="small"><button id="reload">Refresh</button></p>
+  </footer>
+
+  <script src="summary.js"></script>
+</body>
+</html>
