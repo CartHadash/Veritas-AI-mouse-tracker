@@ -158,6 +158,12 @@ python scripts/download_data.py           # once; 1.5 GB into data/
   no worker processes outside `if __name__ == "__main__":`, model weights saved from the
   CPU. Find out which machine you are on before running any command.
 
+- scikit-learn models called on ONE window at a time are slow (about 20 ms) because they start
+  parallel worker threads each call. Live code wraps the call in
+  `threadpoolctl.ThreadpoolController().limit(limits=1, user_api="openmp")` (about 2 ms).
+- When a script edits several `.md` files, check every edit succeeded before committing; twice
+  a failed edit went unnoticed and a merge went out without its STATUS update.
+
 - PADS text files have 7 columns, not the 6 the official page describes; time is first.
 - TremorDB files are plain numbers, one per line; the `wfdb` library cannot read them.
 - On macOS, asking where the pointer is needs no permission; listening to mouse events or

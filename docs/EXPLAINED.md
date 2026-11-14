@@ -380,7 +380,22 @@ was starting parallel worker threads for every single window, so live calls now 
 
 ## Where it fails
 
-(To be written after step 9.)
+Full write-up: `evaluation/results/failures/failures.md` (charts in the same folder, made by
+`python evaluation/find_failures.py` on test people). In short:
+
+- **Missed tremor is mostly tiny.** 37.0% of mild tremor (under 3 px) is missed, but only 3.4%
+  of strong tremor (over 10 px). The three most confident misses are 0.2-0.4 px: marked as
+  tremor by the wrist sensor, but too small to visibly shake a cursor.
+- **Many "false alarms" are probably real tremor our labelling rule left unmarked.** They
+  cluster in action tasks (43.5% false alarms there, vs 19.0% for rest). For action tasks the
+  rule compares with healthy people moving on purpose, a very high bar, so real tremor during
+  action can end up labelled "no tremor". The most confident false alarm is a strong, regular
+  5 Hz shake that looks exactly like tremor. We do not change the rule after seeing results;
+  we report it. Deliberate look-alike movement also causes false alarms (33.4% when it fills
+  more than 30% of the window, vs 21.6% otherwise).
+- **The corrector loses to One Euro on irregular shaking.** When the shaking is not a steady
+  rhythm, the detector keeps the gate closed, so our system leaves it alone; One Euro smooths
+  everything (and pays with 40 ms of lag everywhere else).
 
 ## The app
 
