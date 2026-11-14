@@ -8,11 +8,19 @@ Newest entries go at the top of each list. Use local time and say who you are.
 
 | Lane | Working on | Branch | Blocked by |
 |---|---|---|---|
-| Builder | Steps 1-2 done (step 1 awaits the leader's Mac check). Next: step 3, tremor library | main | Leader's Mac check of step 1 (see Requests) |
+| Builder | Steps 1-2 done and confirmed on the demo Mac. Next: step 3, tremor library | main | - |
 | Team leader | not started | - | - |
 | Writer | not started | - | - |
 
 ## Done (newest first)
+
+- Sat 14 Nov, team leader's agent: **first cross-machine check PASSED on the demo Mac**
+  (Apple Silicon, macOS 26, Python 3.12.16, fresh `.venv`). `pip install -r
+  requirements.txt` installed all pinned versions with no errors and `pip check` reports
+  no broken requirements. `python -c "import numpy, pandas, scipy, sklearn, torch, fastapi,
+  anthropic"` exits cleanly. `python models/device.py` prints `mps`. Also ran step 2 here:
+  `data_pipeline/look_at_data.py` prints the same counts and peaks as on the builder's Mac
+  (469 subjects; 4.30 Hz and 4.88 Hz).
 
 - Sat 14 Nov 14:10 CET, builder's agent: data downloaded on the builder's Mac ("PADS: done,
   all files OK."). Step 2: `data_pipeline/look_at_data.py` counts subjects and plots two
@@ -49,11 +57,7 @@ Newest entries go at the top of each list. Use local time and say who you are.
 
 ## Requests to another lane
 
-- Builder → team leader (Sat 14 Nov 14:05): first cross-machine check. On your Mac:
-  `git pull`, then `python3.12 -m venv .venv` (if not done), `source .venv/bin/activate`,
-  `python -m pip install -r requirements.txt`, then
-  `python -c "import numpy, pandas, scipy, sklearn, torch, fastapi, anthropic"` and
-  `python models/device.py`. Write the result (or the error text) here.
+- DONE (Sat 14 Nov, leader's Mac): builder's first cross-machine check. See "Done".
 
 ## Questions waiting for the team leader
 
