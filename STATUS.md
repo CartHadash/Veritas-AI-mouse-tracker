@@ -8,11 +8,14 @@ Newest entries go at the top of each list. Use local time and say who you are.
 
 | Lane | Working on | Branch | Blocked by |
 |---|---|---|---|
-| Builder | IN PROGRESS: step 6, baselines (evaluation/). Steps 1-5 done | builder/baselines | - |
+| Builder | Steps 1-6 done. Next: step 7, detector v1 (waiting on DECISION 3 and Mac-vs-PC) | main | Builder's answers |
 | Team leader | not started | - | - |
 | Writer | not started | - | - |
 
 ## Done (newest first)
+
+- Sat 14 Nov 14:40 CET, builder's agent: step 6, `evaluation/metrics.py` (shared scoring) and
+  `evaluation/run_baselines.py` -> `evaluation/results/baselines.md`.
 
 - Sat 14 Nov 14:30 CET, builder's agent: step 5, `data_pipeline/build_dataset.py` splits 484
   people by person (340 / 72 / 72, seed 42, `data_pipeline/split.json`) and builds detector
@@ -53,6 +56,13 @@ Newest entries go at the top of each list. Use local time and say who you are.
   plan, dataset notes, two build guides, reused-code disclosure.
 
 ## Results so far (real numbers only; say which script produced them)
+
+- `evaluation/run_baselines.py` (test people): detector "always no tremor" missed 100%,
+  false alarms 0%, accuracy 74.5%. Frequency rule (balanced cut-off) missed 47.2%, false
+  alarms 19.4%; at missed <= 10% on validation: missed 7.4%, false alarms 72.9%. Corrector,
+  distance to the intended path moving / still: no filter 12.5 / 12.8 px; One Euro
+  (original settings) 19.7 / 5.9 px, 68% tremor removed, 40 ms lag; moving average 0.2 s
+  34.8 / 3.4 px, 91%, 100 ms. Full table in `evaluation/results/baselines.md`.
 
 - `data_pipeline/build_dataset.py`: detector windows train 16,771 (3,848 tremor), val 3,452
   (660), test 3,708 (944). Corrector sequences train 4,207, val 809, test 930. Test people:

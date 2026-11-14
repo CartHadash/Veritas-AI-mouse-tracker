@@ -216,7 +216,52 @@ Numbers from `python data_pipeline/build_dataset.py` (17 s, about 0.45 GB memory
 
 ## The baselines
 
-(To be written after step 6.)
+A **baseline** is the simplest way to do the job. Judges want our model's score next to it,
+to see how much the AI adds. `python evaluation/run_baselines.py` scores them all (about 4
+minutes) and writes `evaluation/results/baselines.md`. All scoring code is in
+`evaluation/metrics.py`, shared with our models so the comparison is fair. Settings and
+cut-offs are chosen on **validation** people only; the numbers below are on **test** people.
+
+### Detector baselines (test: 3,708 windows, 944 with tremor)
+
+- **Always "no tremor"**: 74.5% accuracy, yet it misses 100% of tremor. This is why
+  accuracy alone is misleading.
+- **Frequency rule** ("tremor" when enough of the movement is at 3-12 Hz):
+  - best balance: misses 47.2% of tremor windows, false alarms on 19.4% of the others;
+  - forced to miss at most 10% on validation: misses 7.4% on test but false alarms jump
+    to 72.9%.
+  - Hand still vs moving (balanced): misses 35.2% vs 53.1%. Deliberate movement hides
+    tremor from a simple frequency rule, as expected.
+
+The rule is far from perfect even when the hand is still, so the task is not too easy.
+
+### Corrector baselines (test: 236 sequences with marked tremor)
+
+| Method | Off the intended path while moving / still (px) | Tremor removed | Lag |
+|---|---|---|---|
+| No filter | 12.5 / 12.8 | 0% | 0 ms |
+| Lower sensitivity 1/2 (hand travels 2x) | 6.2 / 6.4 | 75% | 0 ms |
+| Lower sensitivity 1/4 (hand travels 4x) | 3.0 / 3.3 | 94% | 0 ms |
+| Moving average, original setting (0.2 s) | 34.8 / 3.4 | 91% | 100 ms |
+| One Euro, original settings | 19.7 / 5.9 | 68% | 40 ms |
+| Kalman, original settings | 17.8 / 9.1 | 66% | 20 ms |
+| Moving average, tuned on validation | 21.9 / 8.1 | 54% | 50 ms |
+| One Euro, tuned on validation | 13.2 / 10.4 | 15% | 10 ms |
+| Kalman, tuned on validation | 15.0 / 14.8 | -36% | 0 ms |
+
+**What this shows.** Classical filters face a trade-off they cannot escape. Heavy smoothing
+removes most tremor while the hand is still (good for clicking) but makes the cursor trail
+behind fast reaches by 20-100 ms, which puts it 20-35 px off. Tuned to stay close to the
+path overall, they barely smooth at all (One Euro removes 15%), and Kalman even overshoots
+and *adds* shake. Our idea: the detector switches smoothing on only when tremor is present,
+and the learned corrector should remove tremor with less lag. Lower sensitivity looks
+strong on paper, but the hand must travel 2-4 times as far, which is tiring.
+
+**How we know the scoring works.** The lag measurement gives 50 ms for a 0.1 s moving
+average and 100 ms for a 0.2 s one: exactly half the window, as theory says.
+
+Note: the filters were tuned for the lowest average distance over the whole sequence, and
+fast reaches dominate that average. That is why the tuned settings smooth so little.
 
 ## The detector
 
