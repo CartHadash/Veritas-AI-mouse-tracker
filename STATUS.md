@@ -8,11 +8,15 @@ Newest entries go at the top of each list. Use local time and say who you are.
 
 | Lane | Working on | Branch | Blocked by |
 |---|---|---|---|
-| Builder | IN PROGRESS: step 9, failure analysis (evaluation/). Steps 1-8 done (8 awaits Mac check) | builder/failures | - |
+| Builder | Steps 1-9 done (8 awaits the Mac check; 9 awaits the builder reading failures.md). Next: step 10, server | main | - |
 | Team leader | not started | - | - |
 | Writer | not started | - | - |
 
 ## Done (newest first)
+
+- Sat 14 Nov 15:05 CET, builder's agent: step 9, `evaluation/find_failures.py` ->
+  `evaluation/results/failures/` (charts, `failure_facts.md`, `failures.md`). Saturday-night
+  checkpoint reached early: baselines, both models and failures all done with real numbers.
 
 - Sat 14 Nov 15:00 CET, builder's agent: step 8, corrector v1 (`models/corrector/`), trained in
   119 s on the builder's Mac; scored once on test with `evaluation/evaluate_corrector.py` ->
@@ -64,6 +68,11 @@ Newest entries go at the top of each list. Use local time and say who you are.
   plan, dataset notes, two build guides, reused-code disclosure.
 
 ## Results so far (real numbers only; say which script produced them)
+
+- `evaluation/find_failures.py` (test): detector misses 37.0% of mild tremor (<3 px) vs 3.4% of
+  strong (>10 px); false alarms 43.5% on action-task segments vs 19.0% rest and 8.4% synthetic
+  only. Our corrector is further from the path than the better of no filter / One Euro in 54
+  of 236 test sequences with marked tremor.
 
 - `evaluation/evaluate_corrector.py` (test people, after the 2.56 s detector warm-up): our
   corrector + detector gate removes 84% of tremor with 0 ms lag; distance to the intended path

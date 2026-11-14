@@ -455,6 +455,10 @@ best explanation. Good failure analysis scores higher than a suspiciously perfec
 - 2 sequences where the corrector does worse than no filter or than One Euro.
 - A short `failures.md` summarising the patterns.
 
+Done (Sat 14 Nov): `evaluation/find_failures.py` writes the charts plus `failure_facts.md`
+(facts and failure counts per group); `failures.md` holds the explanations. Waiting for the
+builder to read it before ticking.
+
 **Done when:** the files exist and your human has read `failures.md`.
 
 **Checkpoint (Saturday night):** update `STATUS.md` with the real numbers. This is the
