@@ -14,6 +14,8 @@ Newest entries go at the top of each list. Use local time and say who you are.
 
 ## Done (newest first)
 
+- Sat 14 Nov 14:00 CET, team leader's agent: builder guide rewritten for a Windows PC;
+  cross-machine checks added (builder on Windows, demo on the leader's Mac).
 - Sat 14 Nov 13:30 CET, team leader's agent: repository set up with rules summary, project
   plan, dataset notes, two build guides, reused-code disclosure.
 

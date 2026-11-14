@@ -1,7 +1,12 @@
 # Build guide: BUILDER lane
 
-For the builder and their AI agent (Claude Code on a Mac). This lane builds the heart of
-the project: the data, the two models, their evaluation, the server and the main interface.
+For the builder and their AI agent (Claude Code on a **Windows PC**). This lane builds the
+heart of the project: the data, the two models, their evaluation, the server and the main
+interface.
+
+**Two computers, one project.** The builder works on Windows. The final demo runs on the
+team leader's MacBook. So everything in this lane must work on **both** Windows and macOS.
+The section "Working on Windows, shipping to a Mac" below says how.
 
 **Agent:** read `CLAUDE.md` first. Work through the steps in order. Tick each box when its
 "Done when" is true. Keep this file accurate: if you do a step differently, rewrite the
@@ -20,33 +25,124 @@ them through the three contracts in `docs/PROJECT_PLAN.md`.
 
 ---
 
-## Human setup (about 20 minutes plus the download)
+## Human setup on Windows (about 30 minutes plus the download)
 
-1. Install Git, Python 3.12 and Claude Code if you do not have them.
-2. In a terminal:
+Do these yourself, once. Use **PowerShell** (press the Windows key, type "PowerShell",
+press Enter) for every command below.
 
-   ```bash
-   git clone https://github.com/CartHadash/Veritas-AI-mouse-tracker.git
-   cd Veritas-AI-mouse-tracker
-   python3 -m venv .venv
-   source .venv/bin/activate
-   python scripts/download_data.py
+1. **Install three things** if you do not have them:
+   - **Git for Windows** from https://git-scm.com/download/win (keep the default options).
+   - **Python 3.12** from https://www.python.org/downloads/windows/. On the first screen of
+     the installer, **tick "Add python.exe to PATH"** before clicking Install. This is the
+     most common thing people miss.
+   - **Claude Code** (the desktop app, or the command-line version).
+2. **Check they work.** Close PowerShell, open it again, and run each line. Each should
+   print a version number:
+
+   ```powershell
+   git --version
+   python --version
    ```
 
-   The last line downloads 1.5 GB and can take 10–30 minutes. Start it first and let it
-   run. It finishes with "PADS: done, all files OK."
-3. Keep the Mac awake while the agent works: open a second terminal window, run
-   `caffeinate -dims`, and leave that window open.
-4. Start Claude Code inside the `Veritas-AI-mouse-tracker` folder. Allow it to edit files
-   and run commands in this folder without asking each time, otherwise it stops at every step.
-5. Give it this first message:
+   If `python` opens the Microsoft Store or says "not recognized", Python is not on the
+   PATH: run the installer again, choose "Modify", and tick the PATH option.
+3. **Allow PowerShell to switch on the project's Python environment** (one time only):
 
-   > You are the BUILDER agent. Read CLAUDE.md, then the files it lists, then follow
-   > BUILD_GUIDE_BUILDER.md from the first unticked step. Explain each step to me in simple
-   > words before you do it, and stop to ask me at every DECISION.
+   ```powershell
+   Set-ExecutionPolicy -Scope CurrentUser RemoteSigned
+   ```
+
+   Answer `Y`. Without this, the "Activate" line below fails with a red error about
+   scripts being disabled.
+4. **Get the project and its data.** Pick a short folder path with no spaces, such as
+   `C:\dev` (long paths and OneDrive-synced folders cause trouble on Windows):
+
+   ```powershell
+   mkdir C:\dev
+   cd C:\dev
+   git clone https://github.com/CartHadash/Veritas-AI-mouse-tracker.git
+   cd Veritas-AI-mouse-tracker
+   python -m venv .venv
+   .venv\Scripts\Activate.ps1
+   python scripts\download_data.py
+   ```
+
+   After the "Activate" line, the prompt starts with `(.venv)`. The last line downloads
+   1.5 GB (about 12,700 small files) and can take 10–30 minutes. Let it run. It finishes
+   with "PADS: done, all files OK." If antivirus scanning makes it slow, that is normal
+   for many small files; leave it.
+5. **Keep the PC awake** while the agent works: Settings → System → Power (or "Power &
+   battery") → set "Sleep" to **Never** for when plugged in. Keep the charger connected.
+   Set it back after the hackathon.
+6. **Start Claude Code in the folder** `C:\dev\Veritas-AI-mouse-tracker`. Allow it to edit
+   files and run commands in this folder without asking each time, otherwise it stops at
+   every step.
+7. **Give it this first message:**
+
+   > You are the BUILDER agent, working on Windows. Read CLAUDE.md, then the files it
+   > lists, then follow BUILD_GUIDE_BUILDER.md from the first unticked step. Explain each
+   > step to me in simple words before you do it, and stop to ask me at every DECISION.
 
 When you come back after a break, say: *"Read STATUS.md and BUILD_GUIDE_BUILDER.md and
 continue from the first unticked step."*
+
+Every time you open a new PowerShell window for this project, run these two lines first:
+
+```powershell
+cd C:\dev\Veritas-AI-mouse-tracker
+.venv\Scripts\Activate.ps1
+```
+
+---
+
+## Working on Windows, shipping to a Mac (agent: read carefully)
+
+The builder's machine is Windows; the demo machine is the team leader's Mac. A project
+that only runs on the builder's PC cannot be demonstrated. Follow these rules in every step.
+
+**Commands on this machine**
+
+- The Python command is `python` (not `python3`). The environment is activated with
+  `.venv\Scripts\Activate.ps1`. Run tools as `python -m <tool>` (for example
+  `python -m uvicorn`, `python -m pytest`) so the right environment is always used.
+- You are in PowerShell, not bash. `&&`, `export`, `source`, `rm -rf` and similar bash
+  habits may fail or behave differently. Prefer doing file work in Python scripts, which
+  behave the same everywhere.
+- In every `.md` file, show commands for **both** systems when they differ, Windows first.
+
+**Code that works on both systems**
+
+- Build file paths with `pathlib.Path` or `os.path.join`. Never write a backslash or a
+  drive letter in code. Use forward slashes in anything the browser sees.
+- Open text files with `encoding="utf-8"` every time (Windows defaults to a different
+  encoding and will break on characters like "°" or "–").
+- Anything that starts worker processes (PyTorch `DataLoader` with `num_workers` above 0,
+  `multiprocessing`) must be inside `if __name__ == "__main__":`, or it crashes on Windows.
+  Simplest: keep `num_workers=0`; our data is small.
+- No macOS-only or Windows-only libraries anywhere in this lane. The Mac-only pieces
+  (`tracker/`, `systemwide/`) belong to the leader; your server must run with them absent,
+  which is exactly the situation on this PC.
+- Line endings: the repository's `.gitattributes` keeps all text files with Unix line
+  endings. Do not change that file.
+
+**The processor, not the graphics card**
+
+- The Mac has an Apple GPU (`mps`); this PC may have an NVIDIA card (`cuda`) or none. Pick
+  the device in one helper used everywhere: `cuda` if available, else `mps` if available,
+  else `cpu`. Our models are small enough to train on the CPU in minutes; do not spend
+  time installing GPU drivers.
+- Save model weights so they load on any machine: move the model to the CPU before saving,
+  and load with `map_location="cpu"`.
+- Speed measured on this PC does not prove speed on the Mac. Wherever a step asks for a
+  timing, record this PC's number and add a line under "Requests" in `STATUS.md` asking
+  the leader to run the same script on the Mac.
+
+**Proving it works on the Mac (do this early and often)**
+
+- After step 1, after step 8, after step 11 and at step 15, push your branch and ask the
+  team leader (via `STATUS.md` "Requests" and the group chat) to pull it on the Mac and
+  run the commands in `docs/RUNNING.md`. Do not wait until Sunday evening to find out.
+- `docs/RUNNING.md` must have two clearly separated sections: "On Windows" and "On macOS".
 
 ---
 
@@ -71,12 +167,21 @@ teammates get the same ones.
 
 **Do:** create `requirements.txt` with: `numpy`, `pandas`, `scipy`, `scikit-learn`,
 `matplotlib`, `torch`, `fastapi`, `uvicorn[standard]`, `anthropic`, `python-dotenv`,
-`pytest`. Install them. Add each to `docs/SOURCES.md` with its link. Check
-`torch.backends.mps.is_available()` and note the result (it decides whether training uses
-the Apple GPU or the CPU; either is fine for models this small).
+`pytest`. Install them with `python -m pip install -r requirements.txt` (the plain `torch`
+package installs the CPU version on Windows, which is all we need). Add each to
+`docs/SOURCES.md` with its link. If the leader's lane has already added a line ending in
+`; sys_platform == "darwin"`, leave it: pip skips it on Windows automatically.
+
+Write `models/device.py` with one function that returns the best available device
+(`cuda`, else `mps`, else `cpu`) and print which one this PC uses. Any of them is fine for
+models this small.
+
+If `pip` fails on `torch` with "no matching distribution", the Python version is too new
+for PyTorch: tell your human to install Python 3.12 and recreate `.venv`.
 
 **Done when:** `python -c "import numpy, pandas, scipy, sklearn, torch, fastapi, anthropic"`
-prints nothing and exits cleanly.
+prints nothing and exits cleanly on this PC, **and** the team leader has confirmed the same
+command works on the Mac after pulling (first cross-machine check).
 
 ### - [ ] Step 2. Look at the data with your own eyes
 
@@ -287,21 +392,26 @@ shaky cursor movement and outputs where the cursor *should* be right now.
 - Output: the corrected current position, expressed as an offset from the raw position.
 - **Causal:** it may never see future samples. This is what makes it usable live.
 - Small: a few 1D convolution layers or a small GRU, a few tens of thousands of weights.
-  Training must finish in under 20 minutes on the laptop.
+  Training must finish in under 20 minutes on this PC's CPU (use `models/device.py` and
+  `num_workers=0`).
 - Train to minimise the distance to the clean path. Save the best version by validation
-  score to `models/corrector/weights.pt` (must be under 2 MB).
+  score to `models/corrector/weights.pt` (must be under 2 MB). Move the model to the CPU
+  before saving, so the file loads on the Mac.
 - `live.py` wraps it with the same `reset()` / `update(x, y, t)` shape as the classical
   filters, resampling the incoming samples to 100 per second.
 - **Use the detector to control it:** when the detector's tremor score is low, blend back
   toward the raw cursor, so a steady hand gets no added lag. This is the point where the
   two models work as one system.
-- Measure how long one live update takes on the CPU.
+- Measure how long one live update takes on the CPU, with a script
+  (`models/corrector/time_live.py`) the leader can also run on the Mac.
 
 **Report** (`evaluation/results/corrector_v1.md`): the same measures as the corrector
 baselines, side by side, on test subjects only.
 
-**Done when:** one live update takes well under 8 ms, the report exists, and the loss-curve
-chart is saved. Beating One Euro is the hope, not the requirement; report whatever is true.
+**Done when:** one live update takes well under 8 ms on this PC, the report exists, the
+loss-curve chart is saved, and the leader has loaded `weights.pt` and run the timing script
+on the Mac (second cross-machine check). Beating One Euro is the hope, not the
+requirement; report whatever is true.
 
 ### - [ ] Step 9. Where it fails
 
@@ -327,10 +437,11 @@ official "baseline and first model work" milestone. Then sleep.
 
 ### - [ ] Step 10. The server
 
-**In plain words:** a small Python program that runs on the laptop, keeps the two models
+**In plain words:** a small Python program that runs on the user's computer, keeps the two models
 loaded, and talks to the interface in the browser.
 
-**Do:** `server/main.py` using FastAPI. Run with `uvicorn server.main:app`.
+**Do:** `server/main.py` using FastAPI. Run with `python -m uvicorn server.main:app`
+(the same command works on Windows and macOS).
 
 - Serves the interface files from `web/` at `http://127.0.0.1:8000`. Local only: bind to
   `127.0.0.1`, never `0.0.0.0`.
@@ -343,11 +454,15 @@ loaded, and talks to the interface in the browser.
   samples.
 - **Leader's modules, if present:** try to import `tracker` and `assistant`. If `tracker`
   is there, start it and feed its samples (Contract 1) into the detector and the summary.
-  If `assistant.router` is there, include it. If either is missing, carry on without it and
-  say so on the page. Never edit files inside `tracker/` or `assistant/`.
+  If `assistant.router` is there, include it. If either is missing **or fails to
+  import** (the tracker cannot load on Windows), carry on without it and say so on the
+  page. On this PC you are always in the "tracker missing" situation, so that path gets
+  tested for free; the "tracker present" path can only be tested on the Mac. Never edit
+  files inside `tracker/` or `assistant/`.
 - `POST /api/settings` for the filter mode (none / low sensitivity / One Euro / learned),
   filter strength, and demo tremor on/off.
-- Write `docs/RUNNING.md`: the exact commands to start the app from a fresh clone.
+- Write `docs/RUNNING.md`: the exact commands to start the app from a fresh clone, in two
+  sections, "On Windows" and "On macOS".
 
 **DECISION 5: where the corrector runs.** Option A (recommended): in Python on the server,
 with each sample making a round trip over the WebSocket; on one laptop this adds about a
@@ -386,8 +501,13 @@ contrast, nothing that requires precise clicking outside the practice area.
 no installation and the builder can read it. A framework (React) only if your human
 already knows it.
 
+Test the page in **Chrome or Edge on this PC**, and write it with standard browser
+features only, because on the Mac it will be opened in Safari or Chrome. Use the browser's
+pointer events, which behave the same for a mouse and a trackpad.
+
 **Done when:** your human can open the page, switch demo tremor on, and see the corrected
-cursor visibly steadier than the raw one, switching between filter modes live.
+cursor visibly steadier than the raw one, switching between filter modes live; **and** the
+leader has run the same page on the Mac with the trackpad (third cross-machine check).
 
 ### - [ ] Step 12. One measured improvement to each model (Sunday morning)
 
@@ -448,21 +568,26 @@ explain. If they cannot explain something, fix `docs/EXPLAINED.md` until they ca
 **In plain words:** judges will open our link. Make sure someone starting from nothing can
 run it.
 
-**Do:** clone the repository into a temporary folder, follow `docs/RUNNING.md` exactly, and
-confirm the app starts and the evaluation scripts run (the data download can be pointed at
-the existing `data/` folder to save time). Fix anything that was missing. Check no file
-over a few MB and no `.env` is in git.
+**Do:** clone the repository into a new folder (for example `C:\dev\fresh-test`), follow
+the "On Windows" part of `docs/RUNNING.md` exactly, and confirm the app starts and the
+evaluation scripts run (copy the existing `data` folder across instead of downloading
+again). Fix anything that was missing. Check no file over a few MB and no `.env` is in git.
+Then ask the leader to do the same on the Mac with the "On macOS" part. **The Mac result is
+the one that counts**, because that is the demo machine.
 
-**Done when:** it works from the fresh clone and `STATUS.md` says so.
+**Done when:** it works from a fresh clone on both machines and `STATUS.md` says so.
 
 ### - [ ] Step 16 (only if everything above is done). Desktop-app window
 
 **In plain words:** make the interface open in its own window instead of a browser tab.
 
 **Do:** add `pywebview`; a short `desktop.py` starts the server in the background and opens
-the page in a native window. Do not attempt to build an installable `.app`.
+the page in a native window. `pywebview` works on both Windows and macOS but uses a
+different built-in browser on each, so it must be tried on the Mac before anyone relies on
+it for the demo. Do not attempt to build an installable `.exe` or `.app`.
 
-**Done when:** `python desktop.py` opens the app in its own window.
+**Done when:** `python desktop.py` opens the app in its own window on this PC, and the
+leader has tried it on the Mac. If it misbehaves on the Mac, the demo uses the browser.
 
 ---
 
@@ -473,5 +598,11 @@ the page in a native window. Do not attempt to build an installable `.app`.
 | PADS will not download | Use TremorDB only (16 subjects). Results will be weak for group checks; say so. Tell the team leader at once |
 | The detector cannot beat the frequency rule | Report it honestly. Focus the story on moving windows and on the strength estimate, and on what we learned |
 | The corrector is worse than One Euro | Ship One Euro controlled by the detector as the live filter, and present the learned corrector as an experiment with its real numbers |
+| "running scripts is disabled on this system" | The human runs `Set-ExecutionPolicy -Scope CurrentUser RemoteSigned` once (Human setup, step 3) |
+| `python` opens the Microsoft Store or is "not recognized" | Python is not on the PATH: re-run the installer, "Modify", tick the PATH option, reopen PowerShell |
+| A script crashes with `UnicodeDecodeError` or `charmap` | A file was opened without `encoding="utf-8"`; add it |
+| Training crashes with a "freeze_support" or "spawn" error | Something starts worker processes outside `if __name__ == "__main__":`; set `num_workers=0` |
+| "Address already in use" on port 8000 | An old server is still running: close its PowerShell window, or start on another port with `--port 8001` |
+| It works on Windows but fails on the Mac | Read the Mac's error text from `STATUS.md`; the usual causes are a backslash in a path, a missing `encoding`, or weights saved from a GPU |
 | WebSocket feels laggy | Send samples in small batches, or lower the rate to 60 per second. Measure before and after |
 | Out of time on Sunday evening | Stop at the feature freeze. A working detector with an honest evaluation and a plain page beats a half-finished app |

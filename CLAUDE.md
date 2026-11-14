@@ -131,15 +131,32 @@ permission for routine work inside your lane.
 
 ## Commands (keep this list current)
 
+Windows (PowerShell), the builder's machine:
+
+```powershell
+python -m venv .venv                      # once
+.venv\Scripts\Activate.ps1                # every new PowerShell window
+python -m pip install -r requirements.txt # after requirements change
+python scripts\download_data.py           # once; 1.5 GB into data\
+```
+
+macOS, the team leader's machine and the demo machine:
+
 ```bash
-python3 -m venv .venv && source .venv/bin/activate     # once
-pip install -r requirements.txt                         # after requirements change
-python scripts/download_data.py                         # once; 1.5 GB into data/
+python3 -m venv .venv                     # once
+source .venv/bin/activate                 # every new terminal window
+python -m pip install -r requirements.txt # after requirements change
+python scripts/download_data.py           # once; 1.5 GB into data/
 ```
 
 (Each lane adds its own commands here as they come into existence.)
 
 ## Things we learned the hard way
+
+- **The team uses two operating systems** (builder: Windows; leader and demo: macOS).
+  Shared code must run on both: `pathlib` paths, `encoding="utf-8"` on every text file,
+  no worker processes outside `if __name__ == "__main__":`, model weights saved from the
+  CPU. Find out which machine you are on before running any command.
 
 - PADS text files have 7 columns, not the 6 the official page describes; time is first.
 - TremorDB files are plain numbers, one per line; the `wfdb` library cannot read them.
