@@ -58,7 +58,17 @@ These are yours and nobody else's. Check them at the times shown (CET).
 Order matters: B1 and B2 are the valuable ones. B3 is a stretch goal; start it only when
 B1 and B2 are merged.
 
-### - [ ] Step B1. The whole-laptop pointer reader (`tracker/`)
+### - [x] Step B1. The whole-laptop pointer reader (`tracker/`)
+
+Done Sat 14 Nov (branch `leader/tracker`): `tracker/reader.py`, `tracker/log.py`,
+`tracker/demo.py`, `tracker/test_reader.py`. Measured 100.0 samples per second on the demo
+Mac. DECISION L1 = A.
+Changed: `start(callback, save_log=False)` takes an optional flag for the local file, so
+the server's `start(callback)` writes nothing to disk. Idle cut-off is 3 s.
+Changed: the "delete my data" button and the tracking switch's place in the interface are
+not built yet. `tracker.log.delete_all_logs()` exists; the button goes in the assistant
+panel in B2 (with a small route in `assistant/api.py`). The builder's page owns the
+tracking on/off button.
 
 **In plain words:** a small background piece that asks macOS "where is the pointer?" about
 100 times a second, wherever the user is working, and hands each answer to the rest of the

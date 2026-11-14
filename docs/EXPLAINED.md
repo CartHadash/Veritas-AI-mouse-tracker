@@ -473,4 +473,44 @@ uninterrupted movement is unusual. See "Where it fails".
 
 ## The pointer reader and the assistant
 
-(To be written by the team leader's agent after steps B1 and B2.)
+### The whole-laptop pointer reader (step B1, `tracker/`)
+
+**What it does.** A small background loop asks macOS "where is the pointer right now?" 100
+times a second, in whatever app the user is working, and hands each answer
+(`{"t": seconds, "x": ..., "y": ...}`) to the server. The server runs the same detector on
+it as on the demo page and adds a `whole_laptop` block to the session summary. Tracking is
+off until the user switches it on.
+
+**What it records, and what it deliberately does not.** Only the pointer position and the
+time. No clicks, no keys, no window titles, no app names, no screenshots. It only reads the
+position; it never moves the cursor. Nothing leaves the laptop. When the pointer has been
+still for 3 seconds (the user is away or typing), it stops sending samples until the
+pointer moves again. By default nothing is written to disk: the session lives in memory
+(DECISION L1 = A). An optional file in `local_logs/` (ignored by git) can be switched on,
+and `tracker.log.delete_all_logs()` empties that folder ("delete my data"). A history over
+days to show trends (option B) is a possible future extension.
+
+**Why this way.** Asking for the pointer position needs no special permission on macOS.
+Listening for mouse *events* would need the Accessibility permission, which is a big ask
+of a user and looks like spyware, so we poll the position instead. The cost is that we
+choose the rate ourselves. The timer aims at fixed tick times (10 ms, 20 ms, 30 ms, ...)
+rather than "sleep 10 ms after each reading", so small delays do not add up and the rate
+stays at 100 per second, the same rate the detector was built for.
+
+**How we know it works.** `python -m tracker.demo` on the demo Mac (the leader's MacBook),
+while the leader moved the pointer in another app: 1,001 samples in 10 s, 100.0 samples per
+second, gap between samples median 10.00 ms, 95th percentile 11.80 ms, longest 12.50 ms, no
+permission prompt. `python -m pytest tracker/test_reader.py` (5 tests) checks the rate and
+the idle rule with a fake pointer, that a non-Mac computer gets a clear error, and the log
+file and its deletion. The builder's server found the tracker and switched it on and off
+through `POST /api/settings {"tracking": true/false}`.
+
+**Limits.** macOS only (it uses Apple's Quartz library); on Windows the app runs without
+it. Positions are in screen points, and a "point" is not the same physical size on every
+screen, so tremor size in pixels depends on the display. It sees the pointer, not the
+hand: if the user changes pointer speed in System Settings, the same tremor looks bigger
+or smaller.
+
+### The assistant (step B2)
+
+(To be written by the team leader's agent after step B2.)
