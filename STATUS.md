@@ -9,10 +9,19 @@ Newest entries go at the top of each list. Use local time and say who you are.
 | Lane | Working on | Branch | Blocked by |
 |---|---|---|---|
 | Builder | Steps 1-15 built (4, 9, 11, 14, 15 await human or Mac checks) + click freeze. Next: Godson's calibration idea if wanted | main | - |
-| Team leader | B1 (whole-laptop tracker) DONE and merged. Next: B2, the assistant | - | - |
+| Team leader | B1 (tracker) and B2 (assistant) DONE and merged. Next: Part A checks; B3 only if the leader decides | - | - |
 | Writer | not started | - | - |
 
 ## Done (newest first)
+
+- Sat 14 Nov 19:20 CET, team leader's agent: step B2, the assistant (`assistant/`,
+  `web/assistant/`). `claude-sonnet-5-5` at effort `low`, streamed; sees only the summary
+  numbers; safety rules in `assistant/prompt.py`; a plain non-AI summary when there is no
+  key. Routes: `POST /api/assistant/chat` (Contract 3), `GET /api/assistant/explain`,
+  `GET /api/assistant/status`, `POST /api/assistant/delete-my-data` (empties `local_logs/`).
+  Chat panel with three one-tap questions, a delete button and the disclaimer. Test page:
+  `python -m assistant.standalone` (port 8001, example summary). Trap questions: all 13 safe
+  (`assistant/test_prompts.md`).
 
 - Sat 14 Nov 18:14 CET, builder's agent: click freeze (Timofey's idea 2). Demo page hits need
   press and release on the target; a "Click freeze" switch holds the cursor until release
@@ -118,6 +127,12 @@ Newest entries go at the top of each list. Use local time and say who you are.
 
 ## Results so far (real numbers only; say which script produced them)
 
+- `python -m assistant.run_test_prompts` (13 questions, example summary, `claude-sonnet-5-5`,
+  effort `low`): version 1 prompt: 13/13 safe, all numbers correct, but only 2 of 13 within
+  the 3-6 sentences asked (5-12 sentences, 79-182 words). Version 2 (firmer length rule):
+  13/13 safe, 3-5 sentences, 33-71 words. Answers in `assistant/test_answers_v1.md` and
+  `assistant/test_answers.md`; judged in `assistant/test_prompts.md`.
+
 - `evaluation/smoothness.py --test` (test, gated by detector v2): corrector v4 (app) off the
   path moving / still 6.94 / 4.86 px, 87% tremor removed, 0 ms lag, jerkiness 1.37 px (no
   filter 1.69, v3 1.96, One Euro 0.64 but 40 ms lag); no marked tremor 1.85 px (no filter 2.30).
@@ -195,6 +210,12 @@ Newest entries go at the top of each list. Use local time and say who you are.
 
 ## Decisions made along the way (what, why, who decided)
 
+- Sat 14 Nov, team leader (human): DECISION L2 = `claude-sonnet-5-5` (neither suggested
+  option: cheaper than Opus, stronger than Haiku). Effort `low`, the recommended start for chat.
+- Sat 14 Nov, team leader (human): the assistant stays one instructed AI call, not an agent
+  with tools (it only reads numbers and writes text, which is simpler to make and prove safe).
+  A one-tap "apply this suggested setting" button is a possible later extra.
+
 - Sat 14 Nov, team leader (human): DECISION L1 = A. Keep only the current session in memory,
   plus an optional local file the user can delete. A history across days to show trends
   (option B) is wanted as a future extension, not for the hackathon.
@@ -220,6 +241,13 @@ Newest entries go at the top of each list. Use local time and say who you are.
   task type, because deliberate movement looks like tremor-band power otherwise.
 
 ## Problems and things that did not work
+
+- Sat 14 Nov, team leader's agent: the first API key was not scoped to a workspace, so every
+  assistant request failed with error 400 ("must include the anthropic-workspace-id
+  header"); an organisation ID did not work either. Fixed by adding the workspace ID
+  (`wrkspc_...`) as `ANTHROPIC_WORKSPACE_ID` in `.env` (template in `.env.example`).
+- Sat 14 Nov, team leader's agent: the first assistant prompt gave answers 2-3 times longer
+  than asked (see Results). A firmer length rule fixed it; safety answers were fine both times.
 
 - Sat 14 Nov, builder's agent: step 3 was merged before its `STATUS.md` entry was written (a
   scripted edit failed silently); fixed in the next commit on `main`. Lesson: check each
@@ -252,6 +280,13 @@ Newest entries go at the top of each list. Use local time and say who you are.
 (Keep this list honest; the write-up needs a "what didn't work" section.)
 
 ## Requests to another lane
+
+- Team leader -> builder (Sat 14 Nov 19:20): **the assistant router is live (Contract 3).**
+  After `git pull`, `GET /api/status` shows `assistant: available` and the panel appears in
+  `#assistant-panel`. It reads the live summary by calling your `get_summary()` at request
+  time (via `sys.modules["server.main"]`), so please keep that function name. The
+  `whole_laptop` block is fine. For AI answers on your own laptop, create your own `.env`
+  (see `.env.example`); without it the panel shows a plain non-AI summary.
 
 - Builder -> team leader (Sat 14 Nov 18:14): your idea 2 (click freeze) is built and merged;
   try it on the demo page with "Demo tremor: Strong" and the "Click freeze" button. Your

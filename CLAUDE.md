@@ -162,11 +162,17 @@ Leader lane (macOS only):
 ```bash
 python -m tracker.demo                    # move the pointer in any app; expect ~100 per second
 python -m pytest tracker/test_reader.py
+python -m assistant.standalone            # assistant alone at http://127.0.0.1:8001
+python -m assistant.run_test_prompts      # 13 test questions; needs the key; a few cents
 ```
 
 (Each lane adds its own commands here as they come into existence.)
 
 ## Things we learned the hard way
+
+- An Anthropic API key made outside a workspace fails with error 400 ("must include the
+  anthropic-workspace-id header"). Put the workspace ID (`wrkspc_...`, not the organisation
+  ID) in `.env` as `ANTHROPIC_WORKSPACE_ID`. Never print `.env`: check keys by name only.
 
 - **Two Macs, plus Windows compatibility** (builder: own MacBook; leader and demo: the
   leader's MacBook). Shared code must still run on macOS and Windows: `pathlib` paths, `encoding="utf-8"` on every text file,

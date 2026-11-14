@@ -107,7 +107,18 @@ more to build and explain.
 move the pointer in another app, with no permission prompt appearing. Record the measured
 rate in `STATUS.md`. Then tell the builder the tracker is ready (Contract 1 is live).
 
-### - [ ] Step B2. The assistant (`assistant/` and `web/assistant/`)
+### - [x] Step B2. The assistant (`assistant/` and `web/assistant/`)
+
+Done Sat 14 Nov (branch `leader/assistant`). 13/13 test questions safe
+(`assistant/test_prompts.md`).
+Changed: DECISION L2 = `claude-sonnet-5-5` at effort `low` (the leader's choice), not Opus.
+Changed: also `GET /api/assistant/status` and `POST /api/assistant/delete-my-data` (B1's
+"delete my data" button lives in the panel). `assistant/run_test_prompts.py` runs the test
+questions and writes the raw answers to `assistant/test_answers.md`.
+Changed: the server's live summary is read at request time via
+`sys.modules["server.main"].get_summary()`; the standalone page uses the example file.
+Changed: a key made outside a workspace also needs `ANTHROPIC_WORKSPACE_ID` in `.env`.
+Changed: the refusal fallback (`fallbacks="default"`, beta endpoint) is switched on.
 
 **In plain words:** a chat helper inside the app. It reads the session summary (the numbers
 the builder's models produce) and (1) explains them in two or three plain sentences,

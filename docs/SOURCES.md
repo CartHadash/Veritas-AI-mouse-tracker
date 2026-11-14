@@ -19,7 +19,10 @@ copied from here at the end.
 
 ## AI services used inside the product
 
-- Claude API (Anthropic) for the in-app assistant. Model: to be filled in when built.
+- Claude API (Anthropic) for the in-app assistant, https://docs.claude.com. Model:
+  Claude Sonnet 5.5 (`claude-sonnet-5-5`), effort `low`, streamed, with the server-side
+  refusal fallback (beta `server-side-fallback-2026-07-01`). It receives only the session
+  summary numbers. Called with the Anthropic Python SDK (listed under Libraries).
 
 ## Libraries
 

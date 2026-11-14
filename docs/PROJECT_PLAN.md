@@ -135,7 +135,10 @@ samples.
 
 `POST /api/assistant/chat` with `{"messages": [{"role": "user", "content": "..."}]}`.
 The reply streams back as text. The assistant module offers
-`assistant.router` (a FastAPI router), which the server includes with one line.
+`assistant.router` (a FastAPI router), which the server includes with one line. It also
+serves `GET /api/assistant/explain`, `GET /api/assistant/status` and
+`POST /api/assistant/delete-my-data`, and reads the live summary by calling the server's
+`get_summary()` (so that name must stay).
 
 ## Timeline
 
