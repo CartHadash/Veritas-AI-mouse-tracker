@@ -8,7 +8,7 @@ Newest entries go at the top of each list. Use local time and say who you are.
 
 | Lane | Working on | Branch | Blocked by |
 |---|---|---|---|
-| Builder | Steps 1-13 built (9, 11 await checks below). Next: step 14, results package for the writer | main | - |
+| Builder | IN PROGRESS: leader request, why the demo gain is small (evaluation/compare_modes.py). Steps 1-13 built | builder/demo-gain | - |
 | Team leader | B1 (whole-laptop tracker) DONE and merged. Next: B2, the assistant | - | - |
 | Writer | not started | - | - |
 
