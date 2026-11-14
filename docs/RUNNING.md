@@ -48,6 +48,17 @@ The demo should print a "Rate while moving" near 100 samples per second. No perm
 prompt should appear. In the app, tracking stays off until it is switched on
 (`POST /api/settings {"tracking": true}`).
 
+### The assistant (team leader's lane; any system)
+
+For AI answers, copy `.env.example` to `.env` and put the API key after
+`ANTHROPIC_API_KEY=` (add `ANTHROPIC_WORKSPACE_ID=wrkspc_...` if the API asks for a
+workspace). Never commit `.env`. Without it the panel shows a plain non-AI summary.
+
+```bash
+python -m assistant.standalone            # assistant alone, example summary: http://127.0.0.1:8001
+python -m assistant.run_test_prompts      # the 13 test questions (costs a few cents)
+```
+
 ### Rebuild the data and re-score everything (optional)
 
 ```bash

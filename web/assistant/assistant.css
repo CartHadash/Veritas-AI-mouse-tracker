@@ -1,0 +1,68 @@
+/* The assistant panel. Uses the builder's warm colours (web/styles.css) when present,
+   with the same values as fallbacks for the standalone test page. */
+
+.assistant {
+  background: var(--panel, #fffdf9);
+  border: 2px solid var(--line, #e8c9a8);
+  border-radius: 16px;
+  padding: 14px 16px;
+  margin-top: 16px;
+  color: var(--ink, #3b2314);
+  font-size: 18px;
+}
+
+.assistant h2 { margin: 0 0 6px; font-size: 22px; }
+
+.assistant button {
+  font: inherit;
+  font-weight: 600;
+  padding: 12px 18px;
+  min-height: 48px;                 /* easy to hit with a shaky hand */
+  border-radius: 24px;
+  border: 2px solid var(--accent, #2e7d5b);
+  background: #fff;
+  color: var(--ink, #3b2314);
+  cursor: pointer;
+}
+.assistant button:disabled { opacity: 0.5; cursor: wait; }
+.assistant button:focus-visible,
+.assistant input:focus-visible { outline: 3px solid var(--target, #d9661a); outline-offset: 2px; }
+
+.assistant-log {
+  max-height: 340px;
+  overflow-y: auto;
+  margin: 12px 0;
+}
+.assistant-log:empty { display: none; }
+
+.assistant-bubble {
+  margin: 8px 0;
+  padding: 10px 14px;
+  border-radius: 14px;
+  white-space: pre-wrap;            /* keep the reply's line breaks */
+  line-height: 1.45;
+}
+.assistant-bubble.user {
+  background: #f3e3d1;
+  margin-left: 15%;
+}
+.assistant-bubble.assistant {
+  background: #fff;
+  border: 2px solid var(--line, #e8c9a8);
+  margin-right: 8%;
+}
+
+.assistant-label { display: block; margin: 10px 0 6px; color: var(--muted, #6e5444); }
+.assistant-row { display: flex; gap: 10px; }
+.assistant-row input {
+  flex: 1;
+  min-width: 0;
+  font: inherit;
+  padding: 10px 14px;
+  min-height: 48px;
+  border: 2px solid var(--line, #e8c9a8);
+  border-radius: 12px;
+}
+
+.assistant-disclaimer { font-size: 15px; color: var(--muted, #6e5444); margin: 12px 0 0; }
+.assistant-mode { margin-top: 0; }
