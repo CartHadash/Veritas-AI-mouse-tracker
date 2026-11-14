@@ -7,10 +7,77 @@
 function percent(x) { return x === null || x === undefined ? "-" : `${Math.round(x * 100)}%`; }
 function number(x, digits = 1) { return x === null || x === undefined ? "-" : Number(x).toFixed(digits); }
 
-function tile(value, label) {
+// ------------------------------------------------------------ tiles: numbers, rings, a gauge
+
+// What each tile showed last time, so a number counts on from there instead of from zero.
+const shownBefore = {};
+const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+// Count a number up (or down) to its new value over 0.7 s. `format` turns the number into
+// text, for example percent. If the Analysis tab is hidden, just show the value.
+function countTo(element, key, value, format) {
+  if (value === null || value === undefined) { element.textContent = "-"; return; }
+  const visible = document.getElementById("tiles").offsetParent !== null;
+  const from = shownBefore[key] ?? 0;
+  if (!visible || reducedMotion || from === value) { element.textContent = format(value); if (visible) shownBefore[key] = value; return; }
+  shownBefore[key] = value;
+  const start = performance.now();
+  function step(now) {
+    const k = Math.min(1, (now - start) / 700);
+    const eased = 1 - (1 - k) ** 3;                  // fast at first, then settling
+    element.textContent = format(from + (value - from) * eased);
+    if (k < 1) requestAnimationFrame(step);
+  }
+  element.textContent = format(from);
+  requestAnimationFrame(step);
+}
+
+// A plain tile: one number and what it means.
+function tile(key, value, format, label) {
   const div = document.createElement("div");
   div.className = "tile";
-  div.innerHTML = `<div class="value">${value}</div><div class="label">${label}</div>`;
+  div.innerHTML = `<div class="value"></div><div class="label">${label}</div>`;
+  countTo(div.querySelector(".value"), key, value, format);
+  return div;
+}
+
+// A ring tile for a share between 0 and 1: the coloured arc covers that share of the circle.
+// The arc is a circle whose outline is one long dash; we hide the part beyond the share.
+const RING_LENGTH = 2 * Math.PI * 52;                // the circle's outline, radius 52
+function ringTile(key, share, label) {
+  const div = document.createElement("div");
+  div.className = "tile ring-tile";
+  div.innerHTML = `
+    <div class="ring">
+      <svg viewBox="0 0 120 120" aria-hidden="true">
+        <circle class="ring-track" cx="60" cy="60" r="52"/>
+        <circle class="ring-arc" cx="60" cy="60" r="52" stroke-dasharray="${RING_LENGTH}"/>
+      </svg>
+      <div class="value"></div>
+    </div>
+    <div class="label">${label}</div>`;
+  const arc = div.querySelector(".ring-arc");
+  const before = shownBefore[key] ?? 0;
+  arc.style.strokeDashoffset = RING_LENGTH * (1 - before);       // start where it was...
+  requestAnimationFrame(() => requestAnimationFrame(() => {      // ...then glide to the new share
+    arc.style.strokeDashoffset = RING_LENGTH * (1 - (share ?? 0));
+  }));
+  countTo(div.querySelector(".value"), key, share, percent);
+  return div;
+}
+
+// A gauge tile for a score between 0 and 1, drawn with ui-sdk's <ui-meter>.
+function gaugeTile(key, value, label, lowWord, highWord) {
+  const div = document.createElement("div");
+  div.className = "tile gauge-tile";
+  div.innerHTML = `
+    <div class="value"></div>
+    <ui-meter value="${value ?? 0}" min="0" max="1" aria-label="${label}">
+      <ui-meter-track><ui-meter-indicator></ui-meter-indicator></ui-meter-track>
+    </ui-meter>
+    <div class="gauge-ends"><span>${lowWord}</span><span>${highWord}</span></div>
+    <div class="label">${label}</div>`;
+  countTo(div.querySelector(".value"), key, value, (x) => number(x, 2));
   return div;
 }
 
@@ -52,6 +119,10 @@ function drawChart(byTime) {
   // Bars: share of time with tremor-like movement.
   byTime.forEach((m, i) => {
     const h = plotH * m.detected_share;
+    if (i === hoverIndex) {                          // the minute under the pointer: a soft column
+      ctx.fillStyle = "#f3e6d4";
+      ctx.fillRect(left + i * slot, top, slot, plotH);
+    }
     ctx.fillStyle = "#d9661a";
     ctx.fillRect(left + i * slot + slot * 0.2, top + plotH - h, slot * 0.6, h);
     ctx.fillStyle = "#6a5241";
@@ -75,6 +146,32 @@ function drawChart(byTime) {
     ctx.fill();
   });
   ctx.lineWidth = 1;
+
+  // The exact numbers of the minute under the pointer, in a small dark label.
+  if (hoverIndex >= 0 && hoverIndex < byTime.length) {
+    const m = byTime[hoverIndex];
+    const lines = [`Minute ${m.minute}`, `${percent(m.detected_share)} tremor-like`, `shaking about ${number(m.strength_px)} px`];
+    ctx.font = '600 14px "Avenir Next", "Segoe UI", system-ui, sans-serif';
+    const boxW = Math.max(...lines.map((t) => ctx.measureText(t).width)) + 24, boxH = 74;
+    const centre = left + hoverIndex * slot + slot / 2;
+    const x = Math.min(Math.max(centre - boxW / 2, 4), W - boxW - 4);       // stay inside the chart
+    ctx.fillStyle = "#2f1d10";
+    ctx.beginPath(); ctx.roundRect(x, top + 6, boxW, boxH, 10); ctx.fill();
+    ctx.fillStyle = "#fffdf8";
+    ctx.textAlign = "left";
+    lines.forEach((t, k) => ctx.fillText(t, x + 12, top + 28 + k * 20));
+  }
+}
+
+// Which minute's column the pointer is over (-1 = none). Moving over the chart redraws it.
+let hoverIndex = -1;
+function chartHover(event) {
+  const canvas = document.getElementById("by-time");
+  const byTime = lastSummary ? lastSummary.tremor.by_time : [];
+  const plotW = canvas.clientWidth - 100;                          // the same 50 px margins as above
+  const x = event.clientX - canvas.getBoundingClientRect().left - 50;
+  const index = byTime.length && x >= 0 && x < plotW ? Math.floor(x / (plotW / byTime.length)) : -1;
+  if (index !== hoverIndex) { hoverIndex = index; drawChart(byTime); }
 }
 
 async function loadSummary() {
@@ -94,17 +191,16 @@ async function loadSummary() {
 
   const tiles = document.getElementById("tiles");
   tiles.innerHTML = "";
-  tiles.appendChild(tile(percent(s.tremor.detected_share), sentence(s.tremor.detected_share)));
-  tiles.appendChild(tile(s.tremor.typical_frequency_hz ? `${number(s.tremor.typical_frequency_hz)} Hz` : "-",
+  tiles.appendChild(ringTile("share", s.tremor.detected_share, sentence(s.tremor.detected_share)));
+  tiles.appendChild(tile("rhythm", s.tremor.typical_frequency_hz || null, (x) => `${number(x)} Hz`,
     "Typical rhythm of the shaking, when detected"));
-  tiles.appendChild(tile(s.tremor.typical_strength_px ? `${number(s.tremor.typical_strength_px)} px` : "-",
+  tiles.appendChild(tile("size", s.tremor.typical_strength_px || null, (x) => `${number(x)} px`,
     "Typical size of the shaking on screen, when detected"));
-  tiles.appendChild(tile(s.usage.steadiness_score === null ? "-" : number(s.usage.steadiness_score, 2),
-    "Steadiness score (1 = very steady, 0 = shaking of 10 px or more)"));
-  tiles.appendChild(tile(`${number(s.session.minutes_active)} min`, "Active time (pointer moving)"));
-  tiles.appendChild(tile(`${Math.round(s.usage.distance_px).toLocaleString()} px`, "Distance the pointer travelled"));
-  tiles.appendChild(tile(`${s.usage.clicks_in_app}`, "Clicks in the practice area"));
-  tiles.appendChild(tile(percent(s.usage.click_accuracy), "Clicks that hit the target"));
+  tiles.appendChild(gaugeTile("steady", s.usage.steadiness_score, "Steadiness score", "shaking of 10 px or more", "very steady"));
+  tiles.appendChild(tile("active", s.session.minutes_active, (x) => `${number(x)} min`, "Active time (pointer moving)"));
+  tiles.appendChild(tile("distance", s.usage.distance_px, (x) => `${Math.round(x).toLocaleString()} px`, "Distance the pointer travelled"));
+  tiles.appendChild(tile("clicks", s.usage.clicks_in_app, (x) => `${Math.round(x)}`, "Clicks in the practice area"));
+  tiles.appendChild(ringTile("accuracy", s.usage.click_accuracy, "Clicks that hit the target"));
 
   drawChart(s.tremor.by_time);
 
@@ -113,10 +209,10 @@ async function loadSummary() {
   if (laptop) {
     const lt = document.getElementById("laptop-tiles");
     lt.innerHTML = "";
-    lt.appendChild(tile(percent(laptop.tremor.detected_share), sentence(laptop.tremor.detected_share)));
-    lt.appendChild(tile(`${number(laptop.session.minutes_active)} min`, "Active time across the laptop"));
-    lt.appendChild(tile(`${Math.round(laptop.usage.distance_px).toLocaleString()} px`, "Distance across the laptop"));
-    lt.appendChild(tile(laptop.usage.steadiness_score === null ? "-" : number(laptop.usage.steadiness_score, 2), "Steadiness score"));
+    lt.appendChild(ringTile("laptop-share", laptop.tremor.detected_share, sentence(laptop.tremor.detected_share)));
+    lt.appendChild(tile("laptop-active", laptop.session.minutes_active, (x) => `${number(x)} min`, "Active time across the laptop"));
+    lt.appendChild(tile("laptop-distance", laptop.usage.distance_px, (x) => `${Math.round(x).toLocaleString()} px`, "Distance across the laptop"));
+    lt.appendChild(gaugeTile("laptop-steady", laptop.usage.steadiness_score, "Steadiness score", "shaking", "very steady"));
   }
 
   const info = s.model_info;
@@ -171,6 +267,8 @@ async function loadHistory(current) {
 
 let lastSummary = null;
 document.getElementById("reload").addEventListener("click", loadSummary);
+document.getElementById("by-time").addEventListener("pointermove", chartHover);
+document.getElementById("by-time").addEventListener("pointerleave", () => { hoverIndex = -1; if (lastSummary) drawChart(lastSummary.tremor.by_time); });
 // Redraw the chart (no new request) whenever its size changes: the window was resized, or
 // the Analysis tab has just been shown.
 new ResizeObserver(() => { if (lastSummary) drawChart(lastSummary.tremor.by_time); })

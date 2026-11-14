@@ -62,6 +62,18 @@ Time line: first full version by **Sun 15 Nov 22:00 CET**; no new features after
 
 ## Done (newest first)
 
+- Sat 14 Nov 22:13 CET, leader's agent: second pass on the redesign (`leader/ui`, pushed, not merged), after
+  the leader asked for more interaction and more visual statistics. Practice: a ring bursts
+  from a hit target with the time it took, a cross marks a miss, a "3 in a row" streak chip, a
+  live graph of the last 20 seconds of the detector's score with the cut-off line, and "Your
+  targets" as one bar per filter (share of clicks that hit). Analysis: ring charts for
+  tremor-like share and clicks hit, a 0-to-1 gauge for steadiness, numbers that count up, and
+  the minute-by-minute chart shows a minute's exact numbers under the pointer. How it works:
+  each step has a "Show me" button that opens Practice and rings the part it describes. No
+  new numbers: every figure is one the page already showed. Checked in the browser at 1440 px
+  with simulated pointer events (hits, a miss, hover, Show me), no console errors;
+  `python server/test_ws.py` still passes. Not checked with a real hand on the trackpad.
+
 - Sat 14 Nov 21:57 CET, leader's agent: interface redesign on branch `leader/ui` (pushed, not merged yet).
   One page with three tabs (Practice with a larger practice area, Analysis = the old summary
   page, How it works), the assistant as a floating button that opens a window, the same warm

@@ -895,3 +895,38 @@ filter choice, demo tremor, click freeze, the meter, and opening, keeping open a
 assistant window, with no errors in the browser's console. `python server/test_ws.py` and the
 existing tests still pass. Not yet checked with a real hand on the trackpad: the calibration
 test, Pointer Lock in "Lower sensitivity", and clicking targets.
+
+### Making it interactive and the numbers visual (Sat 14 Nov 22:13 CET)
+
+**Feedback on every click.** When a click hits, a green ring grows out of the target and the
+time it took floats above it; a miss leaves a small orange cross where the click landed.
+Hits in a row are counted in a chip under the practice area ("3 in a row"); a miss sets it
+back to zero. These are drawn on the same canvas as the cursors (`drawEffects` in
+`web/app.js`) and last 0.7 seconds.
+
+**The live graph.** Under the tremor meter a small graph shows the detector's score over the
+last 20 seconds, with "now" at the right edge and the cut-off as a dashed line. The line is
+green below the cut-off and orange while the movement counts as tremor-like, so you can watch
+tremor appear and fade. The page keeps at most 10 points a second, and leaves a gap where the
+pointer was not moving, because the detector gives no score then.
+
+**Bars instead of a table.** "Your targets" shows one bar per filter you tried: the filled
+part is the share of your clicks that hit. It is the quickest way to see whether a filter
+helped. The counts and the time per target are written under each bar.
+
+**Rings and a gauge.** On the Analysis tab the two shares (time with tremor-like movement,
+clicks that hit) are rings: the coloured arc covers that share of the circle. The steadiness
+score is a bar from 0 to 1 with the meaning of each end written under it. Numbers count up
+to their value when the tab opens; this is only for feel and is switched off for people who
+ask their computer for less motion.
+
+**Pointing at the chart.** Moving the pointer over the minute-by-minute chart highlights that
+minute and shows its exact share and shaking size, so the chart can be read precisely.
+
+**"Show me" buttons.** Each step on the How-it-works tab has a button that opens Practice and
+draws an orange ring around the part the step talks about (the practice area, the meter, the
+filter choice).
+
+**Nothing new is measured.** Every figure shown this way is one the page already had; only
+the way it is drawn changed. Checked in a browser with simulated pointer events; not yet
+with a real hand on the trackpad.

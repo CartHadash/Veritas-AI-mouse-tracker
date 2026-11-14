@@ -254,6 +254,26 @@ footer { padding: 6px 28px 110px; text-align: center; color: var(--muted); font-
 .option + .btn, .field-stack + .btn { margin-top: 4px; }
 #calibrate { margin-top: 6px; }
 
+/* Hits in a row, at the end of the legend line. */
+.streak { margin-left: auto; padding: 3px 12px; border-radius: 999px; background: var(--steady); color: #fff; font-weight: 700; }
+
+/* The live graph of the score under the meter. */
+#score-graph { display: block; width: 100%; height: 64px; margin-top: 12px; border-radius: 10px; background: var(--paper); }
+.graph-caption { display: flex; justify-content: space-between; font-size: 13px; color: var(--muted); margin-top: 3px; }
+
+/* "Your targets": one bar per filter. */
+#tally { display: flex; flex-direction: column; gap: 14px; }
+.tally-row b { font-weight: 600; font-size: 16px; }
+.tally-row span { font-weight: 700; font-variant-numeric: tabular-nums; }
+.tally-row [data-slot="meter"] { margin-top: 5px; }
+.tally-row [data-slot="meter-track"] { height: 12px; }
+.tally-row [data-slot="meter-indicator"] { transition: width 0.3s ease; }
+.tally-row .small { margin-top: 4px; font-size: 14px; }
+
+/* A part of the page pointed out by a "Show me" button: an orange ring that pulses twice. */
+.spotlight { outline: 4px solid var(--tremor); outline-offset: 5px; animation: spotlight 1.3s ease-in-out 2; }
+@keyframes spotlight { 50% { outline-offset: 12px; outline-color: rgba(194, 84, 15, 0.25); } }
+
 /* ------------------------------------------------------------ 5. Analysis and How it works */
 .page { max-width: 1160px; margin: 0 auto; padding: 18px 28px 24px; display: flex; flex-direction: column; gap: 16px; }
 .page.narrow { max-width: 940px; }
@@ -274,6 +294,7 @@ footer { padding: 6px 28px 110px; text-align: center; color: var(--muted); font-
 .steps li:last-child::after { display: none; }
 .steps h2 { font-size: 22px; margin-bottom: 6px; }
 .steps p { color: var(--muted); max-width: 34ch; }
+.show-me { margin-top: 14px; min-height: 44px; padding: 8px 16px; font-size: 16px; }
 
 /* ------------------------------------------------------------ 6. ui-sdk controls */
 
@@ -380,7 +401,7 @@ footer { padding: 6px 28px 110px; text-align: center; color: var(--muted); font-
   .assistant-launcher[data-slot] { right: 16px; bottom: 16px; }
 }
 @media (prefers-reduced-motion: reduce) {
-  * { transition: none !important; }
+  * { transition: none !important; animation: none !important; }
 }
 
 /* ------------------------------------------------------------ path_check.html (the team's own tool) */

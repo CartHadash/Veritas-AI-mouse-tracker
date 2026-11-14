@@ -67,6 +67,16 @@ function onTarget(p) { return Math.hypot(p.x - target.x, p.y - target.y) <= TARG
 const TRAIL_MS = 700;               // how much of the past the lines show
 let trail = [];                     // [{at, rawX, rawY, x, y}, ...], oldest first
 
+// Short-lived marks drawn on the practice area after a click: a ring that bursts out of a hit
+// target (with the time it took), or a small cross where a miss landed.
+const EFFECT_MS = 700;
+let effects = [];                   // [{kind: "hit"|"miss", x, y, at, text}, ...]
+let streak = 0;                     // hits in a row; a miss sets it back to 0
+
+// The detector's score over the last 20 seconds, for the small graph under the meter.
+const GRAPH_SECONDS = 20;
+let scoreHistory = [];              // [{at, score, tremor}, ...], at most 10 points a second
+
 // Set a ui-sdk component's state from code. Once the component's code has loaded we set its
 // property; before that we write the HTML attribute, which it reads when it starts up.
 // Neither fires a change event, so the page never reacts to its own update.
@@ -216,12 +226,18 @@ area.addEventListener("pointerup", () => {
   const key = settings.mode + (freezeOn ? "+freeze" : "");
   const row = tally[key] ??= { hits: 0, misses: 0, totalTime: 0 };
   if (hit) {
+    const seconds = (performance.now() - target.shownAt) / 1000;
     row.hits += 1;
-    row.totalTime += (performance.now() - target.shownAt) / 1000;
+    row.totalTime += seconds;
+    streak += 1;
+    effects.push({ kind: "hit", x: target.x, y: target.y, at: performance.now(), text: seconds.toFixed(1) + " s" });
     newTarget();
   } else {
     row.misses += 1;
+    streak = 0;
+    effects.push({ kind: "miss", x: released.x, y: released.y, at: performance.now() });
   }
+  showStreak();
   send({ type: "click", hit });
   showTally();
 });
@@ -237,18 +253,34 @@ function newTarget() {
   };
 }
 
+function showStreak() {
+  const chip = document.getElementById("streak");
+  chip.hidden = streak < 2;                      // one hit is not yet "in a row"
+  chip.textContent = `${streak} in a row`;
+}
+
+// One bar per filter tried: the filled part is the share of clicks that hit the target.
+// Each bar is a <ui-meter>, so screen readers can read it too.
 function showTally() {
-  const body = document.querySelector("#tally tbody");
-  body.innerHTML = "";
+  const box = document.getElementById("tally");
+  box.replaceChildren();
   const empty = Object.keys(tally).length === 0;
-  document.getElementById("tally").hidden = empty;
+  box.hidden = empty;
   document.getElementById("tally-empty").hidden = !empty;
   for (const [mode, row] of Object.entries(tally)) {
-    const time = row.hits ? (row.totalTime / row.hits).toFixed(1) + " s" : "-";
-    const tr = document.createElement("tr");
     const [name, freeze] = mode.split("+");
-    tr.innerHTML = `<td>${MODE_NAMES[name]}${freeze ? " + click freeze" : ""}</td><td>${row.hits}</td><td>${row.misses}</td><td>${time}</td>`;
-    body.appendChild(tr);
+    const title = MODE_NAMES[name] + (freeze ? " + click freeze" : "");
+    const clicks = row.hits + row.misses;
+    const time = row.hits ? `, ${(row.totalTime / row.hits).toFixed(1)} s per target` : "";
+    const div = document.createElement("div");
+    div.className = "tally-row";
+    div.innerHTML = `
+      <div class="row-between"><b>${title}</b><span>${Math.round(100 * row.hits / clicks)}%</span></div>
+      <ui-meter value="${row.hits}" min="0" max="${clicks}" aria-label="${title}: clicks that hit">
+        <ui-meter-track><ui-meter-indicator></ui-meter-indicator></ui-meter-track>
+      </ui-meter>
+      <p class="small">${row.hits} of ${clicks} clicks hit${time}</p>`;
+    box.appendChild(div);
   }
 }
 
@@ -262,6 +294,9 @@ function updateMeter() {
     return;
   }
   word.textContent = latest.tremor ? "Tremor-like movement detected" : "No tremor-like movement";
+  const now = performance.now();
+  const last = scoreHistory[scoreHistory.length - 1];
+  if (!last || now - last.at >= 100) scoreHistory.push({ at: now, score: latest.score, tremor: latest.tremor });
   const meter = document.getElementById("score-meter");
   setControl(meter, "value", latest.score);
   meter.classList.toggle("tremor", latest.tremor);
@@ -299,16 +334,27 @@ function showSettings() {
 
 // Each control reports a change the person made; we send it to the server, which answers
 // with the settings now in force (showSettings then shows them).
-document.getElementById("modes").addEventListener("valuechange", (e) => postSettings({ mode: e.detail.value }));
-document.getElementById("demo-levels").addEventListener("valuechange", (e) => postSettings({ demo_level: e.detail.value }));
+// One exception: after a reload the browser may put a control back to how it was and report
+// that as a change with reason "restore". The server already knows the real settings, so
+// those reports are ignored.
+function onChange(id, eventName, handler) {
+  document.getElementById(id).addEventListener(eventName, (e) => {
+    if (e.detail.reason !== "restore") handler(e.detail.value);
+  });
+}
+onChange("modes", "valuechange", (value) => postSettings({ mode: value }));
+onChange("demo-levels", "valuechange", (value) => postSettings({ demo_level: value }));
 // "valuecommit" fires once when the slider is let go, so we save once, not on every step.
-document.getElementById("strength").addEventListener("valuecommit", (e) => postSettings({ strength: Number(e.detail.value) }));
-document.getElementById("demo-toggle").addEventListener("checkedchange", (e) => postSettings({ demo_tremor: e.detail.value }));
-document.getElementById("freeze-toggle").addEventListener("checkedchange", (e) => { freezeOn = e.detail.value; });
-document.getElementById("tracking-toggle").addEventListener("checkedchange", (e) => postSettings({ tracking: e.detail.value }));
+onChange("strength", "valuecommit", (value) => postSettings({ strength: Number(value) }));
+onChange("demo-toggle", "checkedchange", (value) => postSettings({ demo_tremor: value }));
+onChange("freeze-toggle", "checkedchange", (value) => { freezeOn = value; });
+onChange("tracking-toggle", "checkedchange", (value) => postSettings({ tracking: value }));
 document.getElementById("reset").addEventListener("click", async () => {
   await fetch("/api/reset", { method: "POST" });
   for (const key of Object.keys(tally)) delete tally[key];
+  streak = 0;
+  scoreHistory = [];
+  showStreak();
   showTally();
   send({ type: "reset" });
   newTarget();
@@ -396,6 +442,7 @@ function draw() {
     circle(target.x, target.y, TARGET_RADIUS, TARGET);
     circle(target.x, target.y, 5, PAPER);
   }
+  drawEffects(now);
   if (settings.mode === "low_sensitivity" && !locked && !lockFailed) {
     ctx.fillStyle = MUTED;
     ctx.font = '600 17px "Avenir Next", "Segoe UI", system-ui, sans-serif';
@@ -420,7 +467,68 @@ function draw() {
     const invite = area.clientWidth < 440 ? "Move in here" : "Move your mouse or trackpad in here";
     ctx.fillText(invite, area.clientWidth / 2, area.clientHeight / 2);
   }
+  drawScoreGraph(now);
   requestAnimationFrame(draw);
+}
+
+// Hit: a ring grows out of where the target was and fades, with the time it took above it.
+// Miss: a small cross where the click landed. Both last EFFECT_MS.
+function drawEffects(now) {
+  effects = effects.filter((e) => now - e.at < EFFECT_MS);
+  for (const e of effects) {
+    const k = (now - e.at) / EFFECT_MS;             // 0 at the click, 1 when it vanishes
+    const fade = (1 - k).toFixed(2);
+    if (e.kind === "hit") {
+      ctx.lineWidth = 4;
+      ctx.strokeStyle = `rgba(31, 111, 87, ${fade})`;
+      ctx.beginPath();
+      ctx.arc(e.x, e.y, TARGET_RADIUS + 34 * k, 0, 2 * Math.PI);
+      ctx.stroke();
+      ctx.fillStyle = `rgba(31, 111, 87, ${fade})`;
+      ctx.font = '700 19px "Avenir Next", "Segoe UI", system-ui, sans-serif';
+      ctx.textAlign = "center";
+      ctx.fillText(e.text, e.x, e.y - TARGET_RADIUS - 14 - 16 * k);
+    } else {
+      ctx.lineWidth = 3;
+      ctx.lineCap = "round";
+      ctx.strokeStyle = `rgba(194, 84, 15, ${fade})`;
+      ctx.beginPath();
+      ctx.moveTo(e.x - 7, e.y - 7); ctx.lineTo(e.x + 7, e.y + 7);
+      ctx.moveTo(e.x + 7, e.y - 7); ctx.lineTo(e.x - 7, e.y + 7);
+      ctx.stroke();
+    }
+  }
+}
+
+// The small graph under the meter: the score (0 at the bottom, 1 at the top) against time,
+// "now" at the right edge. Green while below the cut-off, orange while tremor-like. Where the
+// pointer was not moving there are no points, so the line has a gap.
+const graph = document.getElementById("score-graph");
+const graphCtx = graph.getContext("2d");
+function drawScoreGraph(now) {
+  const W = graph.clientWidth, H = graph.clientHeight;
+  if (W === 0) return;                               // the Practice tab is hidden
+  const ratio = window.devicePixelRatio || 1;
+  if (graph.width !== Math.round(W * ratio)) { graph.width = Math.round(W * ratio); graph.height = Math.round(H * ratio); }
+  graphCtx.setTransform(ratio, 0, 0, ratio, 0, 0);
+  graphCtx.clearRect(0, 0, W, H);
+  scoreHistory = scoreHistory.filter((p) => now - p.at < GRAPH_SECONDS * 1000);
+  const xOf = (p) => W * (1 - (now - p.at) / (GRAPH_SECONDS * 1000));
+  const yOf = (score) => 3 + (H - 6) * (1 - score);
+  // The cut-off: a dashed line across the graph.
+  graphCtx.setLineDash([5, 5]);
+  graphCtx.strokeStyle = MUTED;
+  graphCtx.lineWidth = 1.5;
+  graphCtx.beginPath(); graphCtx.moveTo(0, yOf(threshold)); graphCtx.lineTo(W, yOf(threshold)); graphCtx.stroke();
+  graphCtx.setLineDash([]);
+  graphCtx.lineWidth = 3;
+  graphCtx.lineCap = "round";
+  for (let i = 1; i < scoreHistory.length; i++) {
+    const a = scoreHistory[i - 1], b = scoreHistory[i];
+    if (b.at - a.at > 500) continue;                 // a pause in movement: leave a gap
+    graphCtx.strokeStyle = b.tremor ? "#c2540f" : "#1f6f57";
+    graphCtx.beginPath(); graphCtx.moveTo(xOf(a), yOf(a.score)); graphCtx.lineTo(xOf(b), yOf(b.score)); graphCtx.stroke();
+  }
 }
 
 // ------------------------------------------------------------ tabs
@@ -443,6 +551,17 @@ function openTab(name) {
   tabShown(name);
 }
 document.getElementById("open-analysis").addEventListener("click", () => openTab("analysis"));
+
+// "Show me" buttons on the How-it-works tab: open Practice and ring the part the step is about.
+for (const button of document.querySelectorAll("[data-show]")) {
+  button.addEventListener("click", () => {
+    openTab("practice");
+    const part = document.querySelector(button.dataset.show);
+    part.scrollIntoView({ block: "center" });
+    part.classList.add("spotlight");
+    setTimeout(() => part.classList.remove("spotlight"), 2600);
+  });
+}
 window.addEventListener("hashchange", () => openTab(location.hash.slice(1)));
 
 // ------------------------------------------------------------ the assistant window (leader's lane)

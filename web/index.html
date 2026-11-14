@@ -68,6 +68,7 @@
             <span><i class="key raw"></i> raw movement (your hand<span id="legend-demo" hidden> + replayed tremor</span>)</span>
             <span><i class="key fixed"></i> corrected cursor (clicks count here)</span>
             <span><i class="key goal"></i> target</span>
+            <span class="streak" id="streak" hidden></span>
           </p>
         </section>
 
@@ -82,6 +83,9 @@
                 <span id="cutoff-mark" title="Above this mark the movement counts as tremor-like"></span>
               </ui-meter-track>
             </ui-meter>
+            <!-- The detector's score over the last 20 seconds; the dashed line is the cut-off. -->
+            <canvas id="score-graph" aria-label="Graph of the tremor score over the last 20 seconds"></canvas>
+            <p class="graph-caption"><span>20 seconds ago</span><span>now</span></p>
             <p class="correcting">Correction: <b id="correcting-word">-</b></p>
             <dl class="readings">
               <div><dt>Score</dt><dd id="score">-</dd></div>
@@ -137,11 +141,9 @@
 
           <section class="card">
             <h2>Your targets</h2>
-            <table id="tally">
-              <thead><tr><th>Filter</th><th>Hits</th><th>Misses</th><th>Time per target</th></tr></thead>
-              <tbody></tbody>
-            </table>
-            <p class="small" id="tally-empty">Click the orange targets. Your hits and misses appear here, one row per filter.</p>
+            <!-- One bar per filter you tried: how many of your clicks hit the target. -->
+            <div id="tally"></div>
+            <p class="small" id="tally-empty">Click the orange targets. A bar appears here for each filter you try, showing how many clicks hit.</p>
             <div class="actions">
               <button class="btn" id="reset">New session</button>
               <button class="btn quiet" id="open-analysis">See the analysis</button>
@@ -219,18 +221,21 @@
             <h2>Read</h2>
             <p>While you move inside the practice area, the page sends the pointer's position to a
               small program running on this laptop.</p>
+            <button class="btn show-me" data-show="#area">Show me the practice area</button>
           </li>
           <li>
             <h2>Detect</h2>
             <p>The first model looks at the last 2.56 seconds of movement and gives a score from 0 to 1
               for how much it looks like tremor: a steady rhythm of 3 to 12 shakes a second. That
               score is the tremor meter.</p>
+            <button class="btn show-me" data-show=".meter-card">Show me the meter</button>
           </li>
           <li>
             <h2>Correct</h2>
             <p>The second model is a small neural network. It works out where the pointer was meant
               to be, using only movement that has already happened: it never waits to see what comes next. The
               detector decides how much of that correction is applied, so a steady hand is left alone.</p>
+            <button class="btn show-me" data-show="#modes">Show me the filters</button>
           </li>
         </ol>
 
