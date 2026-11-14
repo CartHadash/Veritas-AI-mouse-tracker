@@ -39,6 +39,8 @@ Installed in step 1 (exact versions in `requirements.txt`). Add new ones here wh
 - scikit-learn's HistGradientBoostingClassifier / Regressor and permutation importance,
   https://scikit-learn.org/stable/modules/ensemble.html#histogram-based-gradient-boosting
   (the detector v1 model and its "which features mattered" check)
+- threadpoolctl, https://github.com/joblib/threadpoolctl (keeps live detector calls on one
+  thread; installed with scikit-learn)
 
 ## AI tools used while building
 
@@ -51,6 +53,11 @@ Installed in step 1 (exact versions in `requirements.txt`). Add new ones here wh
 - One Euro filter: Casiez, Roussel, Vogel (2012), "1€ Filter: A Simple Speed-based Low-pass
   Filter for Noisy Input in Interactive Systems", CHI 2012. Used as a baseline.
 - Kalman filter: Kalman (1960). Used as a baseline.
+- Minimum-jerk model of human reaching: Flash, T. & Hogan, N. (1985), "The coordination of arm
+  movements: an experimentally confirmed mathematical model", Journal of Neuroscience 5(7).
+  Used for the synthetic reaches (step 4).
+- Dilated causal convolutions: van den Oord, A. et al. (2016), "WaveNet: A Generative Model for
+  Raw Audio", arXiv:1609.03499. The idea behind the corrector's layer layout (step 8).
 - Microsoft Research work on tremor from cursor movement: NOT YET VERIFIED (see `DATASETS.md`
   section 5). Fill in authors, year, title and link, or delete this line.
 

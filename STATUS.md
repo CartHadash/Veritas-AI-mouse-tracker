@@ -8,11 +8,15 @@ Newest entries go at the top of each list. Use local time and say who you are.
 
 | Lane | Working on | Branch | Blocked by |
 |---|---|---|---|
-| Builder | IN PROGRESS: step 8, corrector v1 (models/corrector/). Steps 1-7 done | builder/corrector-v1 | - |
+| Builder | Steps 1-8 done (step 8 awaits the leader's Mac check). Next: step 9, failure analysis | main | - |
 | Team leader | not started | - | - |
 | Writer | not started | - | - |
 
 ## Done (newest first)
+
+- Sat 14 Nov 15:00 CET, builder's agent: step 8, corrector v1 (`models/corrector/`), trained in
+  119 s on the builder's Mac; scored once on test with `evaluation/evaluate_corrector.py` ->
+  `evaluation/results/corrector_v1.md`. Detector live calls now use one thread (20 ms -> 2 ms).
 
 - Sat 14 Nov 14:45 CET, builder's agent: step 7, detector v1 (`models/detector/`), scored once
   on test with `evaluation/evaluate_detector.py --missed-target 0.2` ->
@@ -60,6 +64,12 @@ Newest entries go at the top of each list. Use local time and say who you are.
   plan, dataset notes, two build guides, reused-code disclosure.
 
 ## Results so far (real numbers only; say which script produced them)
+
+- `evaluation/evaluate_corrector.py` (test people, after the 2.56 s detector warm-up): our
+  corrector + detector gate removes 84% of tremor with 0 ms lag; distance to the intended path
+  moving / still 7.2 / 5.9 px (no filter 13.2 / 12.7; One Euro original 19.7 / 5.9 with 40 ms
+  lag); steady-hand sequences 1.97 px (no filter 2.30). Mild tremor (<3 px): 1% removed.
+  `models/corrector/time_live.py` on the builder's Mac: worst 2.9 ms per update with the gate.
 
 - `evaluation/evaluate_detector.py --missed-target 0.2` (test people): detector v1 missed
   14.3%, false alarms 27.0%, accuracy 76.2%; frequency rule (same cut-off rule) missed 14.8%,
@@ -109,9 +119,17 @@ Newest entries go at the top of each list. Use local time and say who you are.
 - Sat 14 Nov, builder's agent: step 3 was merged before its `STATUS.md` entry was written (a
   scripted edit failed silently); fixed in the next commit on `main`. Lesson: check each
   edit succeeded before committing.
+- Sat 14 Nov, builder's agent: the same slip again at step 8 (merged before STATUS, guide and
+  SOURCES were updated); fixed in the next commit. Git commands now only run after every
+  scripted edit has succeeded.
 - None else yet. (Keep this honest; the write-up needs a "what didn't work" section.)
 
 ## Requests to another lane
+
+- Builder -> team leader (Sat 14 Nov 15:00): **second cross-machine check (step 8).** On the
+  demo Mac after `git pull` and `python -m pip install -r requirements.txt`, run
+  `python models/corrector/time_live.py` and write both lines of output here. It loads
+  `models/corrector/weights.pt` and the detector, so it also proves both models load there.
 
 - Builder -> team leader (Sat 14 Nov 14:45): optional check on the demo Mac after pulling:
   `python models/detector/predict.py` has no main; instead run

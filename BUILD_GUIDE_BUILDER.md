@@ -432,6 +432,11 @@ shaky cursor movement and outputs where the cursor *should* be right now.
 **Report** (`evaluation/results/corrector_v1.md`): the same measures as the corrector
 baselines, side by side, on test subjects only.
 
+Done on the builder's Mac (Sat 14 Nov): dilated causal 1-D CNN, 64-step input, 10,722
+weights; trained 6,000 steps (119 s). Test scoring in `evaluation/evaluate_corrector.py`
+(also scores One Euro switched by the detector gate). Waiting for the leader's Mac check
+before ticking.
+
 **Done when:** one live update takes well under 8 ms on the builder's Mac, the report exists, the
 loss-curve chart is saved, and the leader has loaded `weights.pt` and run the timing script
 on the Mac (second cross-machine check). Beating One Euro is the hope, not the
