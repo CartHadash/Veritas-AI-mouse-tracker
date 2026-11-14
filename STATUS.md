@@ -14,7 +14,7 @@ Newest entries go at the top of each list. Use local time and say who you are.
 
 ## Done (newest first)
 
-- Sat 14 Nov 17:40 CET, builder's agent: step 15 on the builder's Mac. Fresh clone from GitHub
+- Sat 14 Nov 18:05 CET, builder's agent: step 15 on the builder's Mac. Fresh clone from GitHub
   + "On macOS" commands: install 41 s, app and `server/test_ws.py` pass with no data. With
   the datasets copied in, all data rebuilt from raw and every evaluation re-run: every results
   file and chart byte-for-byte identical. No secrets, data or files over 1 MB in git.
@@ -244,7 +244,7 @@ Newest entries go at the top of each list. Use local time and say who you are.
 
 ## Requests to another lane
 
-- Builder -> team leader (Sat 14 Nov 17:40): **step 15 on the demo Mac (the result that
+- Builder -> team leader (Sat 14 Nov 18:05): **step 15 on the demo Mac (the result that
   counts).** In a NEW folder (not your working copy): `git clone
   https://github.com/CartHadash/Veritas-AI-mouse-tracker.git fresh-test`, `cd fresh-test`, then
   exactly the "On macOS" commands in `docs/RUNNING.md` (`python3.12 -m venv .venv`, `source
