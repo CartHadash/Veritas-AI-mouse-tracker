@@ -8,7 +8,7 @@ Newest entries go at the top of each list. Use local time and say who you are.
 
 | Lane | Working on | Branch | Blocked by |
 |---|---|---|---|
-| Builder | Steps 1-7 done. Next: step 8, corrector v1 (on the builder's Mac) | main | - |
+| Builder | IN PROGRESS: step 8, corrector v1 (models/corrector/). Steps 1-7 done | builder/corrector-v1 | - |
 | Team leader | not started | - | - |
 | Writer | not started | - | - |
 
