@@ -1,5 +1,9 @@
 // app.js - the live demo page (step 11). Plain JavaScript, no build tools (DECISION 7).
 //
+// The controls (tabs, filter choice, switches, slider, meter, assistant window) are ui-sdk web
+// components: custom HTML tags such as <ui-switch>. They tell us about a change with an event
+// (for example "checkedchange") whose new value is in event.detail.value.
+//
 // Clicks work like real buttons: a hit needs the button pressed AND released on the target.
 // "Click freeze" (an idea from Timofey, a team member) holds the shown cursor still from the
 // press until the release (at most 0.3 s), so tremor while the button is down cannot carry
@@ -58,19 +62,37 @@ function calibrationDot(seconds) {
 }
 function onTarget(p) { return Math.hypot(p.x - target.x, p.y - target.y) <= TARGET_RADIUS; }
 
+// The last moments of movement, drawn as two fading lines behind the cursors: where the hand
+// went (raw) and where the corrected cursor went. Only real positions from the server.
+const TRAIL_MS = 700;               // how much of the past the lines show
+let trail = [];                     // [{at, rawX, rawY, x, y}, ...], oldest first
+
+// Set a ui-sdk component's state from code. Once the component's code has loaded we set its
+// property; before that we write the HTML attribute, which it reads when it starts up.
+// Neither fires a change event, so the page never reacts to its own update.
+function setControl(element, name, value) {
+  if (customElements.get(element.localName)) element[name] = value;
+  else if (typeof value === "boolean") element.toggleAttribute(name, value);
+  else element.setAttribute(name, value);
+}
+
 // ------------------------------------------------------------ server connection
 
 function connect() {
   const protocol = location.protocol === "https:" ? "wss" : "ws";
   socket = new WebSocket(`${protocol}://${location.host}/ws/cursor`);
-  socket.onopen = () => { setStatus("Connected to the local server."); sendArea(); };
+  socket.onopen = () => { setStatus("Connected to the local server."); setConnected(true); sendArea(); };
   socket.onmessage = (event) => {
     const message = JSON.parse(event.data);
     if (message.type === "calibration") { showCalibration(message); return; }
     latest = message;
+    if (inside) {
+      trail.push({ at: performance.now(), rawX: message.raw_x, rawY: message.raw_y, x: message.x, y: message.y });
+      if (trail.length > 400) trail.shift();          // never grows without limit
+    }
     updateMeter();
   };
-  socket.onclose = () => { setStatus("Connection lost - retrying..."); setTimeout(connect, 1000); };
+  socket.onclose = () => { setStatus("Connection lost - retrying..."); setConnected(false); setTimeout(connect, 1000); };
 }
 
 function send(message) {
@@ -89,15 +111,25 @@ async function loadStatus() {
   threshold = status.detector_threshold ?? threshold;
   document.getElementById("cutoff-mark").style.left = `${threshold * 100}%`;
   const parts = [`tracker: ${status.tracker}`, `assistant: ${status.assistant}`];
-  setStatus(document.getElementById("status-line").textContent + " " + parts.join(" · "));
+  setStatus(statusText + " " + parts.join(", "));
   // The tracking button only appears when the leader's tracker can run on this computer.
-  document.getElementById("tracking-toggle").hidden = !String(status.tracker).startsWith("available")
+  document.getElementById("tracking-row").hidden = !String(status.tracker).startsWith("available")
     && !String(status.tracker).startsWith("running");
   settings = await (await fetch("/api/settings")).json();
   showSettings();
 }
 
-function setStatus(text) { document.getElementById("status-line").textContent = text; }
+// The header shows a short word; the full status text is its tooltip.
+let statusText = "";
+function setStatus(text) {
+  statusText = text;
+  document.getElementById("status-line").title = text;
+}
+function setConnected(on) {
+  const line = document.getElementById("status-line");
+  line.textContent = on ? "Connected" : "Reconnecting...";
+  line.classList.toggle("off", !on);
+}
 
 // ------------------------------------------------------------ pointer input
 
@@ -140,6 +172,7 @@ area.addEventListener("pointermove", (event) => {
 });
 area.addEventListener("pointerleave", () => {
   inside = false;
+  trail = [];
   if (calib && calib.phase !== "scoring") {                 // left the area: the test is void
     if (calib.phase === "running") send({ type: "calibrate_cancel" });
     calib = null;
@@ -148,11 +181,12 @@ area.addEventListener("pointerleave", () => {
 });
 // Coming back into the area (maybe somewhere else): start the filter afresh, so the
 // cursor never jumps across from where the pointer left.
-area.addEventListener("pointerenter", () => send({ type: "reset" }));
+area.addEventListener("pointerenter", () => { trail = []; send({ type: "reset" }); });
 
 document.addEventListener("pointerlockchange", () => {
   locked = document.pointerLockElement === area;
   inside = locked;
+  trail = [];
   send({ type: "reset" });                // start the filter afresh where the pointer is
 });
 document.addEventListener("pointerlockerror", () => {
@@ -206,6 +240,9 @@ function newTarget() {
 function showTally() {
   const body = document.querySelector("#tally tbody");
   body.innerHTML = "";
+  const empty = Object.keys(tally).length === 0;
+  document.getElementById("tally").hidden = empty;
+  document.getElementById("tally-empty").hidden = !empty;
   for (const [mode, row] of Object.entries(tally)) {
     const time = row.hits ? (row.totalTime / row.hits).toFixed(1) + " s" : "-";
     const tr = document.createElement("tr");
@@ -225,9 +262,10 @@ function updateMeter() {
     return;
   }
   word.textContent = latest.tremor ? "Tremor-like movement detected" : "No tremor-like movement";
-  const bar = document.getElementById("score-bar");
-  bar.style.width = `${Math.round(latest.score * 100)}%`;
-  bar.classList.toggle("tremor", latest.tremor);
+  const meter = document.getElementById("score-meter");
+  setControl(meter, "value", latest.score);
+  meter.classList.toggle("tremor", latest.tremor);
+  word.classList.toggle("tremor", latest.tremor);
   document.getElementById("score").textContent = latest.score.toFixed(2);
   // How much of our model's correction is being applied right now (the detector's gate).
   const correcting = document.getElementById("correcting-word");
@@ -248,43 +286,26 @@ function updateMeter() {
 
 function showSettings() {
   if (locked && settings.mode !== "low_sensitivity") document.exitPointerLock();
-  for (const button of document.querySelectorAll("#modes button")) {
-    button.classList.toggle("on", button.dataset.mode === settings.mode);
-  }
-  document.getElementById("strength").value = settings.strength;
-  document.getElementById("strength-value").textContent = Number(settings.strength).toFixed(1);
-  const demoButton = document.getElementById("demo-toggle");
-  demoButton.textContent = `Demo tremor: ${settings.demo_tremor ? "on" : "off"}`;
-  demoButton.classList.toggle("on", settings.demo_tremor);
+  setControl(document.getElementById("modes"), "value", settings.mode);
+  setControl(document.getElementById("strength"), "value", Number(settings.strength));
+  setControl(document.getElementById("demo-toggle"), "checked", Boolean(settings.demo_tremor));
+  setControl(document.getElementById("tracking-toggle"), "checked", Boolean(settings.tracking));
+  if (settings.demo_level) setControl(document.getElementById("demo-levels"), "value", settings.demo_level);
   document.getElementById("demo-banner").hidden = !settings.demo_tremor;
-  document.getElementById("demo-levels").hidden = !settings.demo_tremor;
+  document.getElementById("demo-levels-row").hidden = !settings.demo_tremor;
   document.getElementById("demo-tip").hidden = settings.demo_tremor;
-  for (const button of document.querySelectorAll("#demo-levels button")) {
-    button.classList.toggle("on", button.dataset.level === settings.demo_level);
-  }
   document.getElementById("legend-demo").hidden = !settings.demo_tremor;
-  const trackButton = document.getElementById("tracking-toggle");
-  trackButton.textContent = `Whole-laptop tracking: ${settings.tracking ? "on" : "off"}`;
-  trackButton.classList.toggle("on", settings.tracking);
 }
 
-for (const button of document.querySelectorAll("#modes button")) {
-  button.addEventListener("click", () => postSettings({ mode: button.dataset.mode }));
-}
-for (const button of document.querySelectorAll("#demo-levels button")) {
-  button.addEventListener("click", () => postSettings({ demo_level: button.dataset.level }));
-}
-document.getElementById("strength").addEventListener("change", (e) => postSettings({ strength: Number(e.target.value) }));
-document.getElementById("strength").addEventListener("input", (e) => {
-  document.getElementById("strength-value").textContent = Number(e.target.value).toFixed(1);
-});
-document.getElementById("demo-toggle").addEventListener("click", () => postSettings({ demo_tremor: !settings.demo_tremor }));
-document.getElementById("freeze-toggle").addEventListener("click", (event) => {
-  freezeOn = !freezeOn;
-  event.target.textContent = `Click freeze: ${freezeOn ? "on" : "off"}`;
-  event.target.classList.toggle("on", freezeOn);
-});
-document.getElementById("tracking-toggle").addEventListener("click", () => postSettings({ tracking: !settings.tracking }));
+// Each control reports a change the person made; we send it to the server, which answers
+// with the settings now in force (showSettings then shows them).
+document.getElementById("modes").addEventListener("valuechange", (e) => postSettings({ mode: e.detail.value }));
+document.getElementById("demo-levels").addEventListener("valuechange", (e) => postSettings({ demo_level: e.detail.value }));
+// "valuecommit" fires once when the slider is let go, so we save once, not on every step.
+document.getElementById("strength").addEventListener("valuecommit", (e) => postSettings({ strength: Number(e.detail.value) }));
+document.getElementById("demo-toggle").addEventListener("checkedchange", (e) => postSettings({ demo_tremor: e.detail.value }));
+document.getElementById("freeze-toggle").addEventListener("checkedchange", (e) => { freezeOn = e.detail.value; });
+document.getElementById("tracking-toggle").addEventListener("checkedchange", (e) => postSettings({ tracking: e.detail.value }));
 document.getElementById("reset").addEventListener("click", async () => {
   await fetch("/api/reset", { method: "POST" });
   for (const key of Object.keys(tally)) delete tally[key];
@@ -325,6 +346,7 @@ function showCalibration(result) {
 
 function resizeCanvas() {
   // Draw sharply on high-resolution (Retina) screens.
+  if (area.clientWidth === 0) return;      // the Practice tab is hidden: nothing to measure
   const ratio = window.devicePixelRatio || 1;
   area.width = area.clientWidth * ratio;
   area.height = area.clientHeight * ratio;
@@ -340,65 +362,110 @@ function circle(x, y, r, fill) {
   ctx.fill();
 }
 
+// Colours used on the canvas (the same warm palette as styles.css).
+const INK = "#2f1d10", MUTED = "#6a5241", PAPER = "#fffdf8", TARGET = "#d9661a", CALIB = "#2f6db5";
+
+// Draw one of the two trail lines. Each short piece is fainter the older it is.
+function drawTrail(xKey, yKey, rgb, width, now) {
+  ctx.lineWidth = width;
+  ctx.lineCap = "round";
+  for (let i = 1; i < trail.length; i++) {
+    const age = (now - trail[i].at) / TRAIL_MS;            // 0 = just now, 1 = about to vanish
+    ctx.strokeStyle = `rgba(${rgb}, ${(1 - age).toFixed(2)})`;
+    ctx.beginPath();
+    ctx.moveTo(trail[i - 1][xKey], trail[i - 1][yKey]);
+    ctx.lineTo(trail[i][xKey], trail[i][yKey]);
+    ctx.stroke();
+  }
+}
+
 function draw() {
+  const now = performance.now();
   ctx.clearRect(0, 0, area.clientWidth, area.clientHeight);
-  if (calib && calib.phase === "running" && (performance.now() - calib.start) / 1000 >= CALIB_SECONDS) {
+  if (calib && calib.phase === "running" && (now - calib.start) / 1000 >= CALIB_SECONDS) {
     calib.phase = "scoring";
     send({ type: "calibrate_end" });
     showCalibrationText("Trying each filter on your test...");
   }
   if (calib && calib.phase !== "scoring") {
-    const dot = calibrationDot(calib.phase === "running" ? (performance.now() - calib.start) / 1000 : 0);
-    circle(dot.x, dot.y, 14, "#2f6db5");
-    circle(dot.x, dot.y, 4, "#fffdf9");
+    const dot = calibrationDot(calib.phase === "running" ? (now - calib.start) / 1000 : 0);
+    circle(dot.x, dot.y, 14, CALIB);
+    circle(dot.x, dot.y, 4, PAPER);
   } else if (target) {
-    circle(target.x, target.y, TARGET_RADIUS, "#d9661a");
-    circle(target.x, target.y, 5, "#fffdf9");
+    circle(target.x, target.y, TARGET_RADIUS + 7, "rgba(217, 102, 26, 0.16)");   // soft halo
+    circle(target.x, target.y, TARGET_RADIUS, TARGET);
+    circle(target.x, target.y, 5, PAPER);
   }
   if (settings.mode === "low_sensitivity" && !locked && !lockFailed) {
-    ctx.fillStyle = "#6e5444";
-    ctx.font = "17px system-ui, sans-serif";
+    ctx.fillStyle = MUTED;
+    ctx.font = '600 17px "Avenir Next", "Segoe UI", system-ui, sans-serif';
     ctx.textAlign = "center";
-    ctx.fillText("Lower sensitivity: click here to start (Esc to stop)", area.clientWidth / 2, 28);
+    ctx.fillText("Lower sensitivity: click here to start (Esc to stop)", area.clientWidth / 2, 34);
   }
   if (inside && latest) {
-    const shown = shownPosition();
+    // Forget trail points older than TRAIL_MS, then draw the two lines.
+    while (trail.length && now - trail[0].at > TRAIL_MS) trail.shift();
     // Raw: faint grey. Hidden under Pointer Lock, where the hand's position can be off the area.
-    if (!locked) circle(latest.raw_x, latest.raw_y, 9, "rgba(110, 110, 110, 0.45)");
-    circle(shown.x, shown.y, 8, "#3b2314");                                // corrected: solid
-    circle(shown.x, shown.y, 3, "#fffdf9");
+    if (!locked) drawTrail("rawX", "rawY", "120, 108, 98", 2, now);
+    drawTrail("x", "y", "31, 111, 87", 3.5, now);                        // corrected: green
+    const shown = shownPosition();
+    if (!locked) circle(latest.raw_x, latest.raw_y, 9, "rgba(120, 108, 98, 0.45)");
+    circle(shown.x, shown.y, 9, INK);                                      // corrected: solid
+    circle(shown.x, shown.y, 3.5, PAPER);
   } else {
-    ctx.fillStyle = "#6e5444";
-    ctx.font = "20px system-ui, sans-serif";
+    ctx.fillStyle = MUTED;
+    ctx.font = '500 21px "Avenir Next", "Segoe UI", system-ui, sans-serif';
     ctx.textAlign = "center";
-    ctx.fillText("Move your mouse or trackpad in here", area.clientWidth / 2, area.clientHeight / 2);
+    // A shorter invitation when the area is too narrow for the long one (a phone).
+    const invite = area.clientWidth < 440 ? "Move in here" : "Move your mouse or trackpad in here";
+    ctx.fillText(invite, area.clientWidth / 2, area.clientHeight / 2);
   }
   requestAnimationFrame(draw);
 }
 
-// ------------------------------------------------------------ the assistant panel (leader's lane)
+// ------------------------------------------------------------ tabs
+
+const tabs = document.getElementById("tabs");
+const TAB_NAMES = ["practice", "analysis", "how"];
+
+// Runs whenever a tab is shown. The Analysis numbers are fetched fresh each time.
+// (The practice area re-measures itself: see the ResizeObserver below.)
+function tabShown(name) {
+  history.replaceState(null, "", "#" + name);       // so a reload or a link opens the same tab
+  if (name === "analysis") loadSummary();
+}
+tabs.addEventListener("valuechange", (e) => tabShown(e.detail.value));
+
+// Open a tab from code: the "See the analysis" button, the logo, and links like index.html#analysis.
+function openTab(name) {
+  if (!TAB_NAMES.includes(name)) return;
+  setControl(tabs, "value", name);
+  tabShown(name);
+}
+document.getElementById("open-analysis").addEventListener("click", () => openTab("analysis"));
+window.addEventListener("hashchange", () => openTab(location.hash.slice(1)));
+
+// ------------------------------------------------------------ the assistant window (leader's lane)
 
 async function loadAssistant() {
   try {
     const check = await fetch("assistant/assistant.js", { method: "HEAD" });
     if (!check.ok) return;
+    document.getElementById("assistant-float").hidden = false;   // show the floating button
     const script = document.createElement("script");
     script.src = "assistant/assistant.js?v=" + Date.now();   // never an old cached copy (leader's request)
     document.body.appendChild(script);
   } catch (error) { /* no assistant: fine */ }
 }
 
-async function hideSummaryLinkIfMissing() {
-  try {
-    const check = await fetch("summary.html", { method: "HEAD" });
-    if (!check.ok) document.querySelector('a[href="summary.html"]').hidden = true;
-  } catch (error) { document.querySelector('a[href="summary.html"]').hidden = true; }
-}
-
-window.addEventListener("resize", resizeCanvas);
+// The practice area changes size with the window, and has no size at all while another tab
+// is shown. A ResizeObserver tells us each time its size changes, so the drawing stays sharp.
+new ResizeObserver(resizeCanvas).observe(area);
 resizeCanvas();
+showTally();
 connect();
 loadStatus();
 loadAssistant();
-hideSummaryLinkIfMissing();
+loadSummary();                                       // also fills "How well it does"
+if (location.hash.length > 1) openTab(location.hash.slice(1));
 requestAnimationFrame(draw);

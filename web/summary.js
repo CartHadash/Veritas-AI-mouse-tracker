@@ -1,4 +1,6 @@
-// summary.js - the session summary page (step 13). Reads GET /api/summary (Contract 2) and
+// summary.js - the Analysis tab of index.html (step 13; it used to be its own page,
+// summary.html). Loaded before app.js, which calls loadSummary() when the tab is shown and
+// owns MODE_NAMES. Reads GET /api/summary (Contract 2) and
 // draws a few tiles and one chart with the browser's canvas (no chart library, so it works
 // offline). Wording is for a general reader: no medical claims.
 
@@ -22,7 +24,7 @@ function drawChart(byTime) {
   const canvas = document.getElementById("by-time");
   document.getElementById("by-time-empty").hidden = byTime.length > 0;
   canvas.hidden = byTime.length === 0;
-  if (!byTime.length) return;
+  if (!byTime.length || canvas.clientWidth === 0) return;   // nothing to draw, or the tab is hidden
 
   const ratio = window.devicePixelRatio || 1;
   canvas.width = canvas.clientWidth * ratio;
@@ -35,11 +37,11 @@ function drawChart(byTime) {
   const maxSize = Math.max(5, ...byTime.map((m) => m.strength_px));
   const slot = plotW / byTime.length;
   ctx.clearRect(0, 0, W, H);
-  ctx.font = "14px system-ui, sans-serif";
+  ctx.font = '14px "Avenir Next", "Segoe UI", system-ui, sans-serif';
 
   // Axes and labels: left = share of time (0-100%), right = size in px.
-  ctx.fillStyle = "#6e5444";
-  ctx.strokeStyle = "#e8c9a8";
+  ctx.fillStyle = "#6a5241";
+  ctx.strokeStyle = "#e7d2b8";
   for (const f of [0, 0.5, 1]) {
     const y = top + plotH * (1 - f);
     ctx.beginPath(); ctx.moveTo(left, y); ctx.lineTo(W - right, y); ctx.stroke();
@@ -52,13 +54,13 @@ function drawChart(byTime) {
     const h = plotH * m.detected_share;
     ctx.fillStyle = "#d9661a";
     ctx.fillRect(left + i * slot + slot * 0.2, top + plotH - h, slot * 0.6, h);
-    ctx.fillStyle = "#6e5444";
+    ctx.fillStyle = "#6a5241";
     ctx.textAlign = "center";
     ctx.fillText(`min ${m.minute}`, left + i * slot + slot / 2, H - 12);
   });
 
   // Line: typical size of the shaking.
-  ctx.strokeStyle = "#2e7d5b";
+  ctx.strokeStyle = "#1f6f57";
   ctx.lineWidth = 3;
   ctx.beginPath();
   byTime.forEach((m, i) => {
@@ -66,7 +68,7 @@ function drawChart(byTime) {
     if (i === 0) ctx.moveTo(x, y); else ctx.lineTo(x, y);
   });
   ctx.stroke();
-  ctx.fillStyle = "#2e7d5b";
+  ctx.fillStyle = "#1f6f57";
   byTime.forEach((m, i) => {
     ctx.beginPath();
     ctx.arc(left + i * slot + slot / 2, top + plotH * (1 - m.strength_px / maxSize), 5, 0, 2 * Math.PI);
@@ -75,7 +77,7 @@ function drawChart(byTime) {
   ctx.lineWidth = 1;
 }
 
-async function load() {
+async function loadSummary() {
   const s = await (await fetch("/api/summary")).json();
   lastSummary = s;
 
@@ -118,16 +120,16 @@ async function load() {
   }
 
   const info = s.model_info;
-  document.getElementById("model-info").textContent =
+  const modelText =
     `Detector version ${info.detector_version}. On people it had never seen, it missed ${percent(info.missed_cases_rate)} ` +
     `of tremor windows and raised a false alarm on ${percent(info.false_alarm_rate)} of windows without tremor ` +
-    `(tested on recordings from a public dataset, not on mouse use). Filter now: ${s.filter.mode}, strength ${s.filter.strength}.`;
+    `(tested on recordings from a public dataset, not on mouse use). Filter now: ${MODE_NAMES[s.filter.mode] ?? s.filter.mode}, strength ${s.filter.strength}.`;
+  // The same sentence is shown on the Analysis tab and on "How it works".
+  for (const element of document.querySelectorAll(".model-info")) element.textContent = modelText;
   loadHistory(s);
 }
 
 // ------------------------------------------------------------ earlier sessions (leader's history)
-
-const MODE_NAMES = { none: "No filter", low_sensitivity: "Lower sensitivity", one_euro: "One Euro", learned: "Our model" };
 
 function historyRow(cells) {
   const tr = document.createElement("tr");
@@ -167,23 +169,9 @@ async function loadHistory(current) {
   document.getElementById("history-empty").hidden = history.sessions.length > 0;
 }
 
-async function loadAssistant() {
-  try {
-    const check = await fetch("assistant/assistant.js", { method: "HEAD" });
-    if (!check.ok) return;
-    const script = document.createElement("script");
-    script.src = "assistant/assistant.js?v=" + Date.now();   // never an old cached copy
-    document.body.appendChild(script);
-  } catch (error) { /* no assistant: fine */ }
-}
-
 let lastSummary = null;
-let resizeTimer = null;
-document.getElementById("reload").addEventListener("click", load);
-// On resize only redraw the chart (no new request), at most once the resizing stops.
-window.addEventListener("resize", () => {
-  clearTimeout(resizeTimer);
-  resizeTimer = setTimeout(() => { if (lastSummary) drawChart(lastSummary.tremor.by_time); }, 150);
-});
-load();
-loadAssistant();
+document.getElementById("reload").addEventListener("click", loadSummary);
+// Redraw the chart (no new request) whenever its size changes: the window was resized, or
+// the Analysis tab has just been shown.
+new ResizeObserver(() => { if (lastSummary) drawChart(lastSummary.tremor.by_time); })
+  .observe(document.getElementById("by-time"));

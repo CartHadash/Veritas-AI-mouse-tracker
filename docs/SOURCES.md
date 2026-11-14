@@ -51,7 +51,16 @@ Installed in step 1 (exact versions in `requirements.txt`). Add new ones here wh
   pointer position for the whole-laptop tracker via Apple's Quartz `CGEventGetLocation`,
   https://developer.apple.com/documentation/coregraphics/cgevent/location)
 
+- ui-sdk web components, `@ui-sdk/web` version 0.1.0-beta.1 (Vercel Labs, Apache-2.0 licence),
+  https://ui-sdk.dev . The tabs, filter choice, switches, slider, meter and the assistant's
+  pop-up window in `web/index.html`. Not installed with pip or npm: the package's `browser`
+  folder is copied into `web/vendor/ui-sdk/` (its licence file is there too). Added Sat 14 Nov 21:57 CET.
+
 ## AI tools used while building
+
+- The ui-sdk agent skill (`npx skills add vercel-labs/ui --skill ui-sdk`, saved in
+  `.agents/skills/ui-sdk/`): the library's own instructions for AI assistants. Used by the
+  leader's agent for the redesign. Added Sat 14 Nov 21:57 CET.
 
 - Claude Code (Anthropic): planning, writing and testing most of the code.
 - ChatGPT (OpenAI): write-up and video script drafting.

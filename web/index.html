@@ -4,94 +4,281 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Steady Pointer</title>
+  <!-- ui-sdk: ready-made interface components (tabs, switches, sliders, the pop-up window).
+       The files are copied into web/vendor/ui-sdk/ so the page also works with no internet.
+       Each component's code loads the first time one of its <ui-...> tags appears on the page. -->
+  <script type="module" src="vendor/ui-sdk/web.js"></script>
+  <link rel="stylesheet" href="vendor/ui-sdk/web.css">
   <link rel="stylesheet" href="styles.css">
+  <link rel="stylesheet" href="summary.css">
 </head>
 <body>
-  <header>
-    <h1>Steady Pointer</h1>
-    <p class="subtitle">A tremor-aware pointer assistant. Move inside the practice area and click the orange targets.</p>
-  </header>
+  <!-- The whole page is one set of tabs. Each <ui-tabs-tab> shows the <ui-tabs-panel> with the
+       same value. A hidden panel stays in the page, so the practice area keeps its state. -->
+  <ui-tabs id="tabs" default-value="practice">
+    <header class="topbar">
+      <a class="brand" href="#practice" aria-label="Steady Pointer">
+        <!-- The logo: a shaky line that becomes a steady one. -->
+        <svg viewBox="0 0 64 28" width="50" height="22" aria-hidden="true">
+          <path d="M2 14 l4 -9 l4 16 l4 -15 l4 14 l4 -11 l4 8 q3 -3 6 -3 h26" fill="none"
+                stroke="currentColor" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+        <span>Steady Pointer</span>
+      </a>
+      <ui-tabs-list aria-label="Sections">
+        <ui-tabs-indicator></ui-tabs-indicator>
+        <ui-tabs-tab value="practice"><button type="button">Practice</button></ui-tabs-tab>
+        <ui-tabs-tab value="analysis"><button type="button">Analysis</button></ui-tabs-tab>
+        <ui-tabs-tab value="how"><button type="button">How it works</button></ui-tabs-tab>
+      </ui-tabs-list>
+      <p class="status" id="status-line">Connecting to the local server...</p>
+    </header>
 
-  <!-- Shown whenever demo tremor is on (required wording). -->
-  <div id="demo-banner" class="banner" hidden>
-    Demo mode: replaying recorded tremor from a public dataset.
-    <span id="demo-source"></span>
-  </div>
+    <!-- ============================================================ Practice -->
+    <ui-tabs-panel value="practice">
+      <div class="practice">
+        <section class="stage">
+          <div class="stage-bar">
+            <div class="field-inline">
+              <span class="field-name" id="modes-label">Filter</span>
+              <ui-segmented-control id="modes" aria-labelledby="modes-label">
+                <ui-segmented-control-indicator></ui-segmented-control-indicator>
+                <ui-segmented-control-item value="none">No filter</ui-segmented-control-item>
+                <ui-segmented-control-item value="low_sensitivity">Lower sensitivity</ui-segmented-control-item>
+                <ui-segmented-control-item value="one_euro">One Euro</ui-segmented-control-item>
+                <ui-segmented-control-item value="learned">Our model</ui-segmented-control-item>
+              </ui-segmented-control>
+            </div>
+            <label class="field-inline">
+              <span class="field-name">Demo tremor</span>
+              <ui-switch id="demo-toggle"><ui-switch-thumb></ui-switch-thumb></ui-switch>
+            </label>
+          </div>
 
-  <main>
-    <section class="left">
-      <!-- The practice area: the system cursor is hidden here; we draw two cursors instead. -->
-      <canvas id="area" aria-label="Practice area with targets"></canvas>
-      <p class="legend">
-        <span class="dot raw"></span> raw movement (your hand<span id="legend-demo" hidden> + replayed tremor</span>)
-        &nbsp;&nbsp; <span class="dot fixed"></span> corrected cursor (clicks count here)
-      </p>
-    </section>
+          <!-- Shown whenever demo tremor is on (required wording). -->
+          <div id="demo-banner" class="banner" hidden>
+            Demo mode: replaying recorded tremor from a public dataset.
+            <span id="demo-source"></span>
+          </div>
 
-    <section class="right">
-      <div class="panel">
-        <h2>Filter</h2>
-        <div class="buttons" id="modes">
-          <button data-mode="none">No filter</button>
-          <button data-mode="low_sensitivity">Lower sensitivity</button>
-          <button data-mode="one_euro">One Euro</button>
-          <button data-mode="learned">Our model</button>
-        </div>
-        <label class="slider">Strength <input id="strength" type="range" min="0" max="1" step="0.1" value="1">
-          <span id="strength-value">1.0</span></label>
-        <div class="buttons">
-          <button id="demo-toggle" class="toggle">Demo tremor: off</button>
-          <button id="freeze-toggle" class="toggle"
-                  title="Hold the cursor still while the button is pressed (at most 0.3 s)">Click freeze: off</button>
-        </div>
-        <div class="buttons">
-          <button id="calibrate" title="Hold the cursor on a blue dot, then follow it for a few seconds">Calibrate for my mouse (10 s)</button>
-        </div>
-        <p class="small" id="calib-result" hidden></p>
-        <div class="buttons" id="demo-levels" hidden>
-          <span class="level-label">Replayed tremor:</span>
-          <button data-level="mild">Mild</button>
-          <button data-level="medium">Medium</button>
-          <button data-level="strong">Strong</button>
-        </div>
-        <div class="buttons">
-          <button id="tracking-toggle" class="toggle" hidden>Whole-laptop tracking: off</button>
-        </div>
+          <!-- The practice area: the system cursor is hidden here; we draw two cursors instead. -->
+          <canvas id="area" aria-label="Practice area with targets"></canvas>
+
+          <p class="legend">
+            <span><i class="key raw"></i> raw movement (your hand<span id="legend-demo" hidden> + replayed tremor</span>)</span>
+            <span><i class="key fixed"></i> corrected cursor (clicks count here)</span>
+            <span><i class="key goal"></i> target</span>
+          </p>
+        </section>
+
+        <aside class="rail">
+          <section class="card meter-card">
+            <h2>Tremor meter</h2>
+            <p class="meter-word" id="tremor-word">Waiting for movement...</p>
+            <!-- The bar is the detector's score from 0 to 1; the dark mark is its cut-off. -->
+            <ui-meter id="score-meter" value="0" min="0" max="1" aria-label="Tremor score">
+              <ui-meter-track>
+                <ui-meter-indicator></ui-meter-indicator>
+                <span id="cutoff-mark" title="Above this mark the movement counts as tremor-like"></span>
+              </ui-meter-track>
+            </ui-meter>
+            <p class="correcting">Correction: <b id="correcting-word">-</b></p>
+            <dl class="readings">
+              <div><dt>Score</dt><dd id="score">-</dd></div>
+              <div><dt>Rhythm</dt><dd><span id="freq">-</span> Hz</dd></div>
+              <div><dt>Size</dt><dd><span id="size">-</span> px</dd></div>
+            </dl>
+            <p class="small" id="demo-tip">Switch on "Demo tremor" to see the correction. A steady
+              hand is deliberately left alone.</p>
+            <p class="small">The detector looks at the last 2.56 seconds. It flags tremor-like movement;
+              it does not diagnose anything.</p>
+          </section>
+
+          <section class="card">
+            <h2>Adjust</h2>
+            <ui-slider id="strength" min="0" max="1" step="0.1" default-value="1">
+              <div class="row-between">
+                <span class="field-name">Strength</span>
+                <ui-slider-value></ui-slider-value>
+              </div>
+              <ui-slider-control>
+                <ui-slider-track>
+                  <ui-slider-indicator></ui-slider-indicator>
+                  <ui-slider-thumb aria-label="Filter strength"></ui-slider-thumb>
+                </ui-slider-track>
+              </ui-slider-control>
+            </ui-slider>
+
+            <div class="field-stack" id="demo-levels-row" hidden>
+              <span class="field-name" id="levels-label">Replayed tremor</span>
+              <ui-segmented-control id="demo-levels" aria-labelledby="levels-label">
+                <ui-segmented-control-indicator></ui-segmented-control-indicator>
+                <ui-segmented-control-item value="mild">Mild</ui-segmented-control-item>
+                <ui-segmented-control-item value="medium">Medium</ui-segmented-control-item>
+                <ui-segmented-control-item value="strong">Strong</ui-segmented-control-item>
+              </ui-segmented-control>
+            </div>
+
+            <label class="option">
+              <span><b>Click freeze</b>
+                <small>Holds the cursor still while the button is pressed (at most 0.3 s).</small></span>
+              <ui-switch id="freeze-toggle"><ui-switch-thumb></ui-switch-thumb></ui-switch>
+            </label>
+            <label class="option" id="tracking-row" hidden>
+              <span><b>Whole-laptop tracking</b>
+                <small>Positions only; nothing leaves this computer.</small></span>
+              <ui-switch id="tracking-toggle"><ui-switch-thumb></ui-switch-thumb></ui-switch>
+            </label>
+
+            <button class="btn wide" id="calibrate"
+                    title="Hold the cursor on a blue dot, then follow it for a few seconds">Calibrate for my mouse (10 s)</button>
+            <p class="small" id="calib-result" hidden></p>
+          </section>
+
+          <section class="card">
+            <h2>Your targets</h2>
+            <table id="tally">
+              <thead><tr><th>Filter</th><th>Hits</th><th>Misses</th><th>Time per target</th></tr></thead>
+              <tbody></tbody>
+            </table>
+            <p class="small" id="tally-empty">Click the orange targets. Your hits and misses appear here, one row per filter.</p>
+            <div class="actions">
+              <button class="btn" id="reset">New session</button>
+              <button class="btn quiet" id="open-analysis">See the analysis</button>
+            </div>
+          </section>
+        </aside>
       </div>
+    </ui-tabs-panel>
 
-      <div class="panel">
-        <h2>Tremor meter</h2>
-        <p class="meter-label"><span id="tremor-word">Waiting for movement...</span></p>
-        <div class="bar"><div id="score-bar"></div><div id="cutoff-mark"></div></div>
-        <p class="correcting" id="correcting">Correction: <b id="correcting-word">-</b></p>
-        <p class="small" id="demo-tip">Tip: switch "Demo tremor" on to see the correction. A steady
-          hand is deliberately left alone.</p>
-        <p class="meter-numbers">Score <b id="score">-</b> &nbsp;·&nbsp; about <b id="freq">-</b> Hz
-          &nbsp;·&nbsp; size <b id="size">-</b> px</p>
-        <p class="small">The detector looks at the last 2.56 seconds. It flags tremor-like movement;
-          it does not diagnose anything.</p>
+    <!-- ============================================================ Analysis (was summary.html) -->
+    <ui-tabs-panel value="analysis">
+      <div class="page">
+        <div class="page-head">
+          <div>
+            <h1>Your session</h1>
+            <p class="lede">What the pointer assistant noticed since you started.</p>
+          </div>
+          <button class="btn" id="reload">Refresh</button>
+        </div>
+
+        <div id="notes"></div>
+        <section class="tiles" id="tiles"></section>
+
+        <section class="card chart-panel">
+          <h2>Tremor-like movement, minute by minute</h2>
+          <p class="small">Bars: share of analysed time with tremor-like movement. Line: typical size of the shaking (px).</p>
+          <canvas id="by-time" aria-label="Chart of tremor-like movement per minute"></canvas>
+          <p class="empty" id="by-time-empty" hidden>No minutes analysed yet. Move in the practice area for a while, then press Refresh.</p>
+        </section>
+
+        <section class="card" id="laptop" hidden>
+          <h2>Across the whole laptop</h2>
+          <p class="small">From the whole-laptop tracker (positions only; nothing leaves this computer).</p>
+          <div class="tiles" id="laptop-tiles"></div>
+        </section>
+
+        <section class="card" id="history" hidden>
+          <h2>Earlier sessions on this laptop</h2>
+          <p class="small">Saved on this laptop only (summary numbers, never your movement). Differences
+            between sessions can come from settings, tasks or time of day; this is not a health trend.</p>
+          <div class="table-scroll">
+            <table id="history-table">
+              <thead><tr><th>Session</th><th>Active</th><th>Tremor-like</th><th>Steadiness</th>
+                <th>Clicks hit</th><th>Filter</th><th>Note</th></tr></thead>
+              <tbody></tbody>
+            </table>
+          </div>
+          <p class="small" id="history-empty" hidden>No earlier sessions saved yet. A session is saved
+            every minute once some movement has been analysed.</p>
+        </section>
+
+        <section class="card">
+          <h2>About these numbers</h2>
+          <p class="small model-info"></p>
+          <p class="small">"Tremor-like movement" means the pointer shook in a steady rhythm of 3 to 12 times a
+            second. It does not mean a diagnosis, and changes from day to day can have many causes.</p>
+        </section>
       </div>
+    </ui-tabs-panel>
 
-      <div class="panel">
-        <h2>Your targets</h2>
-        <table id="tally">
-          <thead><tr><th>Filter</th><th>Hits</th><th>Misses</th><th>Time per target</th></tr></thead>
-          <tbody></tbody>
-        </table>
-        <div class="buttons"><button id="reset">New session</button>
-          <a class="button-link" href="summary.html">Session summary</a></div>
+    <!-- ============================================================ How it works -->
+    <ui-tabs-panel value="how">
+      <div class="page narrow">
+        <div class="page-head">
+          <div>
+            <h1>How it works</h1>
+            <p class="lede">Tremor is fast and rhythmic. Pointing at something is slow. That
+              difference in speed is what lets a computer tell them apart.</p>
+          </div>
+        </div>
+
+        <!-- A numbered list on purpose: these three things really happen in this order. -->
+        <ol class="steps">
+          <li>
+            <h2>Read</h2>
+            <p>While you move inside the practice area, the page sends the pointer's position to a
+              small program running on this laptop.</p>
+          </li>
+          <li>
+            <h2>Detect</h2>
+            <p>The first model looks at the last 2.56 seconds of movement and gives a score from 0 to 1
+              for how much it looks like tremor: a steady rhythm of 3 to 12 shakes a second. That
+              score is the tremor meter.</p>
+          </li>
+          <li>
+            <h2>Correct</h2>
+            <p>The second model is a small neural network. It works out where the pointer was meant
+              to be, using only movement that has already happened: it never waits to see what comes next. The
+              detector decides how much of that correction is applied, so a steady hand is left alone.</p>
+          </li>
+        </ol>
+
+        <section class="card">
+          <h2>How well it does</h2>
+          <p class="small model-info"></p>
+          <p class="small">Both models were trained only on public and computer-generated data. The
+            people used for the final test were never seen during training.</p>
+        </section>
+
+        <section class="card">
+          <h2>What happens to your movement</h2>
+          <p class="small">Both models run on this laptop. The assistant only sees the summary numbers,
+            never your raw movement. You can delete the saved data from the assistant window.</p>
+        </section>
       </div>
-
-      <!-- Belongs to the team leader's assistant (web/assistant/). -->
-      <div id="assistant-panel"></div>
-    </section>
-  </main>
+    </ui-tabs-panel>
+  </ui-tabs>
 
   <footer>
     <p><b>This project is a prototype and is not medical advice.</b></p>
-    <p class="small" id="status-line">Connecting to the local server...</p>
   </footer>
 
+  <!-- The assistant: a floating button that opens a window. dismissible="false" keeps the
+       window open while you use the rest of the page; the button or the X closes it.
+       The window's content (#assistant-panel) is filled by web/assistant/assistant.js. -->
+  <ui-popover id="assistant-float" dismissible="false" hidden>
+    <ui-popover-trigger>
+      <button type="button" class="assistant-launcher">
+        <svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true">
+          <path d="M4 5h16v11H9l-5 4z" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/>
+        </svg>
+        Ask the assistant
+      </button>
+    </ui-popover-trigger>
+    <ui-popover-content class="assistant-window" side="top" align="end" side-offset="12" collision-padding="16">
+      <div class="assistant-head">
+        <ui-popover-title>Ask the assistant</ui-popover-title>
+        <ui-popover-close><button type="button" class="assistant-close" aria-label="Close the assistant">
+          <svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true">
+            <path d="M6 6l12 12M18 6L6 18" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"/>
+          </svg></button></ui-popover-close>
+      </div>
+      <div id="assistant-panel"></div>
+    </ui-popover-content>
+  </ui-popover>
+
+  <script src="summary.js"></script>
   <script src="app.js"></script>
 </body>
 </html>

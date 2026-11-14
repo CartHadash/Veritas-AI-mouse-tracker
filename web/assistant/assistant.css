@@ -3,13 +3,19 @@
 
 .assistant {
   background: var(--panel, #fffdf9);
-  border: 2px solid var(--line, #e8c9a8);
-  border-radius: 16px;
+  border: 1px solid var(--line, #e8c9a8);
+  border-radius: 18px;
   padding: 14px 16px;
   margin-top: 16px;
   color: var(--ink, #3b2314);
-  font-size: 18px;
+  font-size: 17px;
 }
+
+/* Inside the floating window on the main page (web/index.html): the window already has a
+   frame, a title and a close button, so the panel drops its own. */
+.assistant-window .assistant { border: 0; border-radius: 0; margin: 0; padding: 14px 20px 20px; background: none; }
+.assistant-window .assistant h2 { display: none; }
+.assistant-window .assistant-log { max-height: none; }
 
 .assistant h2 { margin: 0 0 6px; font-size: 22px; }
 
@@ -18,9 +24,10 @@
   font-weight: 600;
   padding: 12px 18px;
   min-height: 48px;                 /* easy to hit with a shaky hand */
-  border-radius: 24px;
-  border: 2px solid var(--accent, #2e7d5b);
-  background: #fff;
+  border-radius: 14px;
+  border: 1.5px solid var(--edge, #a8825a);
+  background: var(--panel, #fffdf9);
+  text-align: left;
   color: var(--ink, #3b2314);
   cursor: pointer;
 }
@@ -43,12 +50,13 @@
   line-height: 1.45;
 }
 .assistant-bubble.user {
-  background: #f3e3d1;
+  background: var(--ink, #3b2314);
+  color: var(--panel, #fffdf9);
   margin-left: 15%;
 }
 .assistant-bubble.assistant {
-  background: #fff;
-  border: 2px solid var(--line, #e8c9a8);
+  background: var(--paper, #fbf3e7);
+  border: 1px solid var(--line, #e8c9a8);
   margin-right: 8%;
 }
 
@@ -73,9 +81,13 @@
   font: inherit;
   padding: 10px 14px;
   min-height: 48px;
-  border: 2px solid var(--line, #e8c9a8);
-  border-radius: 12px;
+  border: 1.5px solid var(--edge, #a8825a);
+  border-radius: 14px;
+  background: var(--panel, #fffdf9);
+  color: inherit;
 }
+/* Send: the one filled button, so it reads as the main action. */
+.assistant-row button { background: var(--ink, #3b2314); border-color: var(--ink, #3b2314); color: var(--panel, #fffdf9); }
 
 .assistant-disclaimer { font-size: 15px; color: var(--muted, #6e5444); margin: 12px 0 0; }
 .assistant-mode { margin-top: 0; }

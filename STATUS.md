@@ -9,7 +9,7 @@ Newest entries go at the top of each list. Use local time and say who you are.
 | Lane | Working on | Branch | Blocked by |
 |---|---|---|---|
 | Builder | Steps 1-15 built (4, 9, 11, 14, 15 await human or Mac checks) + click freeze + calibration test + step 4 path check. Next: see "Builder's plan" below | main | - |
-| Team leader | B1 (tracker) and B2 (assistant) DONE and merged. Next: Part A checks; B3 only if the leader decides | - | - |
+| Team leader | B1 (tracker) and B2 (assistant) DONE and merged. UI redesign built on `leader/ui` (pushed, NOT merged: waiting for the leader to look at it). Next: Part A checks | leader/ui | Leader's review of the new look |
 | Writer | IN PROGRESS: drafting the write-up. Start from `docs/WRITER_BRIEF.md` (where everything is) | - | - |
 
 ### Builder's plan: what is left (written Sat 14 Nov 20:03 CET; tick or delete lines as they finish)
@@ -61,6 +61,19 @@ Time line: first full version by **Sun 15 Nov 22:00 CET**; no new features after
 - [ ] Step 16, the desktop window (cut first).
 
 ## Done (newest first)
+
+- Sat 14 Nov 21:57 CET, leader's agent: interface redesign on branch `leader/ui` (pushed, not merged yet).
+  One page with three tabs (Practice with a larger practice area, Analysis = the old summary
+  page, How it works), the assistant as a floating button that opens a window, the same warm
+  look made tidier, and a fading trail behind the raw and corrected cursors. Controls are
+  ui-sdk web components, copied into `web/vendor/ui-sdk/` so the page needs no internet.
+  `summary.html` now only forwards to `index.html#analysis`. Checked in the browser at
+  1440 px and 375 px wide: tabs, filter choice, demo tremor, click freeze, meter, assistant
+  window open/stay open/close, no console errors. Re-run and still passing:
+  `python server/test_ws.py` (4 modes x 500 replies) and
+  `python -m pytest data_pipeline/test_split.py tracker/test_reader.py` (7 passed, 7 skipped).
+  Not checked: a real hand on the trackpad (calibration test, Pointer Lock in "Lower
+  sensitivity", target clicks), and a live question to the assistant in the new window.
 
 - Sat 14 Nov 20:49 CET, builder's agent: step 4 path check round 1 (Timofey's ratings,
   `evaluation/results/path_check_ratings_1.md`): current generator 2.3 / 5, realistic
@@ -339,6 +352,11 @@ Time line: first full version by **Sun 15 Nov 22:00 CET**; no new features after
   4.30 Hz, 99% of power in 3-12 Hz. TremorDB rofh/s6rof.let: peak 4.88 Hz, 98% in 3-12 Hz.
 
 ## Decisions made along the way (what, why, who decided)
+
+- Sat 14 Nov 21:57 CET, team leader (human): redesign choices. Look: keep style C (warm and friendly),
+  polished. Layout: tabs, a big practice area, the assistant as a floating window. Pages:
+  live demo, summary, assistant panel (not the path check tool). Components: ui-sdk web
+  components with no build step, files copied locally so the demo works offline.
 
 - Sat 14 Nov 22:10, team leader (human): README shows no team names or schools (round 1 is
   reviewed blind); the "Team:" line reads "Names on the submission form". Recorded in

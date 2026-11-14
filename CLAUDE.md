@@ -190,6 +190,9 @@ python -m assistant.run_test_prompts      # 13 test questions; needs the key; a 
 - When a script edits several `.md` files, check every edit succeeded before committing; twice
   a failed edit went unnoticed and a merge went out without its STATUS update.
 
+- The interface's controls are ui-sdk web components (`<ui-switch>`, `<ui-tabs>`, ...). Their
+  change events (`valuechange`, `checkedchange`) do not bubble: listen on the element itself.
+  Set their state from code with `setControl()` in `web/app.js`. Never edit `web/vendor/`.
 - A Claude Code worktree (`.claude/worktrees/...`) has no `.venv` of its own; `python` is
   "command not found" there. Activate the main checkout's: `source ../../../.venv/bin/activate`.
 - PADS text files have 7 columns, not the 6 the official page describes; time is first.

@@ -9,3 +9,9 @@ Then follow the guide for your lane:
 - Team leader: [BUILD_GUIDE_LEADER.md](BUILD_GUIDE_LEADER.md)
 - Writer (write-up and video): start from [docs/WRITER_BRIEF.md](docs/WRITER_BRIEF.md), then [STATUS.md](STATUS.md) and
   [docs/COMPETITION_RULES.md](docs/COMPETITION_RULES.md); the write-up template is there.
+
+## Interface components (ui-sdk)
+
+The pages in `web/` use ui-sdk web components, loaded from https://ui-sdk.dev with no build
+step. Before using ui-sdk, follow the ui-sdk skill if it is installed, and read
+https://ui-sdk.dev/web.md.

@@ -79,7 +79,7 @@ them (or write it in `STATUS.md` under "Requests").
 | `models/` | Builder | Detector and corrector: training code and saved weights |
 | `evaluation/` | Builder | Benchmark scripts, results tables, charts, failure examples |
 | `server/` | Builder | The Python web server that ties everything together |
-| `web/` (except `web/assistant/`) | Builder | The interface: live demo and summary pages |
+| `web/` (except `web/assistant/`) | Builder (the redesign: team leader, from Sat 14 Nov 22:00) | The interface: one page with Practice, Analysis and How-it-works tabs. `web/vendor/ui-sdk/` is a copied library: do not edit it |
 | `tracker/` | Team leader | Reads the pointer everywhere on the laptop; local log |
 | `assistant/` | Team leader | Claude API code and prompts |
 | `web/assistant/` | Team leader | The assistant's chat panel in the interface |
