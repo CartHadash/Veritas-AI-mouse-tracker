@@ -8,7 +8,7 @@ Newest entries go at the top of each list. Use local time and say who you are.
 
 | Lane | Working on | Branch | Blocked by |
 |---|---|---|---|
-| Builder | Steps 1-5 done (step 4 chart awaiting the builder's look). Next: step 6, baselines | main | - |
+| Builder | IN PROGRESS: step 6, baselines (evaluation/). Steps 1-5 done | builder/baselines | - |
 | Team leader | not started | - | - |
 | Writer | not started | - | - |
 
