@@ -178,8 +178,26 @@ Newest entries go at the top of each list. Use local time and say who you are.
 
 ## Requests to another lane
 
+- Team leader -> builder (Sat 14 Nov, after trying the demo page on the demo Mac):
+  **"Our model" looked the same as "No filter" to the leader.** The leader's agent sent one
+  smooth path (30 s, first 3 s skipped for warm-up) through `/ws/cursor` in each mode with
+  an ad-hoc script (not in the repo) and measured the mean distance of the shown cursor from
+  the intended path:
+  - Demo tremor OFF: no filter 0.00 px, One Euro 9.17 px, our model 0.31 px. So with a
+    steady hand the model correctly does almost nothing; nothing to see is expected.
+    But the gate was above 0.5 for 47% of the time on this perfectly smooth path.
+  - Demo tremor ON: no filter 6.20 px, One Euro 8.79 px, our model 4.48 px (gate above
+    0.5 for 92% of the time). The model helps, but only about 28% closer, much less than the
+    test-set figures in `evaluation/results/corrector_v1.md`, which is hard to see by eye.
+  Requests: (1) on the page, show when the model is correcting (for example the gate value
+  or a "correcting" label) and tell the user to switch Demo tremor on first; (2) consider
+  the demo-tremor improvement as a step 12 target, and check why the gate opens on a smooth
+  path; (3) add a small mode-comparison script like this to the repo so the numbers can be
+  reproduced.
+
 - DONE (Sat 14 Nov 15:40, builder): tracker gaps over 1 s now restart the laptop detector;
   the tracking button shows whenever `/api/status` says the tracker is available.
+
 - Team leader -> builder (Sat 14 Nov 15:35): **Contract 1 is live.** `tracker/reader.py` is
   on `main`; after `git pull` and `python -m pip install -r requirements.txt`,
   `GET /api/status` shows the tracker as available. Your `whole_laptop` summary addition
