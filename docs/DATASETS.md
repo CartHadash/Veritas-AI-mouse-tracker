@@ -58,9 +58,10 @@ credit the authors, no commercial use, share anything built from it under the sa
 > (2024). PADS - Parkinsons Disease Smartwatch dataset (version 1.0.0). PhysioNet.
 > RRID:SCR_007345. https://doi.org/10.13026/m0w9-zx22
 
-The PhysioNet page also lists an original publication to cite. **To do before submitting:**
-copy its exact wording from
-https://physionet.org/content/parkinsons-disease-smartwatch/1.0.0/
+and the original publication, which the PhysioNet page asks us to cite as well:
+
+> Varghese, J. et al. (2024). Machine Learning in the Parkinson's disease smartwatch (PADS)
+> dataset. npj Parkinson's Disease, 10, 9. https://doi.org/10.1038/s41531-023-00625-7
 
 ## 2. TremorDB: Effect of Deep Brain Stimulation on Parkinsonian Tremor
 
@@ -120,12 +121,14 @@ As shown on both dataset pages on 13 Nov 2026:
 
 ## 5. Related work to cite (verify before citing)
 
-A teammate's AI reported that Microsoft Research (Ryen White and Eric Horvitz, around 2019)
-estimated hand tremor from anonymised mouse cursor movement at population scale and
-suggested opt-in monitoring as a future application. **We have not verified this paper.**
-Before it goes in the write-up, find it, confirm the authors, year, title and what it
-actually claims, and add the link to `docs/SOURCES.md`. If it checks out, it is useful: it
-shows the idea is credible, and our project is the personal, on-device version.
+**Verified (Sat 14 Nov, team leader's agent):** White, R. W. & Horvitz, E. (2019).
+"Population-scale hand tremor analysis via anonymized mouse cursor signals". npj Digital
+Medicine. https://doi.org/10.1038/s41746-019-0171-4 . They estimated hand tremor from the
+anonymised mouse cursor movement of millions of users, checked the estimates against
+self-reports, published clinical findings and a target-selection study, note that checking
+estimates from anonymised logs is hard, and suggest opt-in screening and monitoring as future
+uses. Useful for the write-up: it shows the idea is credible; our project is the personal,
+on-device version that also corrects the cursor. Listed in `docs/SOURCES.md`.
 
 ## 6. Facts about the demo machine
 

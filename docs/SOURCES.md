@@ -74,8 +74,15 @@ Installed in step 1 (exact versions in `requirements.txt`). Add new ones here wh
   Used for the synthetic reaches (step 4).
 - Dilated causal convolutions: van den Oord, A. et al. (2016), "WaveNet: A Generative Model for
   Raw Audio", arXiv:1609.03499. The idea behind the corrector's layer layout (step 8).
-- Microsoft Research work on tremor from cursor movement: NOT YET VERIFIED (see `DATASETS.md`
-  section 5). Fill in authors, year, title and link, or delete this line.
+- White, R. W. & Horvitz, E. (2019), "Population-scale hand tremor analysis via anonymized
+  mouse cursor signals", npj Digital Medicine, https://doi.org/10.1038/s41746-019-0171-4
+  (free: https://www.ncbi.nlm.nih.gov/pmc/articles/PMC6760188/). Related work (Microsoft
+  Research): tremor estimated from millions of users' anonymised cursor logs; suggests opt-in
+  monitoring. Ours is the personal, on-device version. Verified by the team leader's agent,
+  Sat 14 Nov.
+- PADS original publication: Varghese, J. et al. (2024), "Machine Learning in the Parkinson's
+  disease smartwatch (PADS) dataset", npj Parkinson's Disease 10:9,
+  https://doi.org/10.1038/s41531-023-00625-7. Cite together with the PADS dataset above.
 
 ## Our own pre-hackathon work
 
