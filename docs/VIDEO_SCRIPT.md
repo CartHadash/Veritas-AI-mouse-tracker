@@ -28,9 +28,7 @@ Health judges also look for an honest limit and the disclaimer: Part 4.
 shakes and misses the small checkbox target twice.
 
 **Say:**
-> Someone with Parkinson's or essential tremor opens their laptop, and the pointer shakes.
-> The small things are the hardest: a checkbox, the cross that closes a window. We built a
-> tool that steadies the cursor for them.
+A checkbox should be a one-click thing, and not a moving target. For someone with Parkinson’s or essential tremor, even the slightest movement of a cursor can be a challenge. TAG-Pointer uses a trained model  to detect tremor-like motion and stabilise the cursor, to make everyday computer interactions simpler.
 
 ### Part 2. The demo (0:15 to 1:15)
 
@@ -45,23 +43,21 @@ shakes and misses the small checkbox target twice.
 7. Open the assistant, tap "Explain my summary", show the answer and the reminder under it.
 
 **Say:**
-> This is TAG Pointer. None of us has tremor, so the shaking you see is replayed from
+> So here is the TAG Pointer app. Even though none of us has tremor, we used the shaking recording from
 > public recordings of patients. The grey dot is the raw movement. The dark dot is what our
 > model shows.
 >
-> These targets are things people really click, and a click only counts if you press and
-> release on the target.
+> These targets are things people really click on everyday basis.
 >
 > The meter is our first model, the detector. It scores the last two and a half seconds of
 > movement, and the correction switches on only when it sees tremor, so a steady hand is
 > left alone.
 >
-> The fair test gives ten targets without our model and ten with it. Here is the result.
+> The session then gives out the results for a patient.
 >
 > One switch applies the same correction to the real cursor in every app.
 >
-> And the assistant explains the session in plain words. It sees only summary numbers, and
-> it never gives medical advice.
+> And the AI-powered assistant explains the session in plain words.
 
 Do not say a number for the fair test: it is whatever the recording shows. Read the two
 numbers off the result card if there is time.
