@@ -66,7 +66,7 @@ submission Sun 23:00 · final fixes until the deadline **Mon 16 Nov 05:59**.
       by default; try `--response balanced` too and say which feels better).
 
 **Builder, NEXT (leader's decision, Sun 15 Nov 12:30; both before the 20:00 freeze, task 1 first):**
-- [x] (system-wide part DONE Sun 15 Nov ~13:00, see "Done since the trim"; the leader re-checks
+- [x] (system-wide part DONE Sun 15 Nov 12:53, see "Done since the trim"; the leader re-checks
       by hand; the page's click freeze not done yet) **1. "Click where you aimed" (about 45 min).** Why: the leader's B3 re-check (12:18) found
       the click still lands away from where they meant to click; click freeze only helps
       AFTER the press, and at the press the cursor still carries leftover shake and about
@@ -81,7 +81,7 @@ submission Sun 23:00 · final fixes until the deadline **Mon 16 Nov 05:59**.
       (more clicks landing on a 10 px button with strong tremor, no worse on medium or with
       no tremor); test people once. Add a test to `systemwide/test_steady.py`. The leader
       re-checks by hand on the demo Mac.
-- [x] (BUILT Sun 15 Nov ~13:30, see "Done since the trim"; **not yet run on a real cursor: the
+- [x] (BUILT Sun 15 Nov 12:56, see "Done since the trim"; **not yet run on a real cursor: the
       leader checks it on the demo Mac**) **2. System-wide correction as a real feature, not only a timed test (about 1.5 h).**
       Why: B3 is proven (it steadies the real cursor in every app), but today it only runs
       from the terminal for at most 10 minutes. The leader wants the corrector to work across
@@ -119,7 +119,7 @@ write-up as a next step); round 2 of the step 4 path check (the stress test alre
 
 ## Done since the trim (newest first)
 
-- Sun 15 Nov ~14:15, builder's agent: **three practice exercises** (leader's requests;
+- Sun 15 Nov 13:09, builder's agent: **three practice exercises** (leader's requests;
   new file `web/exercises.js`, five small hooks in `web/app.js`, plain markup under the
   practice area in `web/index.html`, ids `spiral-start`, `fair-start`, `exercise-status`,
   `exercise-result`). **Trace the spiral:** a faint spiral, start at the middle dot, raw line
@@ -136,7 +136,7 @@ write-up as a next step); round 2 of the step 4 path check (the stress test alre
   space held and released); a bug found on the way (the spiral's progress ran ahead of the
   hand with strong tremor and ended early) is fixed. Not tried with a real hand.
 
-- Sun 15 Nov ~14:00, builder's agent: **the first-use guide is now a live walkthrough**
+- Sun 15 Nov 13:03, builder's agent: **the first-use guide is now a live walkthrough**
   (Oleksandr's idea; `web/tutorial.js` rewritten). Seven steps; each dims the page except the
   real part it is about, points a speech bubble with an arrow at it, and a drawn "demo"
   cursor shows what to do (wander in the practice area, go to the target and click, press
@@ -152,7 +152,7 @@ write-up as a next step); round 2 of the step 4 path check (the stress test alre
   leader's running session; no server code changed in this branch). Everyone: `git pull` and
   a hard reload (Cmd+Shift+R). Still not tried with a real hand: the everyday targets.
 
-- Sun 15 Nov ~13:30, builder's agent: **"Steady cursor everywhere" switch** (leader's task 2).
+- Sun 15 Nov 12:56, builder's agent: **"Steady cursor everywhere" switch** (leader's task 2).
   Practice -> Adjust has a switch that starts the system-wide correction inside the server
   (`systemwide/service.py`; `run.py`'s event tap is now the reusable `run_tap`) and keeps it
   on until switched off: by the switch, by Control + Option + X (the page notices within 2 s),
@@ -210,7 +210,7 @@ write-up as a next step); round 2 of the step 4 path check (the stress test alre
   real tremor score, the real file download, the "reduce motion" setting, phone width.
   The earlier "one-minute tour" idea is dropped: the builder's `web/tutorial.js` already does it.
 
-- Sun 15 Nov ~13:00, builder's agent: **"click where you aimed" in the system-wide corrector**
+- Sun 15 Nov 12:53, builder's agent: **"click where you aimed" in the system-wide corrector**
   (leader's task 1). At the press the click and the freeze point go to the average of the
   shown cursor positions of the last 0.1 s, only while our model's gate is over half open
   (`systemwide/steady.py` `press`; `--aim 0` switches it off). Window chosen on validation
@@ -380,7 +380,7 @@ Headlines on test people:
   `assistant/run_test_prompts.py` (one that asks for something outside the list must do
   nothing).
 
-- (1), (2), (3) DONE by the builder (Sun 15 Nov ~14:15, see "Done since the trim"); (4) was the
+- (1), (2), (3) DONE by the builder (Sun 15 Nov 13:09, see "Done since the trim"); (4) was the
   leader's. Sun 15 Nov 12:37, team leader -> builder: **four practice-area features (leader's decision:
   the leader does the design half of the new ideas, the builder the practice-area half).**
   In the leader's order of value; cut from the bottom; all before the 20:00 freeze. They live
