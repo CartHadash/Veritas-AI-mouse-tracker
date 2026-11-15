@@ -5,13 +5,27 @@ Keep it short: only what is live. Finished requests, superseded results and the 
 up to Sun 15 Nov 10:45 CET are in `docs/STATUS_ARCHIVE.md` (move things there, never delete).
 Newest entries at the top of each list. Use local time (CET) and say who you are.
 
-## Right now (Sun 15 Nov 10:45 CET)
+## Right now (Sun 15 Nov 14:50 CET, leader's agent)
 
 | Lane | Working on | Blocked by |
 |---|---|---|
-| Builder | NEXT: "click where you aimed", then system-wide correction as a page switch (tasks below) | - |
-| Team leader | B3 off-switch check and video clip, then the UI fixes the leader took over | - |
+| Builder | All tasks the leader gave are built (click where you aimed, Steady cursor everywhere, exercises, assistant actions and hardening, walkthrough). Waiting for the leader's hand checks | Leader's checks |
+| Team leader | Hand checks on the demo Mac (list below), then the write-up phase | - |
 | Writer | IN PROGRESS: drafting the write-up from `docs/WRITER_BRIEF.md` | Final project name |
+
+Checked on the demo Mac at 14:50 (commit 34e8cea, leader's agent): `python -m pytest` 30 passed,
+7 skipped (need data); `check_results.py` OK (30 sources); `server/test_ws.py` 500/500 in every
+mode; `/api/status` says `systemwide: available` (server started from the Claude app, which has
+the permission). No hand checks yet.
+
+**Leader's hand checks still open (demo Mac):**
+- [ ] "Steady cursor everywhere" on the REAL cursor: switch on, Control + Option + X, change
+      filters while on, stop the server with Ctrl+C while on (the cursor must be normal after).
+- [ ] "Click where you aimed" by hand, on the page and system-wide.
+- [ ] The new page parts with a real hand and in Safari: everyday targets, spiral trace, fair
+      test, hold space to peek, the live walkthrough, the fonts.
+- [ ] `python -m assistant.run_test_prompts` (needs the key): judge questions 19-28 (action
+      buttons, staying on its job).
 
 **Time line (CET):** feature freeze **Sun 20:00** (leader's decision, Sun 10:45) · first full
 submission Sun 23:00 · final fixes until the deadline **Mon 16 Nov 05:59**.
