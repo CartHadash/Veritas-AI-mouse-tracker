@@ -181,11 +181,19 @@
     note.className = "assistant-reminder";
     note.textContent = REMINDER;
     bubble.after(note);
+    return note;
+  }
+
+  // Keep the newest part of the conversation in view. In the floating window it is the
+  // window that scrolls, not the log, so the last element is scrolled into view as well.
+  function showNewest() {
+    log.scrollTop = log.scrollHeight;
+    if (log.lastElementChild) log.lastElementChild.scrollIntoView({ block: "nearest" });
   }
 
   // "Read aloud" under an answer: the browser's built-in speech (no API, no key, works
   // offline on macOS). Reading is easier than small text for many of our users.
-  function addReadAloud(bubble) {
+  function addReadAloud(bubble, after) {
     if (!("speechSynthesis" in window)) return;     // a browser without speech: no button
     const button = document.createElement("button");
     button.type = "button";
@@ -203,8 +211,8 @@
       speech.onend = speech.onerror = () => { button.textContent = "Read aloud"; };
       speechSynthesis.speak(speech);
     });
-    bubble.after(button);
-    log.scrollTop = log.scrollHeight;
+    after.after(button);                             // under the answer and its reminder
+    showNewest();
   }
 
   // One button per allowed action, under the answer. Pressing it is the person's own act.
@@ -258,16 +266,17 @@
         if (done) break;
         reply += decoder.decode(value, { stream: true });
         renderHighlighted(bubble, splitReply(reply).answer || "...");
-        log.scrollTop = log.scrollHeight;
+        showNewest();
       }
     } catch (error) {
       reply = reply || "Sorry, the assistant could not be reached. The rest of the app still works.";
     }
     const { answer, suggestions, actions } = splitReply(reply);
     renderHighlighted(bubble, answer);
-    addReminder(bubble);
-    addReadAloud(bubble);
+    const note = addReminder(bubble);
+    addReadAloud(bubble, note);
     addActions(log.lastElementChild, parseActions(actions));
+    showNewest();
     history.push({ role: "assistant", content: answer.trim() });
     const next = parseSuggestions(suggestions);
     showQuestions(next.length ? next : STARTERS);
