@@ -12,6 +12,6 @@ Then follow the guide for your lane:
 
 ## Interface components (ui-sdk)
 
-The pages in `web/` use ui-sdk web components, loaded from https://ui-sdk.dev with no build
-step. Before using ui-sdk, follow the ui-sdk skill if it is installed, and read
-https://ui-sdk.dev/web.md.
+The pages in `web/` use ui-sdk web components with no build step. The library is copied into
+`web/vendor/ui-sdk/` so the demo works offline; never edit that folder. Before using ui-sdk,
+follow the ui-sdk skill (`.agents/skills/ui-sdk/`).

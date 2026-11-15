@@ -85,7 +85,7 @@ them (or write it in `STATUS.md` under "Requests").
 | `web/assistant/` | Team leader | The assistant's chat panel in the interface |
 | `systemwide/` | Builder (moved from the leader, Sat 14 Nov 21:20) | Stretch goal: correcting the real cursor everywhere |
 | `baselines/`, `scripts/` | Nobody (frozen) | Reused pre-hackathon files. Bug fixes only |
-| `README.md` | Writer, at the end | The write-up. Empty until Sunday |
+| `README.md` | Writer, at the end | The write-up. Empty until the leader starts the write-up phase |
 | `docs/`, `STATUS.md`, `CLAUDE.md`, guides | Everyone | Kept up to date by every agent (rules in `CLAUDE.md`) |
 
 ### The contracts (how the two lanes meet without waiting for each other)
@@ -154,7 +154,7 @@ Times are Central European Time (the official deadline is Sunday 23:59 US Easter
 | Sun 02:00–09:00 | Sleep (the guide insists; so do we) |
 | Sun 13:00 | One measured improvement to each model; interface shows the live demo end to end |
 | Sun 18:00 | Summary page and assistant connected; failure examples collected |
-| Sun 21:00 | **Feature freeze.** Only fixes after this |
+| Sun 20:00 | **Feature freeze** (moved from 21:00 by the team leader, Sun 10:45). Only fixes after this |
 | Sun 23:00 | Write-up in README; video recorded; **first submission sent** |
 | Mon 03:00 | Final fixes, all links checked in a private window, final resubmission |
 | Mon 05:59 | Deadline |

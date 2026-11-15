@@ -1,37 +1,39 @@
-Ideas per teammate:
+# Ideas per teammate (and what happened to each)
 
-#Godson
-1. Personal calibration: Upon first use, the user follows a guided movement test lasting approximately 10 seconds with which the estimates the movement characteristics of the input device that allows it to adjusts its processing parameters.
-   How it could be built (discussed by Timofey with his agent, Sat 14 Nov):
-   - The test, about 10 s: hold the pointer on a dot (4 s), follow a slowly moving dot
-     (4 s), click 3 targets (2 s).
-   - What it measures: the device's sample rate and timing gaps; the shake size (px) and
-     peak frequency (Hz) during the still part; normal movement speed; how long a click is held.
-   - What it changes: (a) a scale factor so the detector sees movement at the size it was
-     trained on (step 7 showed false alarms go from 27.0% to 34.0% when the pixel factor
-     doubles); (b) the correction strength (our model helps little on mild tremor and more on
-     strong, `evaluation/results/demo_modes.md`); (c) the click-freeze time from the measured
-     hold time. Note: measuring the user's tremor size on the still dot is exactly what the
-     detector already does, so the first version can reuse its `size_px` output.
-   - Rules: kept in memory for the session only (decision L1); never used for training
-     (rule 9); worded as "settings for your device", never as a diagnosis.
-   - How to prove it helps: in a simulation, calibrate on the first 10 s of each test-person
-     recording at half / normal / double pixel scale, then score the rest, against no calibration.
-   - Owner: server/ and web/ are the builder's folders.
+Status as of Sun 15 Nov 10:45 CET. Numbers and details: the files named; never copy a number
+from here into the write-up without checking `evaluation/results/RESULTS.md`.
 
+## Godson
 
+1. **Personal calibration** (a 10 s guided test that tunes the processing to the user's device).
+   **Built, reports only.** "Calibrate for my mouse (10 s)" on the Practice tab: hold a dot,
+   then follow it; it reports each filter's distance from the dot, the samples per second and
+   the shaking. Letting it choose the filter was tested in a simulation
+   (`evaluation/calibration_sim.py`, validation) and, with the network alone, did worse than
+   always using our model, so it never switches the filter. Re-run with the app's current model,
+   choosing would now help, but there was no time to re-test it properly. Explained in
+   `docs/EXPLAINED.md` "Calibration test".
 
-#Timofey
-1. Movement-aware detector: be stricter before flagging tremor during fast, deliberate
-   movement. Why: `evaluation/find_failures.py` shows 43.5% false alarms on action-task
-   segments vs 19.0% at rest.
-2. Click freeze: hold the corrected cursor still for about 100 ms when the button goes
-   down, so tremor at the moment of the click does not push it off the target.
-3. Sticky targets: when tremor is detected, buttons and links gently pull the cursor in
-   when it is close to them.
-4. Trends across days: keep a local history so the user can see whether tremor-like
-   movement changes over time (already noted as a future extension in decision L1).
+## Timofey
 
-Oleksandr
-1.
+1. **Movement-aware detector** (stricter during fast, deliberate movement). **Partly covered**
+   by detector v2 (false alarms on pause-free movement fell from 45.3% to 20.4%,
+   `improvements.md`). Action tasks still cause the most false alarms (`failures/failures.md`):
+   a good "next step".
+2. **Click freeze** (hold the shown cursor still while the button is down). **Built** (at most
+   0.3 s). Simulation: `evaluation/click_sim.py`, `click_freeze_test.md`.
+3. **Sticky targets** (buttons gently pull the cursor in when tremor is detected). **Cut** for
+   time (leader, Sun 10:45); a "what we'd do next" item for the write-up.
+4. **Trends across days.** **Built as session history** (numbers only, kept on the laptop; the
+   assistant may compare pointer numbers between sessions but never judges health trends).
+   Shown in the Analysis tab.
 
+## Oleksandr
+
+1. **First-use guide** (it was unclear what to do on first sight). **Built:** `web/tutorial.js`.
+2. **Notch canceller** (remove the tremor's own rhythm). **Tested, not kept:**
+   `evaluation/results/notch_canceller.md`.
+3. **Accessibility** (read aloud, dyslexia-friendly font, colour-blind-safe colours, larger
+   text). **In progress (leader's UI work):** read aloud and larger text first; the rest if time allows.
+4. **"Feels laggy" → let the user choose.** **Built:** Steadiest / Balanced / Faster control
+   (`evaluation/response_levels.py`).

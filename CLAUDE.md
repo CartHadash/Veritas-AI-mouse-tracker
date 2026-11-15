@@ -108,7 +108,8 @@ These `.md` files are the team's shared memory. Stale instructions cost hours. S
 - Fix what is wrong; do not just append. A reader should never find two instructions that
   disagree. If you replace an instruction, delete the old one.
 - Never delete another lane's notes or a recorded result. If you think one is wrong, add a
-  line under "Requests" in `STATUS.md`.
+  line under "Requests" in `STATUS.md`. To keep `STATUS.md` short, move finished requests and
+  superseded results to `docs/STATUS_ARCHIVE.md` (moved, not deleted).
 - Never change the "Decisions" table in `PROJECT_PLAN.md` or anything in
   `COMPETITION_RULES.md` without the team leader saying so.
 - Before you start a session, re-read `STATUS.md` and your guide: another agent may have
