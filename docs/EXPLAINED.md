@@ -1096,3 +1096,29 @@ filter choice).
 **Nothing new is measured.** Every figure shown this way is one the page already had; only
 the way it is drawn changed. Checked in a browser with simulated pointer events; not yet
 with a real hand on the trackpad.
+
+## Hints, "Use this filter" and "Read aloud" (team leader's lane, Sun 15 Nov)
+
+**Hints.** Even the team leader was not sure what "Click freeze" meant, so a judge would not be
+either. Each control now has one short sentence next to it: under the filter buttons a line
+that changes with the chosen filter (`MODE_HINTS` in `web/app.js`), and under Strength and
+Calibrate a small grey line. Short and quiet on purpose, so the page does not feel cluttered.
+
+**"Use this filter" after calibration.** The 10 s test already knew which filter kept the
+cursor closest to the dot but only reported it. Now a button "Use <that filter>" appears under
+the result. It never switches by itself: the person taps it. Why not automatic: one short test
+is a hint, not a final answer, and with the network alone choosing per person did worse
+(`evaluation/results/calibration_val.md`); with the app's current model choosing would help
+(4.83 px always our model vs 3.61 px the test's choice, same file), but it was not re-tested
+end to end, so the person decides. Checked in the browser with a simulated 12 s test: the
+button appeared, and tapping it switched the filter and strength.
+
+**Read aloud.** Every assistant answer gets a "Read aloud" button (a second tap stops it). It
+uses the browser's own speech (`speechSynthesis`): no API, no key, nothing sent anywhere.
+Checked in the app's browser: speech starts and stops.
+
+**The assistant's words.** The plain (no-key) summary said "about 0 minutes" and
+"Cursor smoothing: learned". It now says "less than a minute" and uses the page's names
+("Our model"). The AI prompt now knows those names, the Steadiest / Balanced / Faster choice,
+Click freeze and the calibration test. Re-tested: 18/18 test questions safe
+(`assistant/test_prompts.md`, version 5).

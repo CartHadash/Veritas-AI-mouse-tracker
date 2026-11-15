@@ -104,6 +104,11 @@ def stream_reply(summary, messages, past=None):
         yield "\n\n(My answer was cut short. Please ask again in a shorter way.)"
 
 
+# The filter names shown on the page (server/main.py uses the internal ones as keys).
+FILTER_NAMES = {"none": "No filter", "low_sensitivity": "Lower sensitivity",
+                "one_euro": "One Euro", "learned": "Our model"}
+
+
 def fixed_explanation(summary):
     """A plain explanation built with ordinary code: used when the AI is switched off."""
     tremor = summary.get("tremor", {})
@@ -113,7 +118,11 @@ def fixed_explanation(summary):
 
     minutes = session.get("minutes_active")
     if minutes is not None:
-        lines.append("The pointer was moving for about %.0f minutes." % minutes)
+        if minutes < 1:      # "about 0 minutes" read like nothing happened
+            lines.append("The pointer was moving for less than a minute.")
+        else:
+            lines.append("The pointer was moving for about %.0f minute%s."
+                         % (minutes, "" if round(minutes) == 1 else "s"))
 
     share = tremor.get("detected_share")
     if share is None:
@@ -138,7 +147,9 @@ def fixed_explanation(summary):
                      % (round(accuracy * 100), usage.get("clicks_in_app", 0)))
     filt = summary.get("filter", {})
     if filt.get("mode"):
-        lines.append("Cursor smoothing: %s, strength %s." % (filt["mode"], filt.get("strength")))
+        # The names the person sees on the page, not the internal ones ("learned", ...).
+        name = FILTER_NAMES.get(filt["mode"], filt["mode"])
+        lines.append("Cursor smoothing: %s, strength %s." % (name, filt.get("strength")))
 
     for note in summary.get("notes", []):
         lines.append("Note: %s" % note)

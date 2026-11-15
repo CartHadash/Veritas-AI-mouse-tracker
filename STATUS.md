@@ -34,11 +34,10 @@ submission Sun 23:00 · final fixes until the deadline **Mon 16 Nov 05:59**.
 - [ ] The builder's five findings: (1) the floating assistant button covers content at the
       bottom right; (2) Analysis chart labels cut off on the right; (3) How it works -> "How
       well it does" repeats the filter line and shows no corrector result; (4) the meter keeps
-      old values after the hand stops (grey out after about 1 s); (5) the assistant's plain
-      summary says "about 0 minutes" and "Cursor smoothing: learned" (`assistant/core.py`
-      `fixed_explanation`).
-- [ ] Accessibility (Oleksandr's idea): "Read aloud" (browser speech), larger text.
-      Dyslexia-friendly font and colour-blind-safe colours only if time allows.
+      old values after the hand stops (grey out after about 1 s). ((5), the assistant's
+      "0 minutes" / "learned", is done.)
+- [ ] Larger text (accessibility). Dyslexia-friendly font and colour-blind-safe colours only
+      if time allows. ("Read aloud" is done.)
 - [ ] Mention the Steadiest / Balanced / Faster control in the tutorial (`web/tutorial.js`).
 
 **Oleksandr:**
@@ -51,6 +50,18 @@ submission Sun 23:00 · final fixes until the deadline **Mon 16 Nov 05:59**.
 
 **Cut (leader's decision, Sun 10:45):** step 16 desktop window; sticky targets (goes into the
 write-up as a next step); round 2 of the step 4 path check (the stress test already answered it).
+
+## Done since the trim (newest first)
+
+- Sun 15 Nov, leader's agent (branch `leader/hints-calibration`): one-line hints on the
+  controls (a sentence per filter under the filter buttons; Strength; Calibrate); a
+  "Use <filter>" button after the calibration test (the person taps it, never automatic);
+  "Read aloud" under every assistant answer (browser speech, no API); the assistant's plain
+  summary says "less than a minute" and "Our model"; the prompt knows the page's names,
+  Steadiest / Balanced / Faster, Click freeze and calibration. Checked in the app's browser
+  (simulated 12 s calibration, apply, read aloud start/stop, an AI answer);
+  `python -m pytest assistant/test_history.py` 5 passed; `python -m assistant.run_test_prompts`
+  18/18 safe (version 5). Not checked with a real hand.
 
 ## What the app is now (for anyone catching up)
 
@@ -120,6 +131,11 @@ Headlines on test people:
 - Retraining the corrector on another Mac is not bit-identical (same conclusions); the detector is.
 
 ## Requests to another lane (open only; answered ones are in the archive)
+
+- Sun 15 Nov, team leader -> builder (small, optional): please add the response level to the
+  summary's filter block (`server/main.py`, `"filter": {"mode": ..., "strength": ...,
+  "response": settings["response"]}`), so the assistant can see Steadiest / Balanced / Faster
+  when it suggests settings. The prompt already handles the field when it is there.
 
 - Sun 15 Nov, builder -> team leader: the Steadiest / Balanced / Faster control (`web/index.html`
   id `response-row`, `web/app.js` `showSettings` / `onChange("response", ...)`) is yours to

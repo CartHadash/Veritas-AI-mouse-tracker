@@ -27,6 +27,13 @@
 const area = document.getElementById("area");
 const ctx = area.getContext("2d");
 const MODE_NAMES = { none: "No filter", low_sensitivity: "Lower sensitivity", one_euro: "One Euro", learned: "Our model" };
+// One plain sentence per filter, shown under the filter buttons (leader's agent, Sun 15 Nov).
+const MODE_HINTS = {
+  none: "The cursor follows your hand exactly, shake and all. Useful for comparing.",
+  low_sensitivity: "The cursor moves half as far as your hand, so shaking looks smaller. Click the area to start, Esc to stop.",
+  one_euro: "A classic smoothing filter: very steady when you hold still, a little behind when you move.",
+  learned: "Our trained model removes shaking, and only switches on when the detector sees tremor.",
+};
 const TARGET_RADIUS = 22;           // px; small on purpose, so a shaky cursor finds it hard
 
 let socket = null;
@@ -388,6 +395,7 @@ function showSettings() {
   if (settings.demo_level) setControl(document.getElementById("demo-levels"), "value", settings.demo_level);
   if (settings.response) setControl(document.getElementById("response"), "value", settings.response);
   document.getElementById("response-row").hidden = settings.mode !== "learned";
+  document.getElementById("mode-hint").textContent = MODE_HINTS[settings.mode] || "";
   document.getElementById("demo-banner").hidden = !settings.demo_tremor;
   document.getElementById("demo-levels-row").hidden = !settings.demo_tremor;
   document.getElementById("demo-tip").hidden = settings.demo_tremor;
@@ -429,7 +437,18 @@ document.getElementById("calibrate").addEventListener("click", () => {
   const radius = Math.min(120, area.clientWidth / 2 - 30, area.clientHeight / 2 - 30);
   calib = { phase: "waiting", start: null, radius,
             centre: { x: area.clientWidth / 2, y: area.clientHeight / 2 + radius } };
+  document.getElementById("calib-apply").hidden = true;
   showCalibrationText("Move your cursor onto the blue dot and hold it there. Then follow the dot.");
+});
+
+// "Use this filter": switches to the filter that kept the cursor closest to the dot in the
+// test. Never automatic: the person decides (one short test is a hint, not a final answer).
+let calibChoice = null;
+document.getElementById("calib-apply").addEventListener("click", async () => {
+  if (!calibChoice) return;
+  await postSettings({ mode: calibChoice.mode, strength: calibChoice.strength });
+  document.getElementById("calib-apply").hidden = true;
+  showCalibrationText(`Switched to ${calibChoice.name}. You can change the filter any time.`);
 });
 
 function showCalibrationText(text) {
@@ -447,8 +466,13 @@ function showCalibration(result) {
     (result.tremor_share > 0 ? `, tremor-like ${Math.round(result.tremor_share * 100)}% of the time at about ${result.frequency_hz.toFixed(1)} Hz.` : ", not tremor-like.");
   showCalibrationText(`On your test, average distance from the dot: ${others} (closest: ${result.chosen}). ` +
     `Your device sent ${result.samples_per_second} samples per second.${shake} ` +
-    "The filter is not changed automatically: one short test is not enough to choose well. " +
     "Kept only until the server stops; not a diagnosis.");
+  // Offer the closest filter, unless it is already the one in use.
+  calibChoice = { name: result.chosen, mode: result.mode, strength: result.strength };
+  const inUse = settings.mode === result.mode && Number(settings.strength) === result.strength;
+  const apply = document.getElementById("calib-apply");
+  apply.textContent = `Use ${result.chosen}`;
+  apply.hidden = inUse;
 }
 
 // ------------------------------------------------------------ drawing
