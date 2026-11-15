@@ -13,6 +13,9 @@
   <link rel="stylesheet" href="vendor/ui-sdk/web.css">
   <link rel="stylesheet" href="styles.css">
   <link rel="stylesheet" href="summary.css">
+  <!-- The colour-and-movement layer (leader). Delete this line and the motion.js line at the
+       end of the page to go back to the plain look; nothing else depends on them. -->
+  <link rel="stylesheet" href="motion.css">
 </head>
 <body>
   <!-- The whole page is one set of tabs. Each <ui-tabs-tab> shows the <ui-tabs-panel> with the
@@ -333,9 +336,12 @@
   </ui-popover>
 
   <script src="summary.js"></script>
+  <!-- The everyday things to click in the practice area; app.js uses its functions. -->
+  <script src="targets.js"></script>
   <script src="app.js"></script>
   <!-- First-use guide (builder, Oleksandr's request): its own file, so it never clashes with app.js. -->
   <script src="tutorial.js"></script>
   <script src="reading.js"></script>
+  <script src="motion.js"></script>
 </body>
 </html>

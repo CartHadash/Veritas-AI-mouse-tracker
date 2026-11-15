@@ -1,0 +1,203 @@
+/* motion.css - the "colour and movement" layer (team leader, Sun 15 Nov).
+
+   This file and motion.js are an ADD-ON on top of styles.css. To go back to the plain look,
+   delete the two lines in index.html that load motion.css and motion.js; nothing else needs
+   to change. It is loaded after styles.css, so a rule here wins over the same rule there.
+
+   What it changes:
+     1. the fonts (stored in web/fonts, so they work offline)
+     2. the colours: forest green, clay orange and gold on cream
+     3. the widgets: cards float on a soft shadow with no outline; controls are pill-shaped
+     4. what moves: a quiet wave in the top bar, tabs and cards arriving, controls that
+        respond to a press, a breathing status dot, icons that draw themselves
+
+   Everything that moves stops when the computer is set to "reduce motion" (styles.css
+   switches off every transition and animation; motion.js draws still pictures). */
+
+/* ------------------------------------------------------------ 1. fonts
+   Two open-licence fonts (SIL Open Font License; the licence files are next to them).
+   Each is one "variable" file that holds every weight from light to bold.
+     Bricolage Grotesque: headings and big numbers. Slightly irregular, friendly shapes.
+     Instrument Sans:     everything else. Clean and a little narrow, so more text fits. */
+@font-face { font-family: "Bricolage Grotesque"; font-weight: 200 800; font-display: swap;
+  src: url("fonts/bricolage-grotesque.woff2") format("woff2"); }
+@font-face { font-family: "Instrument Sans"; font-weight: 400 700; font-display: swap;
+  src: url("fonts/instrument-sans.woff2") format("woff2"); }
+
+:root {
+  --font: "Instrument Sans", "Avenir Next", "Segoe UI", system-ui, sans-serif;
+  --font-display: "Bricolage Grotesque", "Avenir Next", "Segoe UI", system-ui, sans-serif;
+  --ui-font-sans: var(--font);
+
+  /* 2. colours. Green, orange and gold are neighbours on the colour wheel and all three sit
+     comfortably on cream. Each has a job: green = steady, orange = tremor, gold = settings. */
+  --paper: #f5ecdd;             /* the page: a little deeper, so white cards stand out */
+  --surface: #fffefb;           /* cards */
+  --sunk: #efe4d2;              /* troughs */
+  --band: #1a5c49;              /* the green top bar */
+  --gold: #8a5d00;              /* gold dark enough to read as text */
+  --gold-fill: #d39a16;         /* gold for shapes */
+  --float: 0 1px 2px rgba(94, 56, 20, 0.06), 0 14px 34px -14px rgba(94, 56, 20, 0.28);
+}
+/* The "Easier-to-read text" switch (reading.js) replaces the font; headings follow it. */
+:root.easy-read { --font-display: var(--font); }
+
+h1, h2, .brand, .meter-word, .readings dd, .tile .value, .steps li::before, .streak,
+[data-slot="popover-title"] { font-family: var(--font-display); }
+h1 { font-weight: 700; letter-spacing: -0.02em; }
+h2 { font-weight: 650; letter-spacing: -0.01em; }
+.brand { font-size: 21px; font-weight: 700; }
+.tile .value, .readings dd { font-weight: 650; letter-spacing: -0.01em; }
+
+/* ------------------------------------------------------------ 3. widgets: soft and floating */
+
+/* Cards, tiles and the practice stage lose their outline and float on a soft warm shadow. */
+.card, .tile, .stage, .how-art {
+  border-color: transparent;
+  border-radius: 26px;
+  background: var(--surface);
+  box-shadow: var(--float);
+}
+.card, .tile { padding: 20px 22px; }
+#area { border-color: transparent; border-radius: 18px; background-color: #fbf6ec; }
+#laptop .tile { background: var(--paper); box-shadow: none; }
+.banner { border-color: transparent; border-radius: 16px; }
+
+/* Controls become pills. */
+.btn, .buttons button, .button-link { border-radius: 999px; border-color: transparent; background: var(--sunk); }
+.btn:hover, .buttons button:hover, .button-link:hover { background: #e6d8c1; }
+.btn.quiet { background: transparent; }
+[data-slot="segmented-control"] { border-radius: 999px; padding: 5px; }
+[data-slot="segmented-control-item"], [data-slot="segmented-control-indicator"] { border-radius: 999px; }
+[data-slot="switch"] { border-color: transparent; background: #dccdb5; }
+[data-slot="switch-thumb"] { background: #fff; box-shadow: 0 1px 3px rgba(47, 29, 16, 0.3); }
+[data-slot="slider-thumb"] { border-width: 0; background: var(--steady); box-shadow: 0 0 0 5px var(--surface), 0 3px 8px rgba(47, 29, 16, 0.35); width: 22px; height: 22px; }
+
+/* A coloured round badge with a small line icon in front of a card's title. motion.js puts
+   the icons in; the colour says what kind of card it is. */
+h2:has(.title-icon) { display: flex; align-items: center; gap: 10px; }
+.title-icon { flex: none; display: grid; place-items: center; width: 34px; height: 34px; border-radius: 50%; color: #fff; background: var(--steady); }
+.title-icon svg { width: 20px; height: 20px; fill: none; stroke: currentColor; stroke-width: 2.2; stroke-linecap: round; stroke-linejoin: round; }
+.title-icon.clay { background: var(--tremor); }
+.title-icon.gold { background: var(--gold-fill); }
+.title-icon.ink { background: var(--ink); }
+
+/* Analysis: the numbers take the colour of what they measure. */
+#tiles .tile:nth-child(2) .value { color: var(--gold); }             /* rhythm */
+#tiles .tile:nth-child(3) .value { color: var(--tremor); }           /* size of the shaking */
+#tiles .tile:nth-child(4) .value { color: var(--steady); }           /* steadiness */
+#tiles .tile:first-child { box-shadow: 0 18px 40px -18px rgba(47, 29, 16, 0.6); }
+
+/* How it works: one colour per step, the same three as the moving picture above them.
+   Gold = reading the pointer, orange = spotting tremor, green = the steadied result. */
+.steps li:nth-child(1)::before { background: var(--gold-fill); }
+.steps li:nth-child(2)::before { background: var(--tremor); }
+.steps li:nth-child(3)::before { background: var(--steady); }
+.how-art { padding: 12px 16px 14px; }
+#how-art { display: block; width: 100%; height: 190px; }
+.how-art p { font-size: 14px; color: var(--muted); text-align: center; margin-top: 2px; }
+
+/* ------------------------------------------------------------ the green top bar */
+.topbar {
+  position: relative;           /* so the wave can sit behind everything in the bar */
+  overflow: hidden;
+  background: var(--band);
+  color: #fffefb;
+  margin-bottom: 20px;
+  /* One slim row: logo | tabs in the middle | the small tools | status. (Before, the tools
+     had a row of their own, which made the bar twice as tall.) */
+  display: flex;
+  flex-wrap: wrap;              /* on a narrow window the pieces wrap onto a second row */
+  align-items: center;
+  gap: 8px 16px;
+  padding: 9px 28px;
+}
+.topbar [data-slot="tabs-list"] { margin-inline: auto; padding: 4px; }   /* the free space goes either side of the tabs */
+.topbar [data-slot="tabs-tab"] { height: 38px; padding: 0 18px; font-size: 16px; }
+.topbar .topbar-tools { order: 2; gap: 6px; }
+.topbar .status { order: 3; }
+/* The three small tools ("How to use", the two reading switches) as see-through pills. */
+.topbar .topbar-tools button { border-color: transparent; background: rgba(255, 255, 255, 0.14); color: #fffefb; font-size: 14px; padding: 5px 12px; }
+.topbar .topbar-tools button:hover { background: rgba(255, 255, 255, 0.24); }
+.topbar .topbar-tools button[aria-pressed="true"] { background: #fffefb; color: var(--ink); }
+
+/* The wave fills the whole bar, behind its content; clicks pass straight through it. */
+#wave { position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; }
+.topbar > *:not(#wave) { position: relative; z-index: 1; }
+
+.brand { color: #fffefb; }
+.brand svg { color: #a9e6cc; }
+.status { color: #dcefe6; }
+.status::before { background: #7fe3b9; }
+.status.off::before { background: #ffb37a; }
+
+/* Tabs on the green bar: a see-through trough, and a light pill behind the chosen tab. */
+[data-slot="tabs-list"] { background: rgba(255, 255, 255, 0.14); }
+[data-slot="tabs-tab"] { color: #e6f3ec; font-family: var(--font-display); font-weight: 600; }
+[data-slot="tabs-tab"][data-selected] { color: var(--ink); }
+[data-slot="tabs-indicator"] { background: #fffefb; }
+/* On green, the orange focus ring is hard to see, so it is a light one here. */
+.topbar :focus-visible { outline-color: #ffe2b8; }
+
+/* ------------------------------------------------------------ 4. movement */
+
+/* (a) A tab opens: the page slides in from the side its tab is on. ui-sdk marks the first
+   frame with data-starting-style and says which way the choice moved. */
+[data-slot="tabs-panel"] { transition: opacity 0.28s ease, translate 0.28s ease; }
+[data-slot="tabs-panel"][data-starting-style] { opacity: 0; }
+[data-slot="tabs-panel"][data-starting-style][data-activation-direction="right"] { translate: 36px 0; }
+[data-slot="tabs-panel"][data-starting-style][data-activation-direction="left"] { translate: -36px 0; }
+
+/* (b) Cards and tiles rise into place one after another. An animation starts again every
+   time its element is shown, so this replays on each tab change with no JavaScript. */
+@keyframes rise { from { opacity: 0; translate: 0 16px; } }
+.stage, .rail > .card, .page > *, .tiles > .tile, .steps > li { animation: rise 0.45s cubic-bezier(0.2, 0.7, 0.2, 1) backwards; }
+.rail > .card:nth-child(1), .page > *:nth-child(2), .tiles > .tile:nth-child(2), .steps > li:nth-child(1) { animation-delay: 0.06s; }
+.rail > .card:nth-child(2), .page > *:nth-child(3), .tiles > .tile:nth-child(3), .steps > li:nth-child(2) { animation-delay: 0.12s; }
+.rail > .card:nth-child(3), .page > *:nth-child(4), .tiles > .tile:nth-child(4), .steps > li:nth-child(3) { animation-delay: 0.18s; }
+.page > *:nth-child(5), .tiles > .tile:nth-child(5) { animation-delay: 0.24s; }
+.page > *:nth-child(6), .tiles > .tile:nth-child(6) { animation-delay: 0.30s; }
+.page > *:nth-child(n+7), .tiles > .tile:nth-child(n+7) { animation-delay: 0.36s; }
+
+/* (c) Under the pointer: cards that hold controls do NOT move, so a shaky hand never has to
+   chase a button. Tiles hold no controls, so they may lift a little. */
+.tile { transition: translate 0.2s ease, box-shadow 0.2s ease; }
+.tile:hover { translate: 0 -3px; box-shadow: 0 2px 3px rgba(94, 56, 20, 0.06), 0 22px 40px -16px rgba(94, 56, 20, 0.36); }
+
+/* (d) Controls answer a press. Nothing moves until it has been pressed.
+   The bouncy timing (the four numbers) overshoots a little and settles back. */
+.btn, .buttons button { transition: background 0.15s, scale 0.12s ease; }
+.btn:active, .buttons button:active { scale: 0.96; translate: none; }
+[data-slot="switch-thumb"] { transition: translate 0.32s cubic-bezier(0.34, 1.56, 0.64, 1), background 0.18s; }
+[data-slot="segmented-control-indicator"], [data-slot="tabs-indicator"] {
+  transition: left 0.34s cubic-bezier(0.34, 1.3, 0.64, 1), top 0.34s cubic-bezier(0.34, 1.3, 0.64, 1), width 0.34s cubic-bezier(0.34, 1.3, 0.64, 1);
+}
+[data-slot="slider-thumb"] { transition: scale 0.15s ease; }
+[data-slot="slider-thumb"][data-dragging] { scale: 1.25; }
+
+/* (e) The "Connected" dot breathes: a soft ring grows out of it and fades, like a pulse. */
+@keyframes breathe { 0% { box-shadow: 0 0 0 0 rgba(127, 227, 185, 0.6); } 70%, 100% { box-shadow: 0 0 0 9px rgba(127, 227, 185, 0); } }
+.status::before { animation: breathe 2.6s ease-out infinite; }
+.status.off::before { animation: none; }
+
+/* (f) The assistant button gives one gentle nudge (motion.js adds the class once, after a
+   few clicks on targets, when there are numbers worth asking about). */
+@keyframes nudge { 0%, 100% { rotate: 0deg; } 20% { rotate: -5deg; } 40% { rotate: 4deg; } 60% { rotate: -3deg; } 80% { rotate: 2deg; } }
+.assistant-launcher.nudge { animation: nudge 0.8s ease-in-out 2; }
+
+/* (g) Title icons draw themselves: the line is one long dash that slides into view. Each
+   icon's lines are given the length 1 (pathLength in motion.js), so one rule fits them all. */
+@keyframes draw { from { stroke-dashoffset: 1; } to { stroke-dashoffset: 0; } }
+.title-icon svg * { stroke-dasharray: 1; animation: draw 0.9s ease-out 0.25s backwards; }
+
+/* (h) The step circles pop in, in order, when "How it works" opens. */
+@keyframes pop { 0% { scale: 0.4; } 70% { scale: 1.12; } 100% { scale: 1; } }
+.steps li::before { animation: pop 0.5s ease backwards; }
+.steps li:nth-child(2)::before { animation-delay: 0.25s; }
+.steps li:nth-child(3)::before { animation-delay: 0.5s; }
+
+/* ------------------------------------------------------------ small things */
+.page-head .actions { margin-top: 0; }
+@media (max-width: 700px) {
+  #how-art { height: 150px; }
+}

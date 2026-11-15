@@ -1205,3 +1205,87 @@ Checked in the app's browser: speech starts and stops.
 ("Our model"). The AI prompt now knows those names, the Steadiest / Balanced / Faster choice,
 Click freeze and the calibration test. Re-tested: 18/18 test questions safe
 (`assistant/test_prompts.md`, version 5).
+
+### Colour and movement (Sun 15 Nov 12:43 CET, team leader's lane, branch `leader/motion`)
+
+**What it is.** A layer on top of the interface, kept in two files of its own
+(`web/motion.css` for the look, `web/motion.js` for what moves). `web/index.html` loads them
+with two lines; delete those two lines and the page looks as it did before. That was the
+point of keeping it separate: the team can try it and drop it without undoing anything.
+
+**Colour with a meaning.** Before, everything was the same cream. Now the top bar is green,
+and each kind of thing has a colour: green for the tremor meter and anything "steady", blue
+for settings and for reading the pointer, orange for tremor and for targets. The three steps
+on "How it works" use the same three colours, so the colour itself tells you which part you
+are looking at.
+
+**The wave and the logo.** Behind the top bar five thin lines drift from left to right. On
+the left they shake; by the middle they are calm, which is the project in one picture. How
+hard they shake follows the detector's live score, so the header gets restless when the
+detector sees tremor and settles when it does not. The logo's zigzag does the same. The
+pictures follow the score slowly (a little closer on every frame) so they swell and settle
+instead of flickering.
+
+**Movement when a tab opens.** The new page slides in from the side its tab is on, and its
+cards arrive one after another. This is done in CSS alone: an animation starts again whenever
+its element is shown, so nothing has to be programmed.
+
+**Nothing you need to click moves.** Cards that hold switches and buttons only get a soft
+shadow under the pointer; they never shift. A person with tremor should not have to chase a
+button. Tiles on the Analysis tab hold no controls, so they may lift a little.
+
+**The picture on "How it works".** A dot draws a shaky blue line, passes through an orange
+ring (the detector) and continues as a calm green line. The movement in it is made up for
+the picture, and the page says so underneath: it is an illustration, not a result.
+
+**Save my session as a picture.** A button on the Analysis tab draws the main numbers on one
+picture and saves it through the browser's normal download. It is made entirely in the
+browser, so nothing is sent anywhere. If demo tremor was on, the picture says so, and it
+always carries "This project is a prototype and is not medical advice."
+
+**Less motion.** If the computer is set to "reduce motion", the wave, the logo and the
+picture are drawn once and stand still, and the sliding and rising are switched off.
+
+**How we know it works.** Opened in a browser: all three tabs, the moving picture and the
+session picture's drawing, with no errors in the console. Not yet checked: the header
+reacting to a real tremor score, the file download itself, the reduce-motion setting.
+
+**After the leader's review (Sun 15 Nov 12:54 CET): fonts, colours, widgets.** Three things changed in
+the same two files. *Fonts:* headings and big numbers use Bricolage Grotesque and ordinary
+text uses Instrument Sans. Both are free fonts whose files sit in `web/fonts/`, so the page
+looks the same on any computer and with no internet (before, it used a font that only Macs
+have). The "Easier-to-read text" switch still replaces both with OpenDyslexic. *Colours:*
+blue did not sit well with the green and cream, so the three section colours are now green
+(steady), clay orange (tremor) and gold (settings): neighbours on the colour wheel. Cards are
+plain white; the colour is in a small round badge in front of each title. *Widgets:* cards
+lost their outlines and float on a soft shadow, and buttons and choosers are pill-shaped.
+The wave in the top bar was made much quieter (three faint, slow lines at the bottom edge)
+so it no longer pulls the eye. In exchange there are several small movements that happen
+only as an answer to something: a button dips when pressed, a switch's knob overshoots a
+little and settles, the "Connected" dot breathes, a title's icon draws itself when its tab
+opens, and the assistant's button wiggles once after five clicks on targets.
+
+### Everyday targets (Sun 15 Nov 12:59 CET, team leader's lane)
+
+**What changed.** The target in the practice area used to be the same orange circle every
+time. Now it takes turns being six things people really click: a round button, a checkbox,
+a folder, a close button, a link and a "Save" button (`web/targets.js`). They have different
+sizes: the checkbox and the close button are small (26 px), the "Save" button is wide.
+
+**Why.** Tremor does not make every click equally hard. It is the small things, a checkbox
+or the cross that closes a window, that a shaky cursor misses. Showing them makes the
+practice area look like the problem the project is about.
+
+**What counts as a hit.** Exactly the shape you see: a circle for the round kinds, a
+rectangle for the others (`targetContains`). A label next to a target ("Remember me",
+"Photos") is only there to make it look real; clicking the label does not count. As before,
+the button must be pressed and released on the target.
+
+**Why a fixed order.** The kinds come round in the same order, not at random. If they were
+random, one filter might by luck get more easy targets than another and look better than it
+is. With a fixed order every filter meets the same mix. One thing to keep in mind: "time per
+target" now averages easy and hard shapes, so it only means something over several targets.
+
+**How we know it works.** In a browser, a simulated click on the centre of each of the six
+kinds counted as a hit, a click 90 px to the side counted as a miss, and points just inside
+and just outside each shape's edge were classified correctly. Not yet tried with a real hand.

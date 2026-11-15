@@ -137,6 +137,46 @@ write-up as a next step); round 2 of the step 4 path check (the stress test alre
   terminal that has the Accessibility permission, switch it on, try Control + Option + X,
   switch filters while it is on, and stop the server with Ctrl+C while it is on.
 
+- Sun 15 Nov 12:59 CET, leader's agent, on `leader/motion` (pushed, NOT merged): (1) the top bar is one
+  slim row (64 px at a 1440 px window; before, the tools had a second row) and the wave
+  fills the whole bar; (2) **everyday targets**: the practice target takes turns being a
+  round button, a checkbox, a folder, a close button, a link and a "Save" button, each with
+  its own size, and the drawn shape is exactly the area that counts as a hit
+  (`web/targets.js`). The kinds come in a fixed order so every filter meets the same mix.
+  Checked in the browser with simulated clicks: a click on the centre of each of the six
+  kinds counted as a hit and a click 90 px to the side as a miss; no console errors. Not
+  checked with a real hand. Note for the write-up: "time per target" now mixes easy and hard
+  shapes, so compare filters over several targets, not one.
+
+- Sun 15 Nov 12:54 CET, leader's agent: second pass on `leader/motion` (pushed, NOT merged) after the
+  leader's review. Fonts: Bricolage Grotesque for headings and numbers, Instrument Sans for
+  text (two files in `web/fonts/`, 41 KB and 30 KB, SIL Open Font License; the
+  easier-to-read switch still replaces both). Colours: the blue is gone; forest green, clay
+  orange and gold on cream. Widgets: cards and tiles have no outline and float on a soft
+  shadow; controls are pill-shaped. The top wave is now three faint, slow lines along the
+  bar's bottom edge. New small animations: buttons, switches and the filter chooser answer a
+  press; the "Connected" dot breathes; the assistant button wiggles once after five target
+  clicks; card titles have icons that draw themselves. This replaces the tinted cards and
+  the five-line wave described in the entry below. Checked in the browser at 1440 px (three
+  tabs, both fonts loaded, no console errors). Not checked: the nudge firing, the
+  easier-to-read switch with the new fonts, reduce motion, phone width. Text drawn inside
+  the practice area keeps the old font (`web/app.js` is the builder's today).
+
+- Sun 15 Nov 12:43 CET, leader's agent: "colour and movement" layer on branch `leader/motion` (pushed, NOT
+  merged: the leader shows it to the team first). All of it is in two NEW files,
+  `web/motion.css` and `web/motion.js`, plus two lines in `web/index.html`; deleting those two
+  lines gives the plain look back. Adds: a green top bar with a moving wave (shaky on the
+  left, calm on the right) and a logo that both shake more as the live tremor score rises;
+  a colour per card (meter green, Adjust blue, targets orange) and per Analysis tile; tabs
+  that slide in and cards that arrive one after another; a moving picture on "How it works"
+  (marked on the page as an illustration with made-up movement); a "Save my session as a
+  picture" button (a 1200 x 630 PNG made in the browser, with the demo note and the
+  disclaimer). Cards that hold controls do not move under the pointer, on purpose. Checked in
+  the browser at 1440 px: three tabs, the moving picture, the session picture's drawing, no
+  console errors; `python -m pytest` as before. Not checked: the wave and logo reacting to a
+  real tremor score, the real file download, the "reduce motion" setting, phone width.
+  The earlier "one-minute tour" idea is dropped: the builder's `web/tutorial.js` already does it.
+
 - Sun 15 Nov ~13:00, builder's agent: **"click where you aimed" in the system-wide corrector**
   (leader's task 1). At the press the click and the freeze point go to the average of the
   shown cursor positions of the last 0.1 s, only while our model's gate is over half open
@@ -324,11 +364,10 @@ Headlines on test people:
   (3) **Hold to peek** (about 30 min): while the space bar is held, the correction is off (the
   shown cursor and the click position follow the raw movement), so the person feels the
   difference; release to switch it back on. Show a small "correction paused" note meanwhile.
-  (4) **Everyday targets: TAKEN and done by the leader's agent (Sun 15 Nov 13:02, branch
-  `leader/motion`, not merged yet). Do not start it.** New file `web/targets.js`; `web/app.js`
-  changes in three small places only (`onTarget`, `newTarget`, the line in `draw` that draws
-  the target). If your spiral or fair test need the target, use `target.kind` and
-  `targetContains()` once the branch is merged.
+  (4) **Everyday targets: DONE by the leader's agent (Sun 15 Nov 12:59 CET, branch `leader/motion`), not
+  yours any more.** New file `web/targets.js`; `web/app.js` changed in three small places
+  only (`onTarget`, `newTarget`, and the line in `draw` that draws the target). If your
+  spiral or fair test need the target, use `target.kind` and `targetContains()`.
   The leader meanwhile works on branch `leader/motion` and keeps new code in NEW files
   (`web/motion.js`, `web/motion.css`), touching `web/app.js` as little as possible, so the
   two lanes do not collide. Styling of whatever you add is the leader's afterwards: plain
