@@ -4,6 +4,9 @@ For the builder (Oleksandr) and their AI agent (Claude Code on the builder's Mac
 lane owns the data, both models, their evaluation, the server, the main interface code and
 the system-wide stretch goal (`systemwide/`). Folder ownership: `docs/PROJECT_PLAN.md`.
 
+**FEATURE FREEZE since Sun 15 Nov 15:20 CET** (team leader): bug fixes, docs and checks only;
+no new features, models or retraining (rules in `STATUS.md`).
+
 **Agent:** read `CLAUDE.md` first, then `STATUS.md` ("What is left"). Almost every step is
 built; what remains is checks by people, fixes, and helping the write-up. The original
 step-by-step instructions are in git history (this file before Sun 15 Nov 10:45 CET).
@@ -45,10 +48,10 @@ When you come back after a break: *"Read STATUS.md and BUILD_GUIDE_BUILDER.md an
 | 13 Summary page | [x] | Now the Analysis tab of `web/index.html` (`summary.html` forwards there) |
 | 14 Results package | [ ] waiting | `evaluation/results/RESULTS.md`, `check_results.py`. Tick when Oleksandr and the leader have read it |
 | 15 Fresh-clone test | [x] | Passed on both Macs (`docs/STATUS_ARCHIVE.md`) |
-| B4 Click where you aimed | [ ] next | Leader, Sun 12:30: details in `STATUS.md` "Builder, NEXT", task 1 |
-| B5 System-wide correction as a page switch | [ ] next | Leader, Sun 12:30: details in `STATUS.md` "Builder, NEXT", task 2 |
+| B4 Click where you aimed | [x] | System-wide and on the page (Sun 12:53 / 13:14); window 0.1 s chosen on validation (`systemwide_clicks.py`, `click_sim.py`) |
+| B5 System-wide correction as a page switch | [x] | "Steady cursor everywhere" (`systemwide/service.py`, Sun 12:56); checked by the leader on the demo Mac |
 | 16 Desktop window | cut | Leader's decision, Sun 10:45: the demo uses the browser |
-| B3 System-wide correction | [x] | `systemwide/` works on the real cursor on the demo Mac (leader, Sun 11:04): visibly steadier after the detector's 2.56 s warm-up. Off-switch check and video clip: leader. Sun 15 Nov: click freeze, `--response`, idle updates added (`evaluation/systemwide_clicks.py`); leader re-checks |
+| B3 System-wide correction | [x] | `systemwide/` works on the real cursor on the demo Mac (leader, Sun 11:04; off key and clip 11:08). Click freeze, `--response`, idle updates added Sun; re-checked by the leader 12:18 ("a bit better") |
 
 Extras built on team members' ideas: click freeze (`evaluation/click_sim.py`), calibration
 test (`evaluation/calibration_sim.py`, reports only), first-use guide (`web/tutorial.js`),
