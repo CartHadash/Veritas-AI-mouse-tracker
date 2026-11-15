@@ -87,8 +87,10 @@ async def only_local_pages(request: Request, call_next):
 # (Oleksandr's hand check, Sat 14 Nov; evaluation/results/demo_modes_test.md, medium, reaching).
 # response: how quickly "Our model" follows a moving hand (steadiest / balanced / responsive,
 # models/corrector/live.py RESPONSE_LEVELS). Starts at the steadiest (team's choice, Sun 15 Nov).
+# systemwide: "Steady cursor everywhere" (the real cursor, in every app; systemwide/service.py).
+# systemwide_demo: also add the replayed tremor to the real cursor (for showing it on video).
 settings = {"mode": "learned", "strength": 1.0, "demo_tremor": False, "demo_level": "strong",
-            "response": "steadiest", "tracking": False}
+            "response": "steadiest", "tracking": False, "systemwide": False, "systemwide_demo": False}
 # Whether "Our model" adds gated One Euro smoothing (option A). Not a user setting: evaluations
 # switch it off to measure the network alone (evaluation/vs_one_euro.py). Evaluations may also
 # put fixed One Euro settings under "settings"; those then win over the page's choice.
@@ -453,6 +455,48 @@ except Exception as error:
         status["assistant"] = "not available: %s" % error
 
 
+# ---------------------------------------------------------------- steady cursor everywhere (B3)
+
+def _systemwide_stopped():
+    """Called when the system-wide correction stops for any reason (the switch, Control +
+    Option + X, an error), so the page's switch always shows the truth."""
+    settings["systemwide"] = False
+
+
+try:
+    from systemwide.service import SystemwideService, config_from
+    systemwide = SystemwideService(models=(DETECTOR, CORRECTOR_MODEL), on_stopped=_systemwide_stopped)
+except Exception as error:         # the folder is missing or cannot load: the app works without it
+    systemwide = None
+    status["systemwide"] = "not available: %s" % error
+
+
+def systemwide_status():
+    if systemwide is None:
+        return status.get("systemwide", "not available")
+    if systemwide.is_on():
+        return "on"
+    ok, why = systemwide.available()
+    return "available" if ok else "not available: %s" % why
+
+
+def set_systemwide(on):
+    if systemwide is None:
+        settings["systemwide"] = False
+    elif on:
+        settings["systemwide"] = systemwide.start(config_from(settings))
+    else:
+        systemwide.stop()
+        settings["systemwide"] = False
+
+
+@app.on_event("shutdown")
+def stop_systemwide():
+    """Stopping the server always gives the cursor back."""
+    if systemwide is not None:
+        systemwide.stop()
+
+
 # ---------------------------------------------------------------- routes
 
 DEMO_SEGMENT_COUNT = len(np.load(DEMO_TREMOR_FILE)["xy"])
@@ -460,7 +504,7 @@ DEMO_SEGMENT_COUNT = len(np.load(DEMO_TREMOR_FILE)["xy"])
 
 @app.get("/api/status")
 def get_status():
-    return {**status, "demo_tremor_segments": DEMO_SEGMENT_COUNT,
+    return {**status, "systemwide": systemwide_status(), "demo_tremor_segments": DEMO_SEGMENT_COUNT,
             "detector_threshold": round(DETECTOR.threshold, 3),
             "disclaimer": "This project is a prototype and is not medical advice."}
 
@@ -474,7 +518,8 @@ def get_settings():
 def post_settings(new: dict):
     """Change any of: mode (none / low_sensitivity / one_euro / learned), strength (0-1),
     demo_tremor (true/false), demo_level (mild / medium / strong), response (steadiest /
-    balanced / responsive), tracking (true/false).
+    balanced / responsive), tracking (true/false), systemwide (true/false: steady cursor
+    everywhere), systemwide_demo (true/false: add replayed tremor to the real cursor).
     Everything is checked first; if anything is invalid, nothing is changed."""
     if "mode" in new and new["mode"] not in MODES:
         return JSONResponse({"error": "mode must be one of %s" % MODES}, status_code=400)
@@ -498,6 +543,12 @@ def post_settings(new: dict):
         settings["demo_tremor"] = bool(new["demo_tremor"])
     if "tracking" in new:
         set_tracking(bool(new["tracking"]))
+    if "systemwide_demo" in new:
+        settings["systemwide_demo"] = bool(new["systemwide_demo"])
+    if "systemwide" in new:
+        set_systemwide(bool(new["systemwide"]))
+    if systemwide is not None and systemwide.is_on():
+        systemwide.update(config_from(settings))      # filter, strength, level changes apply at once
     return settings
 
 
