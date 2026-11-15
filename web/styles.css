@@ -383,6 +383,14 @@ footer { padding: 6px 28px 110px; text-align: center; color: var(--muted); font-
 .assistant-close[data-slot] { width: 44px; height: 44px; padding: 0; border: 0; border-radius: 50%; background: transparent; color: var(--ink); }
 .assistant-close[data-slot]:hover { background: var(--sunk); }
 
+/* The floating "Ask the assistant" button sits over the bottom right corner: leave empty
+   space under each tab's content, so the last lines can always be scrolled clear of it. */
+.practice, .page { padding-bottom: 104px; }
+
+/* The meter while no movement arrives (app.js sets "paused" after one second): old values greyed. */
+.meter-card.paused #score-meter, .meter-card.paused .readings, .meter-card.paused .correcting { opacity: 0.4; }
+.meter-card.paused .meter-word { color: var(--muted); }
+
 /* ------------------------------------------------------------ smaller screens and reduced motion */
 @media (max-width: 1080px) {
   .practice { grid-template-columns: 1fr; }

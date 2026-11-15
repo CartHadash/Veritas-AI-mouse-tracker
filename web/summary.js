@@ -99,12 +99,17 @@ function drawChart(byTime) {
   const ctx = canvas.getContext("2d");
   ctx.setTransform(ratio, 0, 0, ratio, 0, 0);
   const W = canvas.clientWidth, H = canvas.clientHeight;
-  const left = 50, right = 50, top = 16, bottom = 36;
-  const plotW = W - left - right, plotH = H - top - bottom;
+  const top = 16, bottom = 36;
   const maxSize = Math.max(5, ...byTime.map((m) => m.strength_px));
+  ctx.font = '14px "Avenir Next", "Segoe UI", system-ui, sans-serif';
+  // The side margins are as wide as the widest label needs, so no label is cut off
+  // (the right-hand "12.3 px" labels used to be, with a fixed 50 px margin).
+  const left = Math.ceil(ctx.measureText("100%").width) + 14;
+  const right = Math.ceil(ctx.measureText(`${maxSize.toFixed(1)} px`).width) + 14;
+  chartMargins = { left, right };
+  const plotW = W - left - right, plotH = H - top - bottom;
   const slot = plotW / byTime.length;
   ctx.clearRect(0, 0, W, H);
-  ctx.font = '14px "Avenir Next", "Segoe UI", system-ui, sans-serif';
 
   // Axes and labels: left = share of time (0-100%), right = size in px.
   ctx.fillStyle = "#6a5241";
@@ -165,11 +170,14 @@ function drawChart(byTime) {
 
 // Which minute's column the pointer is over (-1 = none). Moving over the chart redraws it.
 let hoverIndex = -1;
+let chartMargins = { left: 50, right: 50 };       // set by drawChart to fit its labels
 function chartHover(event) {
   const canvas = document.getElementById("by-time");
   const byTime = lastSummary ? lastSummary.tremor.by_time : [];
-  const plotW = canvas.clientWidth - 100;                          // the same 50 px margins as above
-  const x = event.clientX - canvas.getBoundingClientRect().left - 50;
+  const box = canvas.getBoundingClientRect();
+  const scale = box.width / canvas.clientWidth || 1;               // not 1 when "Larger text" is on
+  const plotW = canvas.clientWidth - chartMargins.left - chartMargins.right;
+  const x = (event.clientX - box.left) / scale - chartMargins.left;
   const index = byTime.length && x >= 0 && x < plotW ? Math.floor(x / (plotW / byTime.length)) : -1;
   if (index !== hoverIndex) { hoverIndex = index; drawChart(byTime); }
 }
@@ -216,12 +224,16 @@ async function loadSummary() {
   }
 
   const info = s.model_info;
-  const modelText =
+  const detectorText =
     `Detector version ${info.detector_version}. On people it had never seen, it missed ${percent(info.missed_cases_rate)} ` +
     `of tremor windows and raised a false alarm on ${percent(info.false_alarm_rate)} of windows without tremor ` +
-    `(tested on recordings from a public dataset, not on mouse use). Filter now: ${MODE_NAMES[s.filter.mode] ?? s.filter.mode}, strength ${s.filter.strength}.`;
-  // The same sentence is shown on the Analysis tab and on "How it works".
-  for (const element of document.querySelectorAll(".model-info")) element.textContent = modelText;
+    `(tested on recordings from a public dataset, not on mouse use).`;
+  const filterText = ` Filter now: ${MODE_NAMES[s.filter.mode] ?? s.filter.mode}, strength ${s.filter.strength}.`;
+  // Analysis shows the detector sentence and the filter in use; "How it works" only the
+  // detector sentence (class "no-filter"), next to the corrector's result written in index.html.
+  for (const element of document.querySelectorAll(".model-info")) {
+    element.textContent = detectorText + (element.classList.contains("no-filter") ? "" : filterText);
+  }
   loadHistory(s);
 }
 

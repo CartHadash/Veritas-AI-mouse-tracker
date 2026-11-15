@@ -1,7 +1,13 @@
-// reading.js - an "Easier-to-read text" switch in the top bar (Oleksandr's accessibility idea;
-// the team leader agreed, Sun 15 Nov). Plain JavaScript in its own file, like tutorial.js.
+// reading.js - two reading switches in the top bar: "Easier-to-read text" and "Larger text"
+// (Oleksandr's accessibility idea; the team leader agreed, Sun 15 Nov). Plain JavaScript in
+// its own file, like tutorial.js.
 //
-// What it does: switches the whole page to Verdana with wider spacing between letters, words
+// "Larger text" enlarges everything around the practice area by 15% (the CSS "zoom" property
+// on the top bar, the side cards and the other tabs). The practice area itself is left alone,
+// so the cursor and targets keep their real size and position.
+//
+// "Easier-to-read text":
+// switches the whole page to Verdana with wider spacing between letters, words
 // and lines. That follows the British Dyslexia Association's style guide (a plain, evenly
 // spaced sans-serif font such as Verdana; more space between letters, words and lines). Some
 // readers with dyslexia find such text easier; it is a reading preference, not a treatment.
@@ -9,7 +15,12 @@
 // this browser only. Text drawn inside the practice area itself keeps its font.
 
 (function () {
-  const KEY = "steadyPointerEasyRead";
+  const SWITCHES = [
+    { key: "steadyPointerEasyRead", className: "easy-read", text: "Easier-to-read text",
+      title: "Verdana with wider spacing (often easier to read with dyslexia)" },
+    { key: "steadyPointerLargeText", className: "large-text", text: "Larger text",
+      title: "Makes the text and controls 15% larger" },
+  ];
 
   const style = document.createElement("style");
   style.textContent = `
@@ -20,6 +31,12 @@
        smaller, so the wider font still fits (checked at phone and laptop widths). */
     :root.easy-read ui-segmented-control-item, :root.easy-read ui-tabs-tab button {
       letter-spacing: 0; word-spacing: 0; font-size: 0.82em; }
+    /* Only on laptop-sized windows: on a phone-width window there is no room to enlarge. */
+    @media (min-width: 701px) {
+      :root.large-text .topbar, :root.large-text .stage-bar, :root.large-text .mode-hint,
+      :root.large-text .stage .banner, :root.large-text .legend, :root.large-text .rail,
+      :root.large-text .page { zoom: 1.15; }
+    }
     .topbar-tools { grid-column: 1 / -1; display: flex; flex-wrap: wrap; gap: 8px; justify-content: flex-end; }
     .topbar-tools .tutorial-open { margin-left: 0; }
     .easy-read-toggle { font: inherit; font-size: 14px; border-radius: 999px; padding: 4px 12px; cursor: pointer;
@@ -27,28 +44,13 @@
     .easy-read-toggle[aria-pressed="true"] { background: var(--steady, #1f6f57); border-color: var(--steady, #1f6f57); color: #fff; }`;
   document.head.appendChild(style);
 
-  function saved() { try { return localStorage.getItem(KEY) === "1"; } catch (e) { return false; } }
-  function save(on) { try { localStorage.setItem(KEY, on ? "1" : "0"); } catch (e) { /* private window: fine */ } }
+  function saved(sw) { try { return localStorage.getItem(sw.key) === "1"; } catch (e) { return false; } }
+  function save(sw, on) { try { localStorage.setItem(sw.key, on ? "1" : "0"); } catch (e) { /* private window: fine */ } }
 
-  function apply(on, button) {
-    document.documentElement.classList.toggle("easy-read", on);
-    if (button) button.setAttribute("aria-pressed", String(on));
-  }
-
-  apply(saved(), null);                    // as early as possible, so the page does not flicker
+  // As early as possible, so the page does not flicker.
+  for (const sw of SWITCHES) document.documentElement.classList.toggle(sw.className, saved(sw));
 
   function build() {
-    const button = document.createElement("button");
-    button.type = "button";
-    button.className = "easy-read-toggle";
-    button.textContent = "Easier-to-read text";
-    button.title = "Verdana with wider spacing (often easier to read with dyslexia)";
-    apply(saved(), button);
-    button.addEventListener("click", () => {
-      const on = !document.documentElement.classList.contains("easy-read");
-      apply(on, button);
-      save(on);
-    });
     // Next to "How to use" (tutorial.js) in a small row of tools under the top bar.
     const bar = document.querySelector(".topbar");
     if (!bar) return;
@@ -60,7 +62,21 @@
     }
     const guide = bar.querySelector(".tutorial-open");
     if (guide) tools.appendChild(guide);
-    tools.appendChild(button);
+    for (const sw of SWITCHES) {
+      const button = document.createElement("button");
+      button.type = "button";
+      button.className = "easy-read-toggle";
+      button.textContent = sw.text;
+      button.title = sw.title;
+      button.setAttribute("aria-pressed", String(saved(sw)));
+      button.addEventListener("click", () => {
+        const on = !document.documentElement.classList.contains(sw.className);
+        document.documentElement.classList.toggle(sw.className, on);
+        button.setAttribute("aria-pressed", String(on));
+        save(sw, on);
+      });
+      tools.appendChild(button);
+    }
   }
 
   if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", build);
