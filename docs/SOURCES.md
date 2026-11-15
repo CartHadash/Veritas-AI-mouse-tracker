@@ -111,7 +111,11 @@ Installed in step 1 (exact versions in `requirements.txt`). Add new ones here wh
 
 - British Dyslexia Association, "Dyslexia friendly style guide" (sans-serif fonts such as
   Verdana, larger spacing between letters, words and lines): the basis of the page's
-  "Easier-to-read text" switch (`web/reading.js`). No font file is downloaded.
+  "Easier-to-read text" switch (`web/reading.js`).
+- OpenDyslexic font by Abbie Gonzalez (https://opendyslexic.org), SIL Open Font License 1.1:
+  the font of the "Easier-to-read text" switch. Regular and bold `.woff2` files from the
+  `@fontsource/opendyslexic` package, version 5.3.0 (via cdn.jsdelivr.net), stored in
+  `web/fonts/` with the licence text (`OPENDYSLEXIC_LICENSE.txt`).
 - Flash, T. and Hogan, N. (1985), "The coordination of arm movements: an experimentally
   confirmed mathematical model" (the smooth "minimum jerk" reach): the shape of the simulated
   reach in `evaluation/systemwide_clicks.py`.
