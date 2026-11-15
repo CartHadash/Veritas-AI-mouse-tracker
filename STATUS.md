@@ -9,7 +9,7 @@ Newest entries at the top of each list. Use local time (CET) and say who you are
 
 | Lane | Working on | Blocked by |
 |---|---|---|
-| Builder | Leader's Sunday tasks done (detector idea tested: not kept; B3 click fixes; summary field; easier-to-read text). Next: whatever the leader's re-check of B3 finds | - |
+| Builder | NEXT: "click where you aimed", then system-wide correction as a page switch (tasks below) | - |
 | Team leader | B3 off-switch check and video clip, then the UI fixes the leader took over | - |
 | Writer | IN PROGRESS: drafting the write-up from `docs/WRITER_BRIEF.md` | Final project name |
 
@@ -64,6 +64,45 @@ submission Sun 23:00 · final fixes until the deadline **Mon 16 Nov 05:59**.
       (a bit better; Steadiest kept). Original note: **Leader: please re-check on the
       demo Mac** (`git pull`, then `python -m systemwide.run --demo strong`; click freeze is on
       by default; try `--response balanced` too and say which feels better).
+
+**Builder, NEXT (leader's decision, Sun 15 Nov 12:30; both before the 20:00 freeze, task 1 first):**
+- [ ] **1. "Click where you aimed" (about 45 min).** Why: the leader's B3 re-check (12:18) found
+      the click still lands away from where they meant to click; click freeze only helps
+      AFTER the press, and at the press the cursor still carries leftover shake and about
+      72 ms of lag. Do: when a button goes down, place the click (and the freeze point) at the
+      average of the SHOWN cursor positions over the last 0.2 s instead of the current one
+      (tremor is 4-6 shakes a second, so about one cycle averages out). Only while the
+      detector flags tremor (or the gate is open); otherwise click where the cursor is, so a
+      steady hand is never moved. In `systemwide/steady.py` (`press`) first; then the page's
+      click freeze (`web/app.js` `shownPosition`) if it helps there too. Measure: add it to
+      `evaluation/systemwide_clicks.py` (and `click_sim.py` for the page) as a new row; choose
+      the window (0.1 / 0.2 / 0.3 s) on validation people by a rule fixed before running
+      (more clicks landing on a 10 px button with strong tremor, no worse on medium or with
+      no tremor); test people once. Add a test to `systemwide/test_steady.py`. The leader
+      re-checks by hand on the demo Mac.
+- [ ] **2. System-wide correction as a real feature, not only a timed test (about 1.5 h).**
+      Why: B3 is proven (it steadies the real cursor in every app), but today it only runs
+      from the terminal for at most 10 minutes. The leader wants the corrector to work across
+      the whole Mac as a feature. Do:
+      - A switch "Steady cursor everywhere" on the page (Practice -> Adjust) that starts B3 in
+        the background of our server, and switches it off again. It uses the page's filter,
+        strength, response level and click freeze settings. Keep the default "Our model".
+      - It stays on until switched off (no 60 s / 10 min limit in this mode; the terminal
+        `--seconds` test mode stays as it is).
+      - Safety stays exactly as strong: Control + Option + X always switches it off; stopping
+        the server switches it off; a filter failure makes the cursor follow the hand; the page
+        shows clearly when it is ON. Never request the permission from code.
+      - Without the Accessibility permission (or on Windows) the switch is greyed out with
+        one line saying what a human must switch on (System Settings -> Privacy & Security ->
+        Accessibility -> the terminal app -> reopen it).
+      - Optional: a "with demo tremor" choice, so the video can show it.
+      - `GET /api/status` says whether it is available and on. Tests in
+        `systemwide/test_steady.py` (on/off, settings passed through, off-switch); update
+        `docs/RUNNING.md` and `docs/EXPLAINED.md`. The leader checks it by hand on the demo Mac.
+      Note: with a steady hand nothing visible happens (the detector sees no tremor); that is
+      correct, say it next to the switch.
+      If time runs short: finish task 1 and the switch WITHOUT the optional demo choice; never
+      weaken a safety rule to save time.
 
 **Oleksandr:**
 - [ ] Read `evaluation/results/failures/failures.md` (step 9 tick) and `RESULTS.md` (step 14 tick).

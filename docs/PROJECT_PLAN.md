@@ -36,7 +36,7 @@ works for them. In the write-up the *named user* stays the person with tremor.
 | Baselines | Detector: "always says no tremor" and a simple frequency rule. Corrector: no filter, lower pointer sensitivity, and the classical filters in `baselines/` |
 | Training data | Real tremor from two public datasets + **synthetic** clean mouse movement. No recorded mouse data from team, friends or family is used for training or for reported results |
 | Where it reads the mouse | Everywhere on the laptop (read-only) |
-| Where it corrects the mouse | Inside our own app. Correcting the real cursor everywhere is a stretch goal |
+| Where it corrects the mouse | Inside our own app, and (team leader, Sun 15 Nov 12:30) across the whole Mac as a feature switched on from the page (B3 proved it works; macOS only, needs the Accessibility permission) |
 | Interface | A local web app: Python runs the models in the background, the interface is a web page on the same laptop. Wrapping it as a desktop app is a last-step extra |
 | Languages | Python for data, models and server. HTML/CSS/JavaScript for the interface |
 | Assistant | Claude API. It sees only the app's summary numbers, never raw mouse data, and never gives medical advice |

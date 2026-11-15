@@ -45,6 +45,8 @@ When you come back after a break: *"Read STATUS.md and BUILD_GUIDE_BUILDER.md an
 | 13 Summary page | [x] | Now the Analysis tab of `web/index.html` (`summary.html` forwards there) |
 | 14 Results package | [ ] waiting | `evaluation/results/RESULTS.md`, `check_results.py`. Tick when Oleksandr and the leader have read it |
 | 15 Fresh-clone test | [x] | Passed on both Macs (`docs/STATUS_ARCHIVE.md`) |
+| B4 Click where you aimed | [ ] next | Leader, Sun 12:30: details in `STATUS.md` "Builder, NEXT", task 1 |
+| B5 System-wide correction as a page switch | [ ] next | Leader, Sun 12:30: details in `STATUS.md` "Builder, NEXT", task 2 |
 | 16 Desktop window | cut | Leader's decision, Sun 10:45: the demo uses the browser |
 | B3 System-wide correction | [x] | `systemwide/` works on the real cursor on the demo Mac (leader, Sun 11:04): visibly steadier after the detector's 2.56 s warm-up. Off-switch check and video clip: leader. Sun 15 Nov: click freeze, `--response`, idle updates added (`evaluation/systemwide_clicks.py`); leader re-checks |
 
