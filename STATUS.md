@@ -9,7 +9,7 @@ Newest entries at the top of each list. Use local time (CET) and say who you are
 
 | Lane | Working on | Blocked by |
 |---|---|---|
-| Builder | Next: movement-aware detector (cheap version, 1.5 h, below). B3 works on the demo Mac | - |
+| Builder | Leader's Sunday tasks done (detector idea tested: not kept; B3 click fixes; summary field; easier-to-read text). Next: whatever the leader's re-check of B3 finds | - |
 | Team leader | B3 off-switch check and video clip, then the UI fixes the leader took over | - |
 | Writer | IN PROGRESS: drafting the write-up from `docs/WRITER_BRIEF.md` | Final project name |
 
@@ -33,12 +33,13 @@ submission Sun 23:00 · final fixes until the deadline **Mon 16 Nov 05:59**.
       well it does" repeats the filter line and shows no corrector result; (4) the meter keeps
       old values after the hand stops (grey out after about 1 s). ((5), the assistant's
       "0 minutes" / "learned", is done.)
-- [ ] Larger text (accessibility). Dyslexia-friendly font and colour-blind-safe colours only
-      if time allows. ("Read aloud" is done.)
+- [ ] Larger text (accessibility). Colour-blind-safe colours only if time allows. ("Read
+      aloud" is done; the dyslexia-friendly text switch was built by the builder with the
+      leader's OK, Sun 15 Nov: `web/reading.js`.)
 - [ ] Mention the Steadiest / Balanced / Faster control in the tutorial (`web/tutorial.js`).
 
 **Builder (leader's decision, Sun 15 Nov ~11:30; time box 1.5 h, finished before the 20:00 freeze):**
-- [ ] **Movement-aware detector, cheap version** (Timofey's idea 1). Why: false alarms are
+- [x] (tested Sun 15 Nov: NOT kept, see "Done since the trim") **Movement-aware detector, cheap version** (Timofey's idea 1). Why: false alarms are
       29.6% with the hand moving vs 18.0% still, 41.7% on "moving on purpose" tasks
       (`RESULTS.md`); in the app a false alarm switches smoothing on mid-reach and adds lag.
       Do: no retraining; give detector v2 two cut-offs, one for windows where the hand is
@@ -52,8 +53,9 @@ submission Sun 23:00 · final fixes until the deadline **Mon 16 Nov 05:59**.
       report missed cases and false alarms separately. If it does not help: one honest line in
       "What we tried that did not work".
 
-- [ ] B3 click fixes (optional, about 1 h, after the detector task): see the request at the
-      bottom ("three optional fixes for clicking real buttons").
+- [x] B3 click fixes (Sun 15 Nov, see "Done since the trim"). **Leader: please re-check on the
+      demo Mac** (`git pull`, then `python -m systemwide.run --demo strong`; click freeze is on
+      by default; try `--response balanced` too and say which feels better).
 
 **Oleksandr:**
 - [ ] Read `evaluation/results/failures/failures.md` (step 9 tick) and `RESULTS.md` (step 14 tick).
@@ -67,6 +69,29 @@ submission Sun 23:00 · final fixes until the deadline **Mon 16 Nov 05:59**.
 write-up as a next step); round 2 of the step 4 path check (the stress test already answered it).
 
 ## Done since the trim (newest first)
+
+- Sun 15 Nov (afternoon), builder's agent, the leader's Sunday list:
+  **(1) Movement-aware detector, cheap version: tested, NOT kept.** Two cut-offs (looks moving /
+  looks still), each chosen on validation by the usual rule; the keep rule was fixed before
+  running (`python evaluation/moving_cutoffs.py`, `moving_cutoffs.md`). The cut-offs came out
+  0.152 and 0.157 against the single 0.155, and false alarms with the hand truly moving went
+  from 30.3% to 31.1%; test people were not scored. The detector already misses about the same
+  share in both groups, so a cut-off cannot help; it would need retraining.
+  **(2) B3 click fixes.** Click freeze in `systemwide/` (on by default, `--no-freeze`), a
+  `--response` option, and the filter is fed every 10 ms during a pause also without demo
+  tremor (with demo tremor it already was, so the suspected warm-up after a pause was not
+  happening there). Simulated reach-and-click (`python evaluation/systemwide_clicks.py`): on
+  validation people Steadiest lands the most clicks on a 10 px button with freeze and strong
+  tremor (91%; Balanced 88%, Faster 82%), so Steadiest stays B3's default; test people
+  (`systemwide_clicks_test.md`): our model 99% / 99% without / with freeze, One Euro 90% / 95%,
+  no filter 30% / 46%. The simulation has perfect aim and no button jolt, so it cannot show
+  why a real hand still finds it hard. `python -m pytest systemwide/test_steady.py`: 9 passed.
+  Not checked on the real cursor: the leader re-checks on the demo Mac.
+  **(3)** `response` added to the summary's `filter` block (leader's request).
+  **(4) Easier-to-read text** switch in the top bar (`web/reading.js`; Verdana and wider
+  spacing, nothing downloaded; leader's OK in the group chat). "How to use" and this switch now
+  sit in one small row under the top bar. Checked in the app's browser at phone and laptop
+  widths. Re-run and passing: `server/test_ws.py`, 28 tests, `check_results.py` (30 sources).
 
 - Sun 15 Nov 11:04, team leader + leader's agent: **B3 checked on the real cursor, demo Mac.**
   Accessibility switched on for the Claude app by the leader (a human). A 3 s pass-through run
@@ -143,6 +168,8 @@ Headlines on test people:
 - Builder's agent: twice a branch was merged before its `STATUS.md` entry (a scripted edit
   failed silently); once a change went straight to `main`. Commands are now chained so nothing
   runs after a failure.
+- Movement-aware detector with two cut-offs (moving / still): did not lower false alarms while
+  moving (30.3% -> 31.1% on validation, `moving_cutoffs.md`); not kept.
 - Corrector v2 (trained on 0.5x-2x tremor) did not beat v1; dropped.
 - The server's active-time rule missed slow movement; found by a test, fixed.
 - **A number hid what a person saw in two seconds:** corrector v1 scored well on distance but
@@ -160,7 +187,8 @@ Headlines on test people:
 
 ## Requests to another lane (open only; answered ones are in the archive)
 
-- Sun 15 Nov ~11:20, team leader -> builder: **B3 counts as DONE (leader's decision); three
+- DONE by the builder (Sun 15 Nov afternoon, see "Done since the trim"; the leader re-checks
+  on the demo Mac). Sun 15 Nov ~11:20, team leader -> builder: **B3 counts as DONE (leader's decision); three
   optional fixes for clicking real buttons**, which the leader found still hard with our model
   (`--demo strong`, demo Mac). Likely causes, read from the code, not measured:
   (1) after a pause over 1 s (`models/resample.py` `MAX_GAP`) the models start fresh and the
@@ -174,11 +202,15 @@ Headlines on test people:
   detector task; checked with `systemwide/test_steady.py` (add a test per fix); the leader
   re-checks on the demo Mac. If not done, it is a "limits" line in the write-up.
 
-- Sun 15 Nov, team leader -> builder (small, optional): please add the response level to the
+- DONE (builder, Sun 15 Nov). Sun 15 Nov, team leader -> builder (small, optional): please add the response level to the
   summary's filter block (`server/main.py`, `"filter": {"mode": ..., "strength": ...,
   "response": settings["response"]}`), so the assistant can see Steadiest / Balanced / Faster
   when it suggests settings. The prompt already handles the field when it is there.
 
+- Sun 15 Nov, builder -> team leader (UI is yours): new file `web/reading.js` (the easier-to-read
+  text switch) and one `<script>` line in `web/index.html`; it also moves "How to use" into a
+  `.topbar-tools` row. Restyle freely. Earlier the same day: `web/app.js` speed fixes
+  (`shakeNow`, `SEND_GAP_MS`, meter redrawn in `draw`), no visual change.
 - Sun 15 Nov, builder -> team leader: the Steadiest / Balanced / Faster control (`web/index.html`
   id `response-row`, `web/app.js` `showSettings` / `onChange("response", ...)`) is yours to
   restyle; keep the id and the `response` value sent to the server.

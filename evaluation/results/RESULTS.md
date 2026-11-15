@@ -215,7 +215,25 @@ concentrated (8 people cause half of them); false alarms are spread out (25 peop
 2. `failures/detector_false_alarm_1.png`: a "false alarm" that looks exactly like tremor.
 3. `figures/pads_060_relaxed_right.png`: one patient's resting tremor and its sharp frequency peak.
 
+## Clicking real buttons with the system-wide corrector (simulated)
+
+`systemwide_clicks_test.md` (test people's replayed tremor, strong; the hand reaches, stops on
+the button, then clicks; 80 clicks per row). Clicks landing on a 10 px button without / with
+click freeze: no filter 30% / 46%, One Euro 90% / 95%, our model (Steadiest) 99% / 99%. On
+validation people (`systemwide_clicks_val.md`) Steadiest landed the most clicks (91% with
+freeze; Balanced 88%, Faster 82%), so it stays the default. Limits: perfect aim, no jolt from
+pressing the button, and no person steering by a trailing cursor; on the demo Mac the team
+leader still found real buttons hard to click.
+
 ## What we tried that did not work
+
+- A movement-aware detector, cheap version (`moving_cutoffs.md`, validation): one cut-off for
+  windows that look like a moving hand and one for windows that look still, each chosen by the
+  usual rule. The two came out almost the same as the single cut-off (0.152 and 0.157 against
+  0.155), and false alarms with the hand truly moving went from 30.3% to 31.1%, so it was not
+  kept and test people were not scored. The detector already misses about the same share in
+  both groups, so a cut-off alone cannot lower false alarms while moving without missing more
+  tremor; that would need retraining.
 
 - Corrector v2, trained on tremor 0.5x to 2x as large (for different mouse settings): no real
   difference on validation, so not kept (`improvements.md`). Corrector v1 already copes with

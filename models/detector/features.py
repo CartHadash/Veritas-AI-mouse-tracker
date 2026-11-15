@@ -30,6 +30,26 @@ FEATURE_NAMES = (
 _BAND_B, _BAND_A = butter(4, [3, 12], btype="bandpass", fs=RATE)
 
 
+MOVING_BLOCK = 32          # samples (0.32 s) averaged together to iron out the shaking
+MOVING_SPEED = 20.0        # px/s, the project's "hand moving" speed (evaluation/metrics.py)
+
+
+def looks_moving(windows):
+    """
+    A live guess at "is the hand moving on purpose?", from the shaky cursor alone.
+    (The tables' own definition, evaluation.metrics.window_is_moving, needs the intended
+    path, which the app never sees.) The window is cut into 8 blocks of 0.32 s; averaging a
+    block irons out 3-12 Hz shaking, leaving roughly where the hand was. If the hand's average
+    position travels faster than 20 px/s between neighbouring blocks for at least half of the
+    window, it counts as moving. windows: (n, 256, 2). Returns n True/False values.
+    """
+    windows = np.asarray(windows, dtype=np.float64)
+    blocks = windows.shape[1] // MOVING_BLOCK
+    means = windows[:, :blocks * MOVING_BLOCK].reshape(len(windows), blocks, MOVING_BLOCK, 2).mean(axis=2)
+    speed = np.linalg.norm(np.diff(means, axis=1), axis=2) * RATE / MOVING_BLOCK
+    return (speed > MOVING_SPEED).mean(axis=1) >= 0.5
+
+
 def compute_features(windows):
     """windows: (n, samples, 2) positions in px. Returns (n, len(FEATURE_NAMES)) float32."""
     windows = np.asarray(windows, dtype=np.float64)

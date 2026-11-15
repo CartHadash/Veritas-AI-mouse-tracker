@@ -109,6 +109,13 @@ Installed in step 1 (exact versions in `requirements.txt`). Add new ones here wh
   disease smartwatch (PADS) dataset", npj Parkinson's Disease 10:9,
   https://doi.org/10.1038/s41531-023-00625-7. Cite together with the PADS dataset above.
 
+- British Dyslexia Association, "Dyslexia friendly style guide" (sans-serif fonts such as
+  Verdana, larger spacing between letters, words and lines): the basis of the page's
+  "Easier-to-read text" switch (`web/reading.js`). No font file is downloaded.
+- Flash, T. and Hogan, N. (1985), "The coordination of arm movements: an experimentally
+  confirmed mathematical model" (the smooth "minimum jerk" reach): the shape of the simulated
+  reach in `evaluation/systemwide_clicks.py`.
+
 ## Our own pre-hackathon work
 
 - Dataset research only (`DATASETS.md`); no pre-hackathon code is left (see `REUSED_CODE.md`).

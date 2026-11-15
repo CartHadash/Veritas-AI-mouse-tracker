@@ -380,6 +380,22 @@ every tremor at half and at double size. Model missed / false alarms: 16.8% / 34
 14.3% / 27.0% (normal), 12.3% / 22.5% (double); the frequency rule's false alarms were 64.1%,
 59.0% and 50.8%. Bigger tremor is easier, as expected, and the model beats the rule at all three.
 
+**A movement-aware detector, cheap version: tried, not kept (Sun 15 Nov, Timofey's idea).**
+The detector raises more false alarms while the hand moves on purpose. The cheap idea: keep
+the model, but use two cut-offs, a stricter one when the hand is moving and another when it
+is still. One snag: the tables decide "moving" from the intended path, which the app never
+sees, so `looks_moving` in `models/detector/features.py` guesses it from the shaky cursor
+(average the position over 0.32 s blocks to iron out the shaking, then see whether those
+averages travel faster than 20 px/s). The guess agrees with the truth on 81.7% of validation
+windows. Each cut-off was then chosen the usual way (fewest false alarms with at most 20%
+missed, in its own group), and the rule for keeping it was written down before running
+(`python evaluation/moving_cutoffs.py`, `moving_cutoffs.md`). Result: the two cut-offs came out
+nearly equal to the single one (0.152 and 0.157 against 0.155), and false alarms with the hand
+truly moving went from 30.3% to 31.1%. Not kept; test people not scored. Why it cannot work:
+the detector already misses about the same share of tremor in both groups (20.9% moving, 17.1%
+still), so there is no "spare" strictness to spend on the moving group. Fewer false alarms
+while moving would need a better model (retraining with movement in mind), not a new cut-off.
+
 ## The corrector
 
 **What it does.** It takes shaky cursor movement and outputs where the cursor was *meant* to
@@ -771,6 +787,25 @@ steadier after a moment, because the detector first needs 2.56 s of movement bef
 the correction on; clicks landed where the cursor was shown almost always. Both runs logged
 0 filter failures. Before that check it was only tested on the builder's Mac without the permission. The default way of moving the cursor (changing the event) worked, so `--method warp` was not needed.
 
+**Clicking real buttons (Sun 15 Nov).** The team leader found that with our model the real
+cursor was steadier but clicking real buttons was still hard, and suspected three causes. We
+checked each. (1) "The correction warms up again after every pause": with demo tremor on, the
+program already updated the cursor every 10 ms while the mouse was still, so the models never
+restarted there; it now does the same without demo tremor, so a pause never costs a new 2.56 s
+warm-up. (2) "No click freeze": true. Now, as on the page, the cursor stays where the button
+was pressed until it is released (at most 0.3 s), while the hand is still followed underneath.
+(3) "Too much lag at Steadiest": `python -m systemwide.run --response balanced` now exists, but
+a simulation says Steadiest should stay the default. `python evaluation/systemwide_clicks.py`
+drives the real B3 logic: the hand reaches 300 px, stops exactly on a button, presses 0.2-0.6 s
+later and holds 80-200 ms, with strong replayed tremor. On validation people, clicks landing
+on a 10 px button with click freeze: Steadiest 91%, Balanced 88%, Faster 82% (no filter 42%,
+One Euro 81%); without click freeze Steadiest lands 86%. On test people
+(`systemwide_clicks_test.md`): Steadiest 99% with or without freeze, One Euro 90% without and
+95% with, no filter 30% and 46%. What the simulation cannot show: its hand aims perfectly and
+does not jolt when pressing, and a real person steers by watching a cursor that trails the
+hand. So "still hard for a real hand" stays a limit to report, not something these numbers
+disprove. New tests in `systemwide/test_steady.py` cover the freeze, the level and the pause.
+
 ## Can someone else reproduce it? (step 15)
 
 Yes. A fresh copy of the repository from GitHub, set up with the commands in `docs/RUNNING.md`,
@@ -887,6 +922,15 @@ still ends exactly where the hand stopped. On the server, the summary's per-minu
 the browser cache were fixed too (the server tells the browser to check for changed files on
 every reload, so nobody runs an old page after `git pull`). None of this changes what the
 models compute: `evaluation/compare_modes.py` gives the same results file as before.
+
+**Easier-to-read text (Sun 15 Nov, Oleksandr's idea).** A button in the top bar
+(`web/reading.js`) switches the page to Verdana with a little more space between letters, words
+and lines, which the British Dyslexia Association's style guide recommends. Some readers with
+dyslexia find such text easier; it is a reading preference, not a treatment. No font is
+downloaded (Verdana is already on macOS and Windows) and the choice is remembered in the
+browser. How it works: the page's font is one CSS variable (`--font`), so the button only
+changes that variable and the spacing. Checked in the browser at phone and laptop widths:
+nothing sticks out of the page, and the rows of buttons still fit.
 
 ### The summary page (step 13)
 

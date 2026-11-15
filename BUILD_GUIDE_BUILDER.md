@@ -46,7 +46,7 @@ When you come back after a break: *"Read STATUS.md and BUILD_GUIDE_BUILDER.md an
 | 14 Results package | [ ] waiting | `evaluation/results/RESULTS.md`, `check_results.py`. Tick when Oleksandr and the leader have read it |
 | 15 Fresh-clone test | [x] | Passed on both Macs (`docs/STATUS_ARCHIVE.md`) |
 | 16 Desktop window | cut | Leader's decision, Sun 10:45: the demo uses the browser |
-| B3 System-wide correction | [x] | `systemwide/` works on the real cursor on the demo Mac (leader, Sun 11:04): visibly steadier after the detector's 2.56 s warm-up. Off-switch check and video clip: leader |
+| B3 System-wide correction | [x] | `systemwide/` works on the real cursor on the demo Mac (leader, Sun 11:04): visibly steadier after the detector's 2.56 s warm-up. Off-switch check and video clip: leader. Sun 15 Nov: click freeze, `--response`, idle updates added (`evaluation/systemwide_clicks.py`); leader re-checks |
 
 Extras built on team members' ideas: click freeze (`evaluation/click_sim.py`), calibration
 test (`evaluation/calibration_sim.py`, reports only), first-use guide (`web/tutorial.js`),

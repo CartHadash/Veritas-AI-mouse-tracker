@@ -66,6 +66,8 @@ it. Then:
 python -m systemwide.run --demo strong --mode none     # replayed tremor, no correction (60 s)
 python -m systemwide.run --demo strong                 # the same, corrected by our model
 python -m systemwide.run --demo strong --method warp   # if the cursor did not move with the line above
+python -m systemwide.run --demo strong --response balanced   # less lag, a little more shake
+python -m systemwide.run --demo strong --no-freeze     # without click freeze (on by default)
 python -m pytest systemwide/test_steady.py             # the logic, no permission needed
 ```
 
@@ -134,6 +136,9 @@ python models/corrector/train.py --version v5_k3 --loss distance --smooth 2 --sh
 python evaluation/option_b.py --test          # chose v5_k3 over option A
 python evaluation/tune_lag.py --test          # smoothing settings vs lag (kept as they were)
 python evaluation/response_levels.py          # the page's Steadiest / Balanced / Faster choice
+python evaluation/moving_cutoffs.py           # two detector cut-offs, moving / still (not kept)
+python evaluation/systemwide_clicks.py        # reach-and-click simulation for B3 (validation)
+python evaluation/systemwide_clicks.py --people test
 ```
 
 For the pixel-factor check in `evaluate_detector.py` (detector v1), also run
