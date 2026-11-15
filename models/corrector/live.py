@@ -46,6 +46,15 @@ GATE_SECONDS = 0.3       # how quickly the gate follows the detector
 # Settings of the One Euro smoothing of the corrected cursor (option A). The defaults are One
 # Euro's original ones; evaluation/tune_lag.py tunes them on validation to reduce lag.
 SMOOTHING = {"min_cutoff": 1.0, "beta": 0.004}
+# The page's "Steadier <-> More responsive" choice (Sun 15 Nov: the team chose to let users
+# pick). Three points from evaluation/results/tune_lag.md (validation people): steadiest = the
+# settings above (67 ms lag while moving, shake 2.98 px), balanced (42 ms, 3.39 px), most
+# responsive (27 ms, 3.83 px). Less lag always means more shake; the default stays steadiest.
+RESPONSE_LEVELS = {
+    "steadiest": SMOOTHING,
+    "balanced": {"min_cutoff": 1.0, "beta": 0.02},
+    "responsive": {"min_cutoff": 4.0, "beta": 0.05},
+}
 
 
 def gate_target(score, threshold):
@@ -83,6 +92,13 @@ class LiveCorrector:
         self.detector = live_detector if use_gate else None
         self.strength = strength
         self.reset()
+
+    def set_smoothing(self, smoothing):
+        """Change the One Euro settings without losing the detector's history (the page's
+        responsiveness choice). The smoother simply continues with the new settings."""
+        self.smoothing = dict(smoothing)
+        self.smoother.min_cutoff = self.smoothing["min_cutoff"]
+        self.smoother.beta = self.smoothing["beta"]
 
     def reset(self):
         self.positions = deque(maxlen=HISTORY + 1)

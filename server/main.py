@@ -51,7 +51,7 @@ from fastapi.staticfiles import StaticFiles
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT))
 from baselines.classical_filters import OneEuroFilter  # noqa: E402
-from models.corrector.live import LiveCorrector, load_corrector  # noqa: E402
+from models.corrector.live import RESPONSE_LEVELS, LiveCorrector, load_corrector  # noqa: E402
 from models.detector.predict import THRESHOLD_FILE, VERSION, Detector, LiveDetector  # noqa: E402
 
 RATE = 100
@@ -81,9 +81,13 @@ async def only_local_pages(request: Request, call_next):
 
 # Demo tremor starts at "strong": with medium tremor the correction is hard to see by eye
 # (Oleksandr's hand check, Sat 14 Nov; evaluation/results/demo_modes_test.md, medium, reaching).
-settings = {"mode": "learned", "strength": 1.0, "demo_tremor": False, "demo_level": "strong", "tracking": False}
+# response: how quickly "Our model" follows a moving hand (steadiest / balanced / responsive,
+# models/corrector/live.py RESPONSE_LEVELS). Starts at the steadiest (team's choice, Sun 15 Nov).
+settings = {"mode": "learned", "strength": 1.0, "demo_tremor": False, "demo_level": "strong",
+            "response": "steadiest", "tracking": False}
 # Whether "Our model" adds gated One Euro smoothing (option A). Not a user setting: evaluations
-# switch it off to measure the network alone (evaluation/vs_one_euro.py).
+# switch it off to measure the network alone (evaluation/vs_one_euro.py). Evaluations may also
+# put fixed One Euro settings under "settings"; those then win over the page's choice.
 SMOOTH_OUTPUT = {"on": True}
 DEMO_LEVELS = ["mild", "medium", "strong"]
 # The filters the calibration test tries on the user's own movement: (mode, strength).
@@ -269,8 +273,9 @@ class CursorSession:
             self.demo = DemoTremor(conf["demo_level"])
         self.detector.reset()
         if self.mode == "learned":
+            self.response = conf.get("response", "steadiest")
             self.filter = LiveCorrector(live_detector=self.detector, strength=self.strength, model=CORRECTOR_MODEL,
-                                        smooth_output=SMOOTH_OUTPUT["on"], smoothing=SMOOTH_OUTPUT.get("settings"))
+                                        smooth_output=SMOOTH_OUTPUT["on"], smoothing=self.smoothing())
         elif self.mode == "one_euro":
             self.filter = OneEuroFilter()
         elif self.mode == "low_sensitivity":
@@ -279,6 +284,10 @@ class CursorSession:
             self.filter = None
         if self.filter is not None:
             self.filter.reset()
+
+    def smoothing(self):
+        """One Euro settings for "Our model": an evaluation's fixed ones, else the page's choice."""
+        return SMOOTH_OUTPUT.get("settings") or RESPONSE_LEVELS[self.response]
 
     def set_area(self, width, height):
         self.area = (width, height)
@@ -292,6 +301,9 @@ class CursorSession:
         self.strength = float(conf["strength"])          # strength changes apply immediately
         if self.mode == "learned":
             self.filter.strength = self.strength
+            if conf.get("response", "steadiest") != self.response:   # responsiveness: applies at once
+                self.response = conf.get("response", "steadiest")
+                self.filter.set_smoothing(self.smoothing())
         demo_info = None
         if conf["demo_tremor"]:
             dx, dy, demo_info = self.demo.offset(t)
@@ -452,10 +464,13 @@ def get_settings():
 @app.post("/api/settings")
 def post_settings(new: dict):
     """Change any of: mode (none / low_sensitivity / one_euro / learned), strength (0-1),
-    demo_tremor (true/false), demo_level (mild / medium / strong), tracking (true/false).
+    demo_tremor (true/false), demo_level (mild / medium / strong), response (steadiest /
+    balanced / responsive), tracking (true/false).
     Everything is checked first; if anything is invalid, nothing is changed."""
     if "mode" in new and new["mode"] not in MODES:
         return JSONResponse({"error": "mode must be one of %s" % MODES}, status_code=400)
+    if "response" in new and new["response"] not in RESPONSE_LEVELS:
+        return JSONResponse({"error": "response must be one of %s" % list(RESPONSE_LEVELS)}, status_code=400)
     if "demo_level" in new and new["demo_level"] not in DEMO_LEVELS:
         return JSONResponse({"error": "demo_level must be one of %s" % DEMO_LEVELS}, status_code=400)
     if "strength" in new:
@@ -465,7 +480,7 @@ def post_settings(new: dict):
             strength = float("nan")
         if not math.isfinite(strength):
             return JSONResponse({"error": "strength must be a number from 0 to 1"}, status_code=400)
-    for key in ("mode", "demo_level"):
+    for key in ("mode", "demo_level", "response"):
         if key in new:
             settings[key] = new[key]
     if "strength" in new:

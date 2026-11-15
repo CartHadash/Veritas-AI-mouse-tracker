@@ -19,7 +19,8 @@
             "in pixels: raw -> corrected." },
     { part: "#modes", title: "4. Compare the filters",
       text: "Switch between No filter, One Euro and Our model, and see which keeps the dark dot " +
-            "steadier and lets you hit more targets. A steady hand is deliberately left alone." },
+            "steadier and lets you hit more targets. A steady hand is deliberately left alone. " +
+            "If Our model feels slow to follow, try \"Balanced\" or \"Faster\" under Adjust." },
   ];
 
   const style = document.createElement("style");
