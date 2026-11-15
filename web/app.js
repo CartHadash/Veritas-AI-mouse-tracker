@@ -39,6 +39,8 @@ const TARGET_RADIUS = 22;           // px; small on purpose, so a shaky cursor f
 let socket = null;
 let latest = null;                  // last reply from the server
 let meterStale = false;             // a reply arrived since the meter was last redrawn
+let lastReplyAt = 0;                // when the last reply arrived (the meter greys out after 1 s)
+const METER_PAUSE_MS = 1000;
 // A fast mouse reports up to 1000 movements a second; the models work at 100 a second, so the
 // page sends at most one sample per SEND_GAP_MS (plus always the newest one of each event).
 const SEND_GAP_MS = 4;
@@ -141,6 +143,7 @@ function connect() {
     const message = JSON.parse(event.data);
     if (message.type === "calibration") { showCalibration(message); return; }
     latest = message;
+    lastReplyAt = performance.now();
     if (inside) {
       trail.push({ at: performance.now(), rawX: message.raw_x, rawY: message.raw_y, x: message.x, y: message.y });
       shakeLog.push({ at: performance.now(), rawX: message.raw_x, rawY: message.raw_y, x: message.x, y: message.y });
@@ -193,6 +196,8 @@ function areaPosition(event) {
   const box = area.getBoundingClientRect();
   return { x: event.clientX - box.left, y: event.clientY - box.top };
 }
+// (The practice area itself is never enlarged by "Larger text" (web/reading.js), so pointer
+// positions and the drawing always use the same pixels.)
 
 area.addEventListener("pointermove", (event) => {
   inside = true;
@@ -535,6 +540,18 @@ function drawLockInvite() {
 function draw() {
   const now = performance.now();
   if (meterStale) { meterStale = false; updateMeter(); }
+  // No movement for a second: the meter's numbers are old, so grey them out and say so.
+  const paused = latest !== null && now - lastReplyAt > METER_PAUSE_MS;
+  const meterCard = document.querySelector(".meter-card");
+  if (paused !== meterCard.classList.contains("paused")) {
+    meterCard.classList.toggle("paused", paused);
+    if (paused) {
+      const word = document.getElementById("tremor-word");
+      word.textContent = "Paused: move the pointer in the practice area";
+      word.classList.remove("tremor");
+    }
+    else meterStale = true;                           // back: show the fresh values at once
+  }
   ctx.clearRect(0, 0, area.clientWidth, area.clientHeight);
   if (calib && calib.phase === "running" && (now - calib.start) / 1000 >= CALIB_SECONDS) {
     calib.phase = "scoring";

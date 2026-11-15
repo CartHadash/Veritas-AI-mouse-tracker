@@ -28,15 +28,18 @@ submission Sun 23:00 · final fixes until the deadline **Mon 16 Nov 05:59**.
 - [ ] Read `evaluation/results/RESULTS.md` end to end (step 14 tick).
 
 **Team leader (UI work taken over Sat 22:00; `web/` and `assistant/`):**
-- [ ] The builder's five findings: (1) the floating assistant button covers content at the
+- [x] (DONE by the builder at the leader's request, Sun 15 Nov, see "Done since the trim")
+      The builder's five findings: (1) the floating assistant button covers content at the
       bottom right; (2) Analysis chart labels cut off on the right; (3) How it works -> "How
       well it does" repeats the filter line and shows no corrector result; (4) the meter keeps
       old values after the hand stops (grey out after about 1 s). ((5), the assistant's
       "0 minutes" / "learned", is done.)
-- [ ] Larger text (accessibility). Colour-blind-safe colours only if time allows. ("Read
+- [x] Larger text (accessibility): a "Larger text" switch, built by the builder (Sun 15 Nov).
+      Colour-blind-safe colours: not built (only if time allows). ("Read
       aloud" is done; the dyslexia-friendly text switch was built by the builder with the
       leader's OK, Sun 15 Nov: `web/reading.js`.)
-- [ ] Mention the Steadiest / Balanced / Faster control in the tutorial (`web/tutorial.js`).
+- [x] Mention the Steadiest / Balanced / Faster control in the tutorial (`web/tutorial.js`):
+      the last step says so (builder, Sun 15 Nov).
 
 **Builder (leader's decision, Sun 15 Nov ~11:30; time box 1.5 h, finished before the 20:00 freeze):**
 - [x] (tested Sun 15 Nov: NOT kept, see "Done since the trim") **Movement-aware detector, cheap version** (Timofey's idea 1). Why: false alarms are
@@ -69,6 +72,19 @@ submission Sun 23:00 · final fixes until the deadline **Mon 16 Nov 05:59**.
 write-up as a next step); round 2 of the step 4 path check (the stress test already answered it).
 
 ## Done since the trim (newest first)
+
+- Sun 15 Nov (afternoon), builder's agent, **the UI fixes the leader handed back** (group chat,
+  11:29): (1) every tab now leaves empty space at the bottom, so the last lines scroll clear
+  of the floating assistant button; (2) the Analysis chart sizes its side margins to its
+  labels, so the right-hand "px" labels are no longer cut off; (3) "How it works" -> "How well
+  it does" shows the detector sentence without the "Filter now" line, plus the corrector's
+  result (numbers from `RESULTS.md`: shake 7.91 px no filter, 2.56 px our model, 3.39 px One
+  Euro; 72 ms lag at Steadiest); (4) the tremor meter greys out and says "Paused" after one
+  second without movement; (5) a "Larger text" switch next to "Easier-to-read text"
+  (`web/reading.js`; 15% larger around the practice area, which keeps its real size; laptop
+  widths only). Checked in the app's browser at 1440 px and 375 px with simulated pointer
+  events: no page overflow, meter pauses and resumes, chart labels whole. `server/test_ws.py`
+  passes. Not checked with a real hand, in Safari, or on the demo Mac.
 
 - Sun 15 Nov (afternoon), builder's agent, the leader's Sunday list:
   **(1) Movement-aware detector, cheap version: tested, NOT kept.** Two cut-offs (looks moving /

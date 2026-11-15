@@ -932,6 +932,15 @@ browser. How it works: the page's font is one CSS variable (`--font`), so the bu
 changes that variable and the spacing. Checked in the browser at phone and laptop widths:
 nothing sticks out of the page, and the rows of buttons still fit.
 
+**Larger text, and four small fixes (Sun 15 Nov).** "Larger text" (also `web/reading.js`)
+makes everything around the practice area 15% larger with the CSS `zoom` property. The
+practice area itself is not enlarged, because the cursor and targets must keep their real
+positions. Fixes: the page leaves empty space at the bottom so the floating assistant button
+never covers the last lines; the Analysis chart measures its labels and makes its margins
+wide enough for them; "How well it does" now gives both models' results; and the tremor meter
+greys out and says "Paused" one second after the pointer stops, because its numbers are then
+old (the detector only gets new movement while the pointer moves).
+
 ### The summary page (step 13)
 
 **What it does.** `web/summary.html` (with `summary.js`, `summary.css`) turns the session into
