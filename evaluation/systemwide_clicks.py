@@ -18,6 +18,10 @@ Compared: no filter, One Euro, and our model at each smoothing level (Steadiest 
 Faster), each without and with click freeze, for a 22 px button (the demo page's target) and a
 10 px one (a small checkbox).
 
+"Click where you aimed" (team leader's idea, Sun 15 Nov, after re-checking by hand): the click
+is placed at the average of where the cursor was shown over the last 0.1 / 0.2 / 0.3 s, while
+tremor is being corrected. Its rule, also fixed before running, is printed with its table.
+
 THE RULE for B3's default smoothing level (fixed before running): the level with the most
 successful clicks on the 10 px button with click freeze on and strong tremor, on VALIDATION
 people's tremor; an exact tie goes to the steadier level. With --people test the same table is
@@ -53,6 +57,7 @@ METHODS = [("No filter", "none", "steadiest"), ("One Euro", "one_euro", "steadie
            ("Our model, Steadiest", "learned", "steadiest"), ("Our model, Balanced", "learned", "balanced"),
            ("Our model, Faster", "learned", "responsive")]
 ORDER = list(RESPONSE_LEVELS)        # steadiest first: used to break ties
+AIM_WINDOWS = [0.0, 0.1, 0.2, 0.3]   # s; "click where you aimed" candidates (0 = off)
 
 
 def hand_path():
@@ -74,9 +79,11 @@ def hand_path():
     return path, clicks
 
 
-def run(mode, response, level, freeze, path, clicks):
-    """Share of clicks that land for each button size, driving the real B3 logic."""
-    steady = sw.SteadyCursor(tuple(path[0]), BOUNDS, mode=mode, demo_level=level, response=response, freeze=freeze)
+def run(mode, response, level, freeze, path, clicks, aim=0.0):
+    """Share of clicks that land for each button size, driving the real B3 logic.
+    aim: seconds of "click where you aimed" averaging at the press (0 = off)."""
+    steady = sw.SteadyCursor(tuple(path[0]), BOUNDS, mode=mode, demo_level=level, response=response,
+                             freeze=freeze, aim_seconds=aim)
     if steady.detector is not None:
         steady.detector.pool = None                 # in line, so results are repeatable
     presses = {p: i for i, (_, p, _) in enumerate(clicks)}
@@ -89,8 +96,7 @@ def run(mode, response, level, freeze, path, clicks):
         previous = hand
         shown = steady.move_to(steady.shown[0] + dx, steady.shown[1] + dy, t)
         if k in presses:
-            at_press[presses[k]] = shown
-            steady.press(t)
+            at_press[presses[k]] = steady.press(t)    # where the click lands
         if k in releases:
             at_release[releases[k]] = shown
             steady.release()
@@ -135,6 +141,30 @@ def main():
                   "on the 10 px button with click freeze and strong tremor; a tie goes to the steadier level.", "",
                   "**Chosen: %s.**" % best]
         print("Chosen:", best)
+
+    # ---- "Click where you aimed": the click lands at the average shown position of the last moments.
+    windows = AIM_WINDOWS if args.people == "val" else sorted({0.0, sw.DEFAULT_AIM_SECONDS})
+    lines += ["", "## Click where you aimed (our model, Steadiest, click freeze on)", "",
+              "At the press, the click is placed at the average of where the cursor was shown over the last "
+              "moments (only while tremor is being corrected). Share of clicks that land.", "",
+              "| Averaged over | No tremor: 22 px / 10 px | Medium: 22 px / 10 px | Strong: 22 px / 10 px |", "|---|---|---|---|"]
+    aim = {}
+    for w in windows:
+        aim[w] = {level: run("learned", "steadiest", level, True, path, clicks, aim=w) for level in [None, "medium", "strong"]}
+        row = "| %s | %s |" % ("off (click where the cursor is)" if w == 0 else "%.1f s" % w, " | ".join(
+            "%.0f%% / %.0f%%" % (100 * aim[w][level][0], 100 * aim[w][level][1]) for level in [None, "medium", "strong"]))
+        lines.append(row)
+        print(row)
+    if args.people == "val":
+        off = aim[0.0]
+        allowed = [w for w in windows if w > 0 and aim[w]["strong"][1] > off["strong"][1]
+                   and all(aim[w][level][k] >= off[level][k] for level in [None, "medium"] for k in (0, 1))]
+        chosen = max(allowed, key=lambda w: (aim[w]["strong"][1], -w)) if allowed else 0.0
+        lines += ["", "Rule fixed in advance (team leader): choose the window with the most clicks landing on the "
+                  "10 px button with strong tremor, if that is more than with it off and no worse with medium "
+                  "tremor or no tremor (both button sizes); a tie goes to the shorter window; otherwise it stays off.",
+                  "", "**Chosen: %s.**" % ("%.1f s" % chosen if chosen else "off")]
+        print("Aim chosen:", chosen)
     lines += ["", "This project is a prototype and is not medical advice.", ""]
     (ROOT / "evaluation" / "results" / f"systemwide_clicks_{args.people}.md").write_text("\n".join(lines), encoding="utf-8")
 

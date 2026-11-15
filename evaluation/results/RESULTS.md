@@ -225,6 +225,13 @@ freeze; Balanced 88%, Faster 82%), so it stays the default. Limits: perfect aim,
 pressing the button, and no person steering by a trailing cursor; on the demo Mac the team
 leader still found real buttons hard to click.
 
+"Click where you aimed" (added after that hand check): at the press, the click is placed at
+the average of where the cursor was shown over the last 0.1 s, only while tremor is being
+corrected. The window was chosen on validation people (`systemwide_clicks_val.md`: clicks
+landing on the 10 px button with strong tremor and click freeze went from 91% to 95%; 0.2 s
+and 0.3 s gave the same 95%, so the shortest was taken). Test people, scored once: 99% without
+it, 100% with it; medium tremor and no tremor unchanged.
+
 ## What we tried that did not work
 
 - A movement-aware detector, cheap version (`moving_cutoffs.md`, validation): one cut-off for

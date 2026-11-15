@@ -68,6 +68,7 @@ python -m systemwide.run --demo strong                 # the same, corrected by 
 python -m systemwide.run --demo strong --method warp   # if the cursor did not move with the line above
 python -m systemwide.run --demo strong --response balanced   # less lag, a little more shake
 python -m systemwide.run --demo strong --no-freeze     # without click freeze (on by default)
+python -m systemwide.run --demo strong --aim 0         # without "click where you aimed" (0.1 s by default)
 python -m pytest systemwide/test_steady.py             # the logic, no permission needed
 ```
 

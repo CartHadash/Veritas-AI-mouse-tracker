@@ -19,4 +19,19 @@ Rule fixed in advance: B3's default smoothing level is the one with the most cli
 
 **Chosen: steadiest.**
 
+## Click where you aimed (our model, Steadiest, click freeze on)
+
+At the press, the click is placed at the average of where the cursor was shown over the last moments (only while tremor is being corrected). Share of clicks that land.
+
+| Averaged over | No tremor: 22 px / 10 px | Medium: 22 px / 10 px | Strong: 22 px / 10 px |
+|---|---|---|---|
+| off (click where the cursor is) | 100% / 100% | 100% / 99% | 99% / 91% |
+| 0.1 s | 100% / 100% | 100% / 99% | 99% / 95% |
+| 0.2 s | 100% / 100% | 100% / 100% | 99% / 95% |
+| 0.3 s | 100% / 100% | 100% / 100% | 99% / 95% |
+
+Rule fixed in advance (team leader): choose the window with the most clicks landing on the 10 px button with strong tremor, if that is more than with it off and no worse with medium tremor or no tremor (both button sizes); a tie goes to the shorter window; otherwise it stays off.
+
+**Chosen: 0.1 s.**
+
 This project is a prototype and is not medical advice.
