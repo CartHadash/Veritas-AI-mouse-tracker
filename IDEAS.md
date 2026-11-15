@@ -20,7 +20,8 @@ from here into the write-up without checking `evaluation/results/RESULTS.md`.
 1. **Movement-aware detector** (stricter during fast, deliberate movement). **Partly covered**
    by detector v2 (false alarms on pause-free movement fell from 45.3% to 20.4%,
    `improvements.md`). Action tasks still cause the most false alarms (`failures/failures.md`):
-   a good "next step".
+   **Delegated to the builder (Sun 15 Nov):** a cheap version with separate cut-offs for a
+   moving and a still hand, chosen on validation (task in `STATUS.md`).
 2. **Click freeze** (hold the shown cursor still while the button is down). **Built** (at most
    0.3 s). Simulation: `evaluation/click_sim.py`, `click_freeze_test.md`.
 3. **Sticky targets** (buttons gently pull the cursor in when tremor is detected). **Cut** for

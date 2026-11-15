@@ -9,7 +9,7 @@ Newest entries at the top of each list. Use local time (CET) and say who you are
 
 | Lane | Working on | Blocked by |
 |---|---|---|
-| Builder | All build steps done except the human checks below. Waiting for the leader's B3 and trackpad results | Leader's demo-Mac checks |
+| Builder | Next: movement-aware detector (cheap version, 1.5 h, below). Also waiting for the leader's B3 result | - |
 | Team leader | Demo-Mac checks (B3 first, by 15:00), then the UI fixes the leader took over | - |
 | Writer | IN PROGRESS: drafting the write-up from `docs/WRITER_BRIEF.md` | Final project name |
 
@@ -39,6 +39,21 @@ submission Sun 23:00 · final fixes until the deadline **Mon 16 Nov 05:59**.
 - [ ] Larger text (accessibility). Dyslexia-friendly font and colour-blind-safe colours only
       if time allows. ("Read aloud" is done.)
 - [ ] Mention the Steadiest / Balanced / Faster control in the tutorial (`web/tutorial.js`).
+
+**Builder (leader's decision, Sun 15 Nov ~11:30; time box 1.5 h, finished before the 20:00 freeze):**
+- [ ] **Movement-aware detector, cheap version** (Timofey's idea 1). Why: false alarms are
+      29.6% with the hand moving vs 18.0% still, 41.7% on "moving on purpose" tasks
+      (`RESULTS.md`); in the app a false alarm switches smoothing on mid-reach and adds lag.
+      Do: no retraining; give detector v2 two cut-offs, one for windows where the hand is
+      moving (the existing 20 px/s rule) and one for still windows, each chosen on validation
+      people with the same rule (at most 20% missed). Keep it only if validation false alarms
+      while moving drop and missed stays within the rule (fix this rule before looking);
+      then score test people once, update `RESULTS.md`, `check_results.py`, `docs/EXPLAINED.md`,
+      and the live path (`models/detector/`, check with `evaluation/compare_modes.py` and
+      `time_live.py`). Watch out: `failures.md` suggests many "false alarms" on action tasks may
+      be real tremor our labelling rule missed, so stricter can mean more missed real tremor;
+      report missed cases and false alarms separately. If it does not help: one honest line in
+      "What we tried that did not work".
 
 **Oleksandr:**
 - [ ] Read `evaluation/results/failures/failures.md` (step 9 tick) and `RESULTS.md` (step 14 tick).
