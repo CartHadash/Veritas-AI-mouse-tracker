@@ -20,8 +20,8 @@ submission Sun 23:00 · final fixes until the deadline **Mon 16 Nov 05:59**.
 
 **Team leader (only possible on the demo Mac):**
 - [x] **B3 real-cursor check: WORKS** (Sun 11:04, see "Done since the trim").
-- [ ] B3 leftovers: press Control + Option + X during a run to prove the off-switch; record
-      a 30 s clip (Cmd+Shift+5) of `--demo strong --mode none` then `--demo strong` for the video.
+- [x] B3 off-switch and video clip (Sun 11:08). Clip: leader's laptop, to be saved into
+      `~/Desktop/screenshots/veritas-b3/` (not in git: too large).
 - [x] Trackpad check of the CURRENT "Our model" (Sun ~11:00, leader: "good enough"). The
       builder can tick step 11.
 - [ ] Re-run `python models/corrector/time_live.py` on a quiet Mac (last loaded run: worst 7.4 ms).
@@ -73,8 +73,10 @@ write-up as a next step); round 2 of the step 4 path check (the stress test alre
   without correction the cursor shook "a lot" in every app; with our model it was visibly
   steadier "but after some time" (expected: the detector needs 2.56 s of movement before it
   switches the correction on); clicks landed where the cursor was shown "almost always".
-  Not yet checked: Control + Option + X during a run (both runs ended on their timer); no
-  screen recording yet.
+  Second run (11:07-11:09, screen recorded): 15 s no correction, then our model with a 60 s
+  limit; the leader pressed Control + Option + X and it stopped after 48 s (4,160 updates,
+  0 filter failures); the leader: the cursor went back to normal immediately. **Found:**
+  clicking real buttons is still hard even with our model (see the request to the builder).
 
 - Sun 15 Nov, leader's agent (branch `leader/hints-calibration`): one-line hints on the
   controls (a sentence per filter under the filter buttons; Strength; Calibrate); a
