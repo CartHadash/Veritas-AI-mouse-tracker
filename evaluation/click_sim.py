@@ -40,6 +40,8 @@ from evaluation.compare_modes import DEMO_FILES, SECONDS, WARMUP  # noqa: E402
 RADII = [22.0, 10.0]
 CENTRE = np.array([500.0, 400.0])
 MODES = [("none", "No filter"), ("one_euro", "One Euro"), ("learned", "Our model")]
+AIM_WINDOWS = [0.0, 0.1, 0.2, 0.3]   # s; "click where you aimed" candidates for the page (0 = off)
+PAGE_AIM_SECONDS = 0.1               # what the page uses (web/app.js AIM_MS), chosen on validation by the rule below
 
 
 def shown_path(mode, level, t):
@@ -47,8 +49,9 @@ def shown_path(mode, level, t):
     server.settings.update(mode=mode, strength=1.0, demo_tremor=True, demo_level=level)
     session = server.CursorSession(server.SessionStats())
     session.detector.pool = None          # in line, so results are repeatable
-    return np.array([[r["x"], r["y"]] for r in
-                     (session.update(float(ti), *CENTRE) for ti in t)])
+    replies = [session.update(float(ti), *CENTRE) for ti in t]
+    gates = np.array([r["gate"] if r["gate"] is not None else 0.0 for r in replies])
+    return np.array([[r["x"], r["y"]] for r in replies]), gates
 
 
 def click_success(shown, t, rng, radius):
@@ -61,6 +64,22 @@ def click_success(shown, t, rng, radius):
     plain = on[down] & on[up]
     frozen = on[down]
     return plain.mean(), frozen.mean(), len(starts)
+
+
+def aimed_success(shown, gates, t, rng, radius, window):
+    """Share of clicks that land with click freeze when the click is placed at the average of
+    the shown positions of the last `window` seconds ("click where you aimed"), which is done
+    only while our model is correcting (gate over half open). window 0 = off."""
+    starts = np.arange(WARMUP, t[-1] - 0.3, 0.4)
+    rng.uniform(0.08, 0.20, len(starts))             # same random draws as click_success (not used: frozen)
+    down = np.searchsorted(t, starts)
+    landed = []
+    for d in down:
+        point = shown[d]
+        if window > 0 and gates[d] > 0.5:
+            point = shown[(t > t[d] - window - 1e-9) & (t <= t[d] + 1e-9)].mean(axis=0)
+        landed.append(np.linalg.norm(point - CENTRE) <= radius)
+    return float(np.mean(landed))
 
 
 def main():
@@ -81,7 +100,7 @@ def main():
              "|---|---|---|---|---|"]
     for level in ["mild", "medium", "strong"]:
         for mode, name in MODES:
-            shown = shown_path(mode, level, t)
+            shown, _ = shown_path(mode, level, t)
             cells = []
             for radius in RADII:
                 plain, frozen, n = click_success(shown, t, np.random.default_rng(0), radius)
@@ -89,6 +108,31 @@ def main():
             row = "| %s | %s | %d | %s | %s |" % (level, name, n, *cells)
             lines.append(row)
             print(row)
+    # ---- "Click where you aimed" on the page (our model, click freeze on).
+    windows = AIM_WINDOWS if args.people == "val" else sorted({0.0, PAGE_AIM_SECONDS})
+    lines += ["", "## Click where you aimed (our model, click freeze on)", "",
+              "At the press the click is placed at the average of where the cursor was shown over the last "
+              "moments, only while our model is correcting. Share of clicks that land.", "",
+              "| Averaged over | Mild: 22 px / 10 px | Medium: 22 px / 10 px | Strong: 22 px / 10 px |", "|---|---|---|---|"]
+    aim = {}
+    paths = {level: shown_path("learned", level, t) for level in ["mild", "medium", "strong"]}
+    for w in windows:
+        aim[w] = {level: [aimed_success(*paths[level], t, np.random.default_rng(0), radius, w) for radius in RADII]
+                  for level in paths}
+        row = "| %s | %s |" % ("off (click where the cursor is)" if w == 0 else "%.1f s" % w, " | ".join(
+            "%.0f%% / %.0f%%" % (100 * aim[w][level][0], 100 * aim[w][level][1]) for level in paths))
+        lines.append(row)
+        print(row)
+    if args.people == "val":
+        off = aim[0.0]
+        allowed = [w for w in windows if w > 0 and aim[w]["strong"][1] > off["strong"][1]
+                   and all(aim[w][level][k] >= off[level][k] for level in ["mild", "medium"] for k in (0, 1))]
+        chosen = max(allowed, key=lambda w: (aim[w]["strong"][1], -w)) if allowed else 0.0
+        lines += ["", "Rule fixed in advance (the same as for the system-wide corrector): choose the window with the "
+                  "most clicks landing on the 10 px target with strong tremor, if that is more than with it off and "
+                  "no worse with mild or medium tremor (both sizes); a tie goes to the shorter window; otherwise off.",
+                  "", "**Chosen: %s.**" % ("%.1f s" % chosen if chosen else "off")]
+        print("Aim chosen:", chosen)
     lines += ["", "This project is a prototype and is not medical advice.", ""]
     (ROOT / "evaluation" / "results" / f"click_freeze_{args.people}.md").write_text("\n".join(lines), encoding="utf-8")
 

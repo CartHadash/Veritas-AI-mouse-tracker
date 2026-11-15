@@ -232,6 +232,10 @@ landing on the 10 px button with strong tremor and click freeze went from 91% to
 and 0.3 s gave the same 95%, so the shortest was taken). Test people, scored once: 99% without
 it, 100% with it; medium tremor and no tremor unchanged.
 
+The practice page does the same for its own clicks, chosen the same way (`click_freeze_val.md`:
+93% to 95% on the 10 px target with strong tremor; test people, `click_freeze_test.md`: 99% to
+100%; mild and medium tremor unchanged).
+
 ## What we tried that did not work
 
 - A movement-aware detector, cheap version (`moving_cutoffs.md`, validation): one cut-off for

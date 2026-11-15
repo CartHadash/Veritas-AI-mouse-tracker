@@ -816,7 +816,10 @@ while our model is correcting tremor (its gate is more than half open), so a ste
 click is never moved. The window (0.1, 0.2 or 0.3 s) was chosen on validation people by a rule
 fixed before running: clicks landing on a 10 px button with strong tremor rose from 91% to 95%
 for all three, with nothing worse for medium or no tremor, and a tie goes to the shortest. On
-test people, once: 99% to 100%. `python -m systemwide.run --aim 0` switches it off.
+test people, once: 99% to 100%. `python -m systemwide.run --aim 0` switches it off. The
+practice page does the same for its own clicks (`aimedPosition` in `web/app.js`), checked the
+same way with `python evaluation/click_sim.py`: 93% to 95% on validation people, 99% to 100%
+on test people.
 
 **As a switch on the page (Sun 15 Nov).** Until now the real-cursor correction only ran from
 the terminal for a set time. "Steady cursor everywhere" (Practice -> Adjust) runs the same

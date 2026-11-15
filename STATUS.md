@@ -67,7 +67,7 @@ submission Sun 23:00 · final fixes until the deadline **Mon 16 Nov 05:59**.
 
 **Builder, NEXT (leader's decision, Sun 15 Nov 12:30; both before the 20:00 freeze, task 1 first):**
 - [x] (system-wide part DONE Sun 15 Nov 12:53, see "Done since the trim"; the leader re-checks
-      by hand; the page's click freeze not done yet) **1. "Click where you aimed" (about 45 min).** Why: the leader's B3 re-check (12:18) found
+      by hand; the page's part DONE Sun 15 Nov 13:14) **1. "Click where you aimed" (about 45 min).** Why: the leader's B3 re-check (12:18) found
       the click still lands away from where they meant to click; click freeze only helps
       AFTER the press, and at the press the cursor still carries leftover shake and about
       72 ms of lag. Do: when a button goes down, place the click (and the freeze point) at the
@@ -118,6 +118,15 @@ submission Sun 23:00 · final fixes until the deadline **Mon 16 Nov 05:59**.
 write-up as a next step); round 2 of the step 4 path check (the stress test already answered it).
 
 ## Done since the trim (newest first)
+
+- Sun 15 Nov 13:14, builder's agent: **"click where you aimed" on the practice page** (second
+  half of the leader's task 1). `web/app.js` `aimedPosition()`: at the press, while Our model's
+  gate is over half open, the click (and the freeze point) is the average of the corrected
+  cursor's last 0.1 s. Window chosen on validation people by the same rule as system-wide
+  (`python evaluation/click_sim.py`, `click_freeze_val.md`: 10 px target, strong tremor, with
+  freeze, 93% -> 95% for 0.1, 0.2 and 0.3 s; shortest taken; mild and medium unchanged). Test
+  people once (`click_freeze_test.md`): 99% -> 100%. Checked in the app's browser that the
+  press uses the averaged point. Not tried with a real hand.
 
 - Sun 15 Nov 13:11, builder's agent: **assistant action buttons** (leader's request, with the
   leader's permission to edit `assistant/` and `web/assistant/`). The prompt
