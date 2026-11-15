@@ -73,6 +73,12 @@ write-up as a next step); round 2 of the step 4 path check (the stress test alre
 
 ## Done since the trim (newest first)
 
+- Sun 15 Nov (afternoon), builder's agent: "Easier-to-read text" now uses the real OpenDyslexic
+  font (Oleksandr's request) instead of Verdana: two `.woff2` files (about 115 KB and 120 KB)
+  and the licence in `web/fonts/` (SIL Open Font License; cited in `docs/SOURCES.md`), loaded
+  only when the switch is on, Verdana as the fallback. Checked in the app's browser at 1440 px
+  and 375 px: the font loads, nothing sticks out of the page on any tab. Not checked in Safari.
+
 - Sun 15 Nov (afternoon), builder's agent, **the UI fixes the leader handed back** (group chat,
   11:29): (1) every tab now leaves empty space at the bottom, so the last lines scroll clear
   of the floating assistant button; (2) the Analysis chart sizes its side margins to its

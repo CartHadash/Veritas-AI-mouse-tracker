@@ -924,11 +924,13 @@ every reload, so nobody runs an old page after `git pull`). None of this changes
 models compute: `evaluation/compare_modes.py` gives the same results file as before.
 
 **Easier-to-read text (Sun 15 Nov, Oleksandr's idea).** A button in the top bar
-(`web/reading.js`) switches the page to Verdana with a little more space between letters, words
-and lines, which the British Dyslexia Association's style guide recommends. Some readers with
-dyslexia find such text easier; it is a reading preference, not a treatment. No font is
-downloaded (Verdana is already on macOS and Windows) and the choice is remembered in the
-browser. How it works: the page's font is one CSS variable (`--font`), so the button only
+(`web/reading.js`) switches the page to OpenDyslexic, a free font designed for readers with
+dyslexia (the letters are heavier at the bottom, so they are harder to mix up), with a little
+more space between words and lines, which the British Dyslexia Association's style guide
+recommends. Some readers with dyslexia find such text easier; it is a reading preference, not
+a treatment. The two font files are kept in `web/fonts/` with their licence, so the page still
+works without internet; if they cannot load, Verdana is used. The first version used Verdana
+only; Oleksandr asked for the real font. The choice is remembered in the browser. How it works: the page's font is one CSS variable (`--font`), so the button only
 changes that variable and the spacing. Checked in the browser at phone and laptop widths:
 nothing sticks out of the page, and the rows of buttons still fit.
 

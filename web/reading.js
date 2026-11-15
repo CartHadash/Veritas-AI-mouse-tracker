@@ -6,31 +6,43 @@
 // on the top bar, the side cards and the other tabs). The practice area itself is left alone,
 // so the cursor and targets keep their real size and position.
 //
-// "Easier-to-read text":
-// switches the whole page to Verdana with wider spacing between letters, words
-// and lines. That follows the British Dyslexia Association's style guide (a plain, evenly
-// spaced sans-serif font such as Verdana; more space between letters, words and lines). Some
-// readers with dyslexia find such text easier; it is a reading preference, not a treatment.
-// No font is downloaded: Verdana is already on macOS and Windows. The choice is remembered in
-// this browser only. Text drawn inside the practice area itself keeps its font.
+// "Easier-to-read text": switches the whole page to OpenDyslexic, a free font designed for
+// readers with dyslexia (heavier bottoms on the letters, so they are harder to mix up), with a
+// little more space between words and lines, as the British Dyslexia Association's style
+// guide recommends. Some readers with dyslexia find such text easier; it is a reading
+// preference, not a treatment. The two font files are in web/fonts/ (SIL Open Font License,
+// web/fonts/OPENDYSLEXIC_LICENSE.txt), so the page still works without internet; they are only
+// loaded when the switch is on. If they cannot load, Verdana is used instead. The choice is
+// remembered in this browser only. Text drawn inside the practice area keeps its font.
 
 (function () {
   const SWITCHES = [
     { key: "steadyPointerEasyRead", className: "easy-read", text: "Easier-to-read text",
-      title: "Verdana with wider spacing (often easier to read with dyslexia)" },
+      title: "The OpenDyslexic font with wider spacing (often easier to read with dyslexia)" },
     { key: "steadyPointerLargeText", className: "large-text", text: "Larger text",
       title: "Makes the text and controls 15% larger" },
   ];
 
   const style = document.createElement("style");
   style.textContent = `
-    :root.easy-read { --font: Verdana, Tahoma, "DejaVu Sans", Arial, sans-serif; }
-    :root.easy-read body { letter-spacing: 0.035em; word-spacing: 0.12em; line-height: 1.6; }
+    /* size-adjust: OpenDyslexic's letters are much wider than the page's usual font, so they
+       are drawn a little smaller to fit the same boxes and buttons. */
+    @font-face { font-family: "OpenDyslexic"; font-weight: 400; font-display: swap; size-adjust: 84%;
+      src: url("fonts/opendyslexic-400.woff2") format("woff2"); }
+    @font-face { font-family: "OpenDyslexic"; font-weight: 700; font-display: swap; size-adjust: 84%;
+      src: url("fonts/opendyslexic-700.woff2") format("woff2"); }
+    :root.easy-read { --font: "OpenDyslexic", Verdana, Tahoma, "DejaVu Sans", Arial, sans-serif; }
+    /* OpenDyslexic's letters are already wide and well apart: only words and lines get more room. */
+    :root.easy-read body { word-spacing: 0.1em; line-height: 1.6; }
     :root.easy-read p, :root.easy-read li, :root.easy-read small { line-height: 1.6; }
     /* Rows of buttons have a fixed width: keep their spacing normal and the text a little
        smaller, so the wider font still fits (checked at phone and laptop widths). */
     :root.easy-read ui-segmented-control-item, :root.easy-read ui-tabs-tab button {
       letter-spacing: 0; word-spacing: 0; font-size: 0.82em; }
+    @media (max-width: 700px) {                 /* a phone-width window: tighter still */
+      :root.easy-read ui-segmented-control-item, :root.easy-read ui-tabs-tab button { font-size: 0.72em; }
+      :root.easy-read .page, :root.easy-read .rail { overflow-wrap: anywhere; }
+    }
     /* Only on laptop-sized windows: on a phone-width window there is no room to enlarge. */
     @media (min-width: 701px) {
       :root.large-text .topbar, :root.large-text .stage-bar, :root.large-text .mode-hint,
