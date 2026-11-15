@@ -119,6 +119,15 @@ write-up as a next step); round 2 of the step 4 path check (the stress test alre
 
 ## Done since the trim (newest first)
 
+- Sun 15 Nov ~14:00, builder's agent: **the first-use guide is now a live walkthrough**
+  (Oleksandr's idea; `web/tutorial.js` rewritten). Seven steps; each dims the page except the
+  real part it is about, points a speech bubble with an arrow at it, and a drawn "demo"
+  cursor shows what to do (wander in the practice area, go to the target and click, press
+  the Demo tremor switch, hop along the filters). No screenshots, so it cannot go out of date
+  and it follows "Larger text" and the dyslexia font. Back / Next / Skip, arrow keys, Esc;
+  starts by itself on the first visit, "How to use" reopens it. Checked in the app's browser
+  at 1440 px and 375 px. Not checked in Safari.
+
 - Sun 15 Nov 13:02 CET, leader's agent: `leader/motion` merged into `main` on the leader's word (the
   leader's entries below say "NOT merged": true when written). Clean merge. On merged main:
   `python -m pytest` 26 passed, 7 skipped; the page loads with both fonts, the six target

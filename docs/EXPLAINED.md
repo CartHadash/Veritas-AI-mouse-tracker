@@ -949,6 +949,15 @@ the browser cache were fixed too (the server tells the browser to check for chan
 every reload, so nobody runs an old page after `git pull`). None of this changes what the
 models compute: `evaluation/compare_modes.py` gives the same results file as before.
 
+**The walkthrough (Sun 15 Nov, Oleksandr's idea).** The first-use guide (`web/tutorial.js`)
+shows what to do instead of only saying it. For each of its seven steps it finds the real
+part of the page, dims everything else (one box with a very large shadow around it), places a
+speech bubble with an arrow next to it, and moves a drawn "demo" cursor to act the step out,
+for example gliding to the orange target and clicking it. We chose this over screenshots
+because screenshots go out of date every time the page changes and would not follow the
+larger text or the dyslexia font; pointing at the live page always matches. The controls stay
+usable while it is open, so the person can do each step straight away.
+
 **Easier-to-read text (Sun 15 Nov, Oleksandr's idea).** A button in the top bar
 (`web/reading.js`) switches the page to OpenDyslexic, a free font designed for readers with
 dyslexia (the letters are heavier at the bottom, so they are harder to mix up), with a little
