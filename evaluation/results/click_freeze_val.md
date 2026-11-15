@@ -16,4 +16,19 @@ The 22 px target is the demo page's; the 10 px target (about a small checkbox) w
 | strong | One Euro | 95 | 96% / 97% | 73% / 83% |
 | strong | Our model | 95 | 98% / 99% | 87% / 93% |
 
+## Click where you aimed (our model, click freeze on)
+
+At the press the click is placed at the average of where the cursor was shown over the last moments, only while our model is correcting. Share of clicks that land.
+
+| Averaged over | Mild: 22 px / 10 px | Medium: 22 px / 10 px | Strong: 22 px / 10 px |
+|---|---|---|---|
+| off (click where the cursor is) | 100% / 100% | 100% / 100% | 99% / 93% |
+| 0.1 s | 100% / 100% | 100% / 100% | 99% / 95% |
+| 0.2 s | 100% / 100% | 100% / 100% | 99% / 95% |
+| 0.3 s | 100% / 100% | 100% / 100% | 99% / 95% |
+
+Rule fixed in advance (the same as for the system-wide corrector): choose the window with the most clicks landing on the 10 px target with strong tremor, if that is more than with it off and no worse with mild or medium tremor (both sizes); a tie goes to the shorter window; otherwise off.
+
+**Chosen: 0.1 s.**
+
 This project is a prototype and is not medical advice.

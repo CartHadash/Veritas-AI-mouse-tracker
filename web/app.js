@@ -69,6 +69,21 @@ function shownPosition() {
   if (press && freezeOn && performance.now() - press.at < FREEZE_MS) return { x: press.x, y: press.y };
   return latest ? { x: latest.x, y: latest.y } : null;
 }
+// "Click where you aimed" (team leader's idea, Sun 15 Nov): at the press the cursor still
+// carries a little leftover shake, so the click is placed at the average of where the
+// corrected cursor was shown over the last AIM_MS. Only while our model is correcting tremor
+// (its gate is over half open), so a steady hand's click is never moved. 0.1 s was chosen on
+// validation people (evaluation/click_sim.py, click_freeze_val.md).
+const AIM_MS = 100;
+function aimedPosition() {
+  const here = { x: latest.x, y: latest.y };
+  if (settings.mode !== "learned" || !(latest.gate > 0.5) || peeking) return here;
+  const now = performance.now();
+  const recent = trail.filter((p) => now - p.at <= AIM_MS);
+  if (recent.length < 2) return here;
+  return { x: recent.reduce((sum, p) => sum + p.x, 0) / recent.length,
+           y: recent.reduce((sum, p) => sum + p.y, 0) / recent.length };
+}
 // Where the calibration dot is, `seconds` into the test: still for 4 s, then once round a
 // circle every 8 s (about 94 px/s). evaluation/calibration_sim.py uses the same path.
 function calibrationDot(seconds) {
@@ -293,7 +308,8 @@ area.addEventListener("pointerdown", (event) => {
   }
   if (!latest || !target || calib || practiceExtras.blocksClicks()) return;
   try { area.setPointerCapture(event.pointerId); } catch (error) { /* not essential */ }  // see the release even off the area
-  press = { x: latest.x, y: latest.y, at: performance.now(), downInside: onTarget(latest) };
+  const aimed = aimedPosition();
+  press = { x: aimed.x, y: aimed.y, at: performance.now(), downInside: onTarget(aimed) };
 });
 
 area.addEventListener("pointerup", () => {
