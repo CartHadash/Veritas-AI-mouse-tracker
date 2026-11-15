@@ -724,6 +724,17 @@ evaluation/tune_lag.py` tried 12 settings of it on validation people: every sett
 lag shook more (67 -> 52 ms lag raised shake 2.98 -> 3.18 px), beyond the 5% limit fixed in
 advance, so the settings stayed (`tune_lag.md`).
 
+**Letting the person choose (Sun 15 Nov).** Since no setting is best for everyone (some people
+mind shake more, some mind lag more), the page now has a "Steadier or more responsive" control
+for Our model: Steadiest (the default, the settings above), Balanced and Faster, three points of
+the same tuning grid. On test people (`python evaluation/response_levels.py`,
+`response_levels.md`): Steadiest trails a moving hand by 72 ms with shake 2.56 px; Balanced 47 ms
+and 2.87 px; Faster 30 ms and 3.38 px. Faster shakes about as much as One Euro (3.39 px on the same
+people, `vs_one_euro_test.md`), so below Balanced our extra steadiness is used up. How we know it works: the script sets the choice the same way the
+page does, and its validation numbers equal `tune_lag.md` exactly. Switching while the cursor
+moves only changes two numbers in the smoother, so it causes no jump (largest step 55.78 px with
+switching vs 54.86 px without; that step is the reach itself).
+
 **A first-use guide** (`web/tutorial.js`, Oleksandr's request): four short steps on the Practice
 tab (move in the box, click the target, switch on demo tremor, compare filters), each outlining
 the part it is about. Shown once, remembered in the browser only; "How to use" in the top bar

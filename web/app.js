@@ -367,6 +367,8 @@ function showSettings() {
   setControl(document.getElementById("demo-toggle"), "checked", Boolean(settings.demo_tremor));
   setControl(document.getElementById("tracking-toggle"), "checked", Boolean(settings.tracking));
   if (settings.demo_level) setControl(document.getElementById("demo-levels"), "value", settings.demo_level);
+  if (settings.response) setControl(document.getElementById("response"), "value", settings.response);
+  document.getElementById("response-row").hidden = settings.mode !== "learned";
   document.getElementById("demo-banner").hidden = !settings.demo_tremor;
   document.getElementById("demo-levels-row").hidden = !settings.demo_tremor;
   document.getElementById("demo-tip").hidden = settings.demo_tremor;
@@ -385,6 +387,7 @@ function onChange(id, eventName, handler) {
 }
 onChange("modes", "valuechange", (value) => postSettings({ mode: value }));
 onChange("demo-levels", "valuechange", (value) => postSettings({ demo_level: value }));
+onChange("response", "valuechange", (value) => postSettings({ response: value }));
 // "valuecommit" fires once when the slider is let go, so we save once, not on every step.
 onChange("strength", "valuecommit", (value) => postSettings({ strength: Number(value) }));
 onChange("demo-toggle", "checkedchange", (value) => postSettings({ demo_tremor: value }));

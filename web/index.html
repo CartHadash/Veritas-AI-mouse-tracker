@@ -115,6 +115,20 @@
               </ui-slider-control>
             </ui-slider>
 
+            <!-- Builder, Sun 15 Nov: how quickly "Our model" follows a moving hand.
+                 Less lag always means more shake (evaluation/results/tune_lag.md). -->
+            <div class="field-stack" id="response-row">
+              <span class="field-name" id="response-label">Steadier or more responsive</span>
+              <ui-segmented-control id="response" aria-labelledby="response-label">
+                <ui-segmented-control-indicator></ui-segmented-control-indicator>
+                <ui-segmented-control-item value="steadiest">Steadiest</ui-segmented-control-item>
+                <ui-segmented-control-item value="balanced">Balanced</ui-segmented-control-item>
+                <ui-segmented-control-item value="responsive">Faster</ui-segmented-control-item>
+              </ui-segmented-control>
+              <span class="small" style="margin: 0">Our model only. Steadiest shakes least but trails a
+                moving hand most; Faster follows quicker but shakes more.</span>
+            </div>
+
             <div class="field-stack" id="demo-levels-row" hidden>
               <span class="field-name" id="levels-label">Replayed tremor</span>
               <ui-segmented-control id="demo-levels" aria-labelledby="levels-label">

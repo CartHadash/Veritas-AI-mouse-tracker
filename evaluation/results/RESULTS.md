@@ -229,7 +229,9 @@ concentrated (8 people cause half of them); false alarms are spread out (25 peop
   (see "On the demo page"). Lesson: we first chose by distance from the path, which hid jitter.
 - Less lag by retuning that smoothing (`tune_lag.md`, validation): every setting with less lag
   shook more (lag 67 -> 52 ms raised shake 2.98 -> 3.18 px and jerk 0.21 -> 0.25), beyond the limit fixed in
-  advance, so the settings were kept. Steadiness and lag are a trade-off here.
+  advance, so the settings were kept. Steadiness and lag are a trade-off here, so the page now
+  lets the person choose (`response_levels.md`, test people): Steadiest (default) 72 ms lag,
+  shake 2.56 px; Balanced 47 ms, 2.87 px; Faster 30 ms, 3.38 px.
 - Our pre-hackathon One Euro filter did not follow the published algorithm and made One Euro
   look smoother and laggier than it is; the rewritten one follows the authors' reference code.
 - Detector v1 treated movement that never pauses as tremor (45.3% false alarms on pause-free

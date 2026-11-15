@@ -133,6 +133,7 @@ python models/corrector/train.py --version v5_k1 --loss distance --smooth 2 --sh
 python models/corrector/train.py --version v5_k3 --loss distance --smooth 2 --shake 3   # the app's network
 python evaluation/option_b.py --test          # chose v5_k3 over option A
 python evaluation/tune_lag.py --test          # smoothing settings vs lag (kept as they were)
+python evaluation/response_levels.py          # the page's Steadiest / Balanced / Faster choice
 ```
 
 For the pixel-factor check in `evaluate_detector.py` (detector v1), also run

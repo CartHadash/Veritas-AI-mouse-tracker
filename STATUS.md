@@ -62,6 +62,15 @@ Time line: first full version by **Sun 15 Nov 22:00 CET**; no new features after
 
 ## Done (newest first)
 
+- Sun 15 Nov, builder's agent: a "Steadier or more responsive" choice for Our model (Oleksandr:
+  "feels a bit laggy"; team chose to let users pick, starting at the steadiest). Three levels
+  from the lag tuning grid (`models/corrector/live.py` RESPONSE_LEVELS), sent as `response` in
+  `POST /api/settings`, switched without losing the detector's history. Test people
+  (`evaluation/results/response_levels.md`, `python evaluation/response_levels.py`): Steadiest
+  72 ms lag / shake 2.56 px; Balanced 47 ms / 2.87; Faster 30 ms / 3.38. Switching while
+  moving adds no jump (largest step 55.78 px switching vs 54.86 px always Steadiest: that is
+  the reach itself). Small UI addition in `web/index.html` + `web/app.js` (request below).
+
 - Sun 15 Nov 00:55 CET, builder's agent: the model review the team asked for (Timofey 23:14). Measuring what
   the eye sees (`evaluation/vs_one_euro.py`) showed our network's cursor almost as jumpy as no
   filter. Option A: the app adds One Euro smoothing switched by our detector. Option B: corrector
@@ -508,6 +517,12 @@ Time line: first full version by **Sun 15 Nov 22:00 CET**; no new features after
 (Keep this list honest; the write-up needs a "what didn't work" section.)
 
 ## Requests to another lane
+
+- Sun 15 Nov, builder -> team leader (UI is yours): the builder added a small "Steadier or more
+  responsive" control (Steadiest / Balanced / Faster) under "Adjust" in `web/index.html` (id
+  `response-row`, shown only for Our model) and two lines in `web/app.js` (`showSettings`,
+  `onChange("response", ...)`). Restyle or move it freely; keep the id and the `response` value
+  sent to the server. It also deserves a line in the tutorial if you rework it.
 
 - Sat 14 Nov 23:37 CET, builder -> team leader: **merged on main, please pull before editing `web/`:**
   (1) a first-use guide, `web/tutorial.js` (own file; two lines in `index.html` load it; a
