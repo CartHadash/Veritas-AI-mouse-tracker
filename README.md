@@ -1,4 +1,4 @@
-# Steady Pointer
+# TAG Pointer
 
 **Track:** Health
 **Team:** Names on the submission form

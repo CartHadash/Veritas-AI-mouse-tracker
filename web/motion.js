@@ -265,7 +265,7 @@
     ctx.fillRect(0, 0, W, H);
     ctx.fillStyle = "#1a5c49";
     ctx.fillRect(0, 0, W, 104);
-    text("Steady Pointer", 56, 66, "700 40px", "#fffdf8");
+    text("TAG Pointer", 56, 66, "700 40px", "#fffdf8");
     text("Session of " + new Date().toLocaleDateString(undefined, { day: "numeric", month: "long", year: "numeric" }),
       W - 56, 64, "500 26px", "#dcefe6", "right");
 
@@ -310,7 +310,7 @@
     canvas.toBlob((blob) => {
       const link = document.createElement("a");
       link.href = URL.createObjectURL(blob);
-      link.download = "steady-pointer-session.png";
+      link.download = "tag-pointer-session.png";
       link.click();
       URL.revokeObjectURL(link.href);
     }, "image/png");

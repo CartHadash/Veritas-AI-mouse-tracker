@@ -52,7 +52,7 @@ from this brief, from memory, from chat, or from an older draft.
 
 | Section | Take it from | Notes |
 |---|---|---|
-| Project name | Team (STATUS "What is left") | The page says "Steady Pointer"; **wait for the team to confirm** |
+| Project name | Team decision (Sun 15 Nov) | **TAG Pointer** (the page and every document use it) |
 | The problem | `RESULTS.md` "Who it is for"; `docs/EXPLAINED.md` "The idea" | Name ONE user (a person with Parkinson's or essential tremor using a laptop at home) and the moment they reach for it (small targets are hard to click because the pointer shakes) |
 | What we built | Section 3 below; `RESULTS.md` "In 30 seconds" | In: pointer movement. Out: a tremor-like flag, a steadier cursor (in our app and across the whole Mac), a session summary, and an assistant that explains it |
 | What we added | - | "Our own idea" |

@@ -45,7 +45,7 @@ shakes and misses the small checkbox target twice.
 7. Open the assistant, tap "Explain my summary", show the answer and the reminder under it.
 
 **Say:**
-> This is Steady Pointer. None of us has tremor, so the shaking you see is replayed from
+> This is TAG Pointer. None of us has tremor, so the shaking you see is replayed from
 > public recordings of patients. The grey dot is the raw movement. The dark dot is what our
 > model shows.
 >

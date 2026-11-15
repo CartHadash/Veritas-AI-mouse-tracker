@@ -22,14 +22,14 @@ freeze). The program is finished as it is:
 |---|---|---|
 | Builder | Frozen: bug fixes only. Read `failures.md` and `RESULTS.md` (steps 9 and 14) | - |
 | Team leader | Write-up with the writer, the video, the submission | - |
-| Writer | `README.md` from `docs/WRITER_BRIEF.md` | Final project name |
+| Writer | `README.md` from `docs/WRITER_BRIEF.md` | - |
 
 **Time line (CET):** first full submission Sun 23:00 · final fixes until the deadline
 **Mon 16 Nov 05:59**.
 
 ## What is left (tick or delete lines as they finish)
 
-- [ ] **Team:** confirm the final project name (the page says "Steady Pointer").
+- [x] **Team:** final project name: **TAG Pointer** (team leader, Sun 15 Nov; page and docs renamed).
 - [ ] **Writer + leader:** `README.md`: a full DRAFT is in (leader's agent, Sun 15 Nov evening; every
       number checked against `RESULTS.md`). Still to do by people: read it and put it in your own
       words where you like, confirm the name, add the video link (a comment marks the place).
@@ -81,6 +81,9 @@ Copy numbers from `RESULTS.md` (checked by `python evaluation/check_results.py`)
 
 ## Decisions in force (older ones: `docs/STATUS_ARCHIVE.md`)
 
+- Sun 15 Nov, team leader: the project is called **TAG Pointer** (was "Steady Pointer"); the
+  page and all documents were renamed. "Steady cursor everywhere" keeps its name (it describes
+  the switch, not the project).
 - Sun 15 Nov 15:20, team leader: **feature freeze now** (replaces 20:00); **write-up phase started**.
 - Sun 15 Nov 12:30, team leader: correction across the whole Mac as a page switch; "click where
   you aimed" (both built and checked).
