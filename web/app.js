@@ -144,6 +144,7 @@ function connect() {
   socket.onmessage = (event) => {
     const message = JSON.parse(event.data);
     if (message.type === "calibration") { showCalibration(message); return; }
+    practiceExtras.onReply(message);                  // spiral tracing, hold-to-peek (exercises.js)
     latest = message;
     lastReplyAt = performance.now();
     if (inside) {
@@ -290,7 +291,7 @@ area.addEventListener("pointerdown", (event) => {
     if (request && request.catch) request.catch(() => {});
     return;
   }
-  if (!latest || !target || calib) return;
+  if (!latest || !target || calib || practiceExtras.blocksClicks()) return;
   try { area.setPointerCapture(event.pointerId); } catch (error) { /* not essential */ }  // see the release even off the area
   press = { x: latest.x, y: latest.y, at: performance.now(), downInside: onTarget(latest) };
 });
@@ -302,8 +303,9 @@ area.addEventListener("pointerup", () => {
   press = null;
   const key = settings.mode + (freezeOn ? "+freeze" : "");
   const row = tally[key] ??= { hits: 0, misses: 0, totalTime: 0 };
+  const sinceShown = (performance.now() - target.shownAt) / 1000;
   if (hit) {
-    const seconds = (performance.now() - target.shownAt) / 1000;
+    const seconds = sinceShown;
     row.hits += 1;
     row.totalTime += seconds;
     streak += 1;
@@ -317,6 +319,7 @@ area.addEventListener("pointerup", () => {
   showStreak();
   send({ type: "click", hit });
   showTally();
+  practiceExtras.onClick(hit, sinceShown);            // the fair test counts it and shows its next target
 });
 
 // ------------------------------------------------------------ targets and tally
@@ -591,9 +594,10 @@ function draw() {
     const dot = calibrationDot(calib.phase === "running" ? (now - calib.start) / 1000 : 0);
     circle(dot.x, dot.y, 14, CALIB);
     circle(dot.x, dot.y, 4, PAPER);
-  } else if (target) {
+  } else if (target && !practiceExtras.hidesTarget()) {
     drawTarget(ctx, target);                          // a button, a checkbox, a folder... (targets.js)
   }
+  practiceExtras.draw(ctx, now);                      // the spiral, the fair test's timing, the peek note
   drawEffects(now);
   if (settings.mode === "low_sensitivity" && !locked) drawLockInvite();
   if (inside && latest) {

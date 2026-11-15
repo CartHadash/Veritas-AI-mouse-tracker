@@ -78,6 +78,18 @@
             <span><i class="key goal"></i> target</span>
             <span class="streak" id="streak" hidden></span>
           </p>
+
+          <!-- Builder, Sun 15 Nov (leader's requests): practice exercises (web/exercises.js).
+               Plain markup with ids; style it freely. -->
+          <div class="exercises" id="exercises">
+            <button type="button" class="btn" id="spiral-start"
+                    title="Follow a spiral from the middle outwards and see how far your line strays">Trace the spiral</button>
+            <button type="button" class="btn" id="fair-start"
+                    title="10 targets with No filter, then the same 10 with Our model">Fair test (10 + 10 targets)</button>
+            <span class="small" id="peek-hint">Hold the space bar in the practice area to feel the cursor without correction.</span>
+            <p class="small" id="exercise-status" role="status" hidden></p>
+            <div id="exercise-result" hidden></div>
+          </div>
         </section>
 
         <aside class="rail">
@@ -338,6 +350,7 @@
   <script src="summary.js"></script>
   <!-- The everyday things to click in the practice area; app.js uses its functions. -->
   <script src="targets.js"></script>
+  <script src="exercises.js"></script>
   <script src="app.js"></script>
   <!-- First-use guide (builder, Oleksandr's request): its own file, so it never clashes with app.js. -->
   <script src="tutorial.js"></script>
