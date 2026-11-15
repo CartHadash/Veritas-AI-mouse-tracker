@@ -871,6 +871,21 @@ about a second after Esc), the page used to give up for the whole session, so th
 tries again, and a message in the middle of the area says to click to start, or that the
 browser blocked the lock (the app's built-in browser pane always does).
 
+**Keeping the page smooth (Sun 15 Nov).** Three things on the page did more work than needed.
+(1) The "Shake" readout needs, for every sample, the average of the samples around it. It used
+to find them by looking through the whole list again for every sample (work that grows with
+the square of the number of samples), four times a second. Now it keeps a running total over a
+"sliding window": as it steps to the next sample it adds the samples that come into range and
+subtracts the ones that fall out, so each sample is touched once. Same answer, far less work
+(we checked old and new give equal values on the same data). (2) The tremor meter was redrawn
+for every reply from the server; now once per screen frame, since the eye cannot see more.
+(3) A fast mouse can report 1000 movements a second, but the models work at 100 a second, so
+the page now sends at most one sample every 4 ms, and always the newest one, so the cursor
+still ends exactly where the hand stopped. On the server, the summary's per-minute table and
+the browser cache were fixed too (the server tells the browser to check for changed files on
+every reload, so nobody runs an old page after `git pull`). None of this changes what the
+models compute: `evaluation/compare_modes.py` gives the same results file as before.
+
 ### The summary page (step 13)
 
 **What it does.** `web/summary.html` (with `summary.js`, `summary.css`) turns the session into

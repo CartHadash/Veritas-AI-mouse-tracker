@@ -62,6 +62,20 @@ Time line: first full version by **Sun 15 Nov 22:00 CET**; no new features after
 
 ## Done (newest first)
 
+- Sun 15 Nov, builder's agent: bug hunt and speed-up (Oleksandr: "bugfix and then optimize").
+  Measured first, in the browser and with a timing snippet, not by a committed script, so no
+  figures are recorded here; what changed: (1) the page's "Shake" readout compared every sample
+  with every other one four times a second, which stalled the page; it now uses a sliding
+  window and gives identical values. (2) The meter is redrawn once per frame, not once per
+  reply. (3) The page sends at most one sample per 4 ms (plus the newest of each event), so a
+  very fast mouse cannot flood the server; the models work at 100 a second anyway. (4) The
+  summary's per-minute table no longer searches the whole session once per minute (identical
+  output). (5) Bug: browsers kept an old `app.js` after `git pull`; the server now sends
+  `Cache-Control: no-cache`, so a normal reload is enough. (6) Bug: the calibration test ignored
+  the Steadiest / Balanced / Faster choice. (7) The 404 for `favicon.ico` is gone. Checks
+  re-run: `server/test_ws.py`, 19 tests, `time_live.py`, `check_results.py`, and
+  `evaluation/compare_modes.py` (results file unchanged).
+
 - Sun 15 Nov, builder's agent: a "Steadier or more responsive" choice for Our model (Oleksandr:
   "feels a bit laggy"; team chose to let users pick, starting at the steadiest). Three levels
   from the lag tuning grid (`models/corrector/live.py` RESPONSE_LEVELS), sent as `response` in
@@ -523,6 +537,9 @@ Time line: first full version by **Sun 15 Nov 22:00 CET**; no new features after
   `response-row`, shown only for Our model) and two lines in `web/app.js` (`showSettings`,
   `onChange("response", ...)`). Restyle or move it freely; keep the id and the `response` value
   sent to the server. It also deserves a line in the tutorial if you rework it.
+- Sun 15 Nov, builder -> team leader (UI is yours): builder bug fixes in `web/app.js` (sliding
+  window in `shakeNow`, meter redrawn in `draw`, `SEND_GAP_MS` in the pointermove handler) and one
+  line in `web/index.html` (`<link rel="icon" href="data:,">`). No visual change.
 
 - Sat 14 Nov 23:37 CET, builder -> team leader: **merged on main, please pull before editing `web/`:**
   (1) a first-use guide, `web/tutorial.js` (own file; two lines in `index.html` load it; a
@@ -766,7 +783,8 @@ Time line: first full version by **Sun 15 Nov 22:00 CET**; no new features after
 
 ## Questions waiting for the team leader
 
-- Sat 14 Nov 23:18 CET, from the builder (answers Timofey 23:14, "extensive comparison, whether to redo the
+- ANSWERED (Oleksandr, Sat 14 Nov: "A, then B"; both done, see "Done", Sun 15 Nov 00:55).
+  Sat 14 Nov 23:18 CET, from the builder (answers Timofey 23:14, "extensive comparison, whether to redo the
   model"): see `docs/EXPLAINED.md` "Why our model looked worse than One Euro by eye" and
   `evaluation/results/vs_one_euro_val.md`. Our cursor is closest to the hand but almost as jumpy
   as no filter; One Euro is twice as smooth. Builder's recommendation: no full redo (too risky
@@ -779,7 +797,9 @@ Time line: first full version by **Sun 15 Nov 22:00 CET**; no new features after
   `web/path_check.html`): (1) step 4 rework scope: A) stress test first: measure the current
   models on the realistic movement (validation people), retrain only if they clearly drop
   (recommended); B) full rework now: rebuild, retrain, re-run everything (2-3 h, every number
-  changes); C) only fix the chart and docs. STILL OPEN.
+  changes); C) only fix the chart and docs. ANSWERED by the leader's task list (Sat 14 Nov:
+  stress test, retrain only on a clear drop): done, no clear drop, no retraining
+  (`evaluation/results/realism_stress.md`). Round 2 of the path check is still welcome.
   (2) step 9 additions: ANSWERED by the leader (Sat 14 Nov 21:20), see "Decisions".
 
 - ANSWERED (Sat 14 Nov 21:20, leader: YES). Rewrite `scripts/download_data.py` and
