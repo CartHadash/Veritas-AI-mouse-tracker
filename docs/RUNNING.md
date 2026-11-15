@@ -4,7 +4,7 @@ Two parts:
 
 - **The app** (server + interface): needs only this repository. The trained models the app
   uses (`models/detector/detector_v2.joblib` with `detector_v2_threshold.json`, and
-  `models/corrector/weights_v4_s0.5.pt`) and 12 recorded demo tremors from test people
+  `models/corrector/weights_v5_k3.pt`) and 12 recorded demo tremors from test people
   (`server/demo_tremor.npz`) are included, so no dataset download is needed.
 - **Rebuilding data and re-scoring the models**: needs the datasets (1.5 GB download).
 
