@@ -24,7 +24,11 @@ submission Sun 23:00 · final fixes until the deadline **Mon 16 Nov 05:59**.
       `~/Desktop/screenshots/veritas-b3/` (not in git: too large).
 - [x] Trackpad check of the CURRENT "Our model" (Sun ~11:00, leader: "good enough"). The
       builder can tick step 11.
-- [ ] Re-run `python models/corrector/time_live.py` on a quiet Mac (last loaded run: worst 7.4 ms).
+- [x] Re-run `python models/corrector/time_live.py` on a quiet Mac (Sun 12:15, leader's agent,
+      demo Mac, commit 0c5ee66): corrector + detector gate mean 0.345 ms, 99th percentile
+      1.855 ms, worst 2.790 ms per update (limit 8 ms); corrector only worst 0.132 ms. Same
+      session: `server/test_ws.py` 500/500 in every mode, summary `filter` has `response`;
+      `python -m pytest` 21 passed, 7 skipped (need data); `check_results.py` OK (30 sources).
 - [ ] Read `evaluation/results/RESULTS.md` end to end (step 14 tick).
 
 **Team leader (UI work taken over Sat 22:00; `web/` and `assistant/`):**
