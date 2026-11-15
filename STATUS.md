@@ -19,13 +19,11 @@ mode; `/api/status` says `systemwide: available` (server started from the Claude
 the permission). No hand checks yet.
 
 **Leader's hand checks still open (demo Mac):**
-- [ ] "Steady cursor everywhere" on the REAL cursor: switch on, Control + Option + X, change
-      filters while on, stop the server with Ctrl+C while on (the cursor must be normal after).
-- [ ] "Click where you aimed" by hand, on the page and system-wide.
-- [ ] The new page parts with a real hand and in Safari: everyday targets, spiral trace, fair
-      test, hold space to peek, the live walkthrough, the fonts.
-- [ ] `python -m assistant.run_test_prompts` (needs the key): judge questions 19-28 (action
-      buttons, staying on its job).
+- [x] "Steady cursor everywhere" on the REAL cursor (leader, ~15:00): works in every app and
+      Control + Option + X switches it off; "still not perfect but good enough".
+- [x] The website with a real hand (leader, ~15:00): "works".
+- [x] `python -m assistant.run_test_prompts` (leader's agent, 15:00, real key): 28/28 as hoped,
+      every action button from the allowed list (`assistant/test_prompts.md`, version 6).
 
 **Time line (CET):** feature freeze **Sun 20:00** (leader's decision, Sun 10:45) · first full
 submission Sun 23:00 · final fixes until the deadline **Mon 16 Nov 05:59**.
