@@ -119,6 +119,12 @@ write-up as a next step); round 2 of the step 4 path check (the stress test alre
 
 ## Done since the trim (newest first)
 
+- Sun 15 Nov 13:21, builder's agent: assistant window layout (Oleksandr: "Read aloud overlaps the
+  text"). `web/assistant/assistant.css` / `.js`: the "Read aloud" button had a negative top
+  margin and sat on the answer's edge; now each answer is followed, with clear gaps, by its
+  reminder, then "Read aloud", then the action buttons (green outline), and the window
+  scrolls to the newest answer. Checked in the app's browser with two made-up answers.
+
 - Sun 15 Nov 13:18, builder's agent: **assistant hardening** (Oleksandr's request; with the leader's
   earlier permission to edit `assistant/`). Checked first: the API key is only read by the
   Anthropic library from `.env`; it is never in the prompt (so the model cannot know it), no
