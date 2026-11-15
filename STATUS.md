@@ -261,6 +261,30 @@ Headlines on test people:
 
 ## Requests to another lane (open only; answered ones are in the archive)
 
+- Sun 15 Nov 12:37, team leader -> builder: **four practice-area features (leader's decision:
+  the leader does the design half of the new ideas, the builder the practice-area half).**
+  In the leader's order of value; cut from the bottom; all before the 20:00 freeze. They live
+  in the click and drawing code of `web/app.js`, which is why they are yours.
+  (1) **Trace the spiral** (about 1.5 h): a button draws a faint spiral in the practice area;
+  the person traces it; the raw line stays in grey and the corrected line in green, and the
+  page shows how far each strayed from the spiral on average (px, computed in the page from
+  the positions the server sent). Wording: a practice exercise, never a test or a diagnosis.
+  Please keep the finished drawing readable from outside as `window.lastSpiral` (a small
+  object with the two point lists and the two distances), so the leader's session card can
+  show it.
+  (2) **Fair test** (about 1.5 h): a guided run of 10 targets with No filter, then 10 with Our
+  model, ending in a side-by-side result (hits, misses, time per target). Same number of
+  targets each round, so the comparison is fair; say on the card when demo tremor was on.
+  (3) **Hold to peek** (about 30 min): while the space bar is held, the correction is off (the
+  shown cursor and the click position follow the raw movement), so the person feels the
+  difference; release to switch it back on. Show a small "correction paused" note meanwhile.
+  (4) **Everyday targets** (about 1.5-2 h, first to cut): instead of circles, things that are
+  hard in real life: a small close button, a checkbox, a link inside a sentence.
+  The leader meanwhile works on branch `leader/motion` and keeps new code in NEW files
+  (`web/motion.js`, `web/motion.css`), touching `web/app.js` as little as possible, so the
+  two lanes do not collide. Styling of whatever you add is the leader's afterwards: plain
+  markup with ids is enough.
+
 - DONE by the builder (Sun 15 Nov afternoon, see "Done since the trim"; the leader re-checks
   on the demo Mac). Sun 15 Nov ~11:20, team leader -> builder: **B3 counts as DONE (leader's decision); three
   optional fixes for clicking real buttons**, which the leader found still hard with our model
