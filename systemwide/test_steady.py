@@ -68,3 +68,45 @@ def test_cursor_never_leaves_the_screen():
     steady = make("none", demo="strong")
     _, shown = drive(steady, 300, dx=-50.0, dy=-50.0)      # push hard into the top-left corner
     assert shown.min() >= 0 and shown[:, 0].max() <= 1439 and shown[:, 1].max() <= 899
+
+
+def test_click_freeze_holds_the_cursor_until_release_or_300_ms():
+    steady = make("none", demo="strong")
+    drive(steady, 50)
+    steady.press(0.5)
+    pressed_at = steady.shown
+    for k in range(50, 70):                                # 0.2 s with the button down
+        steady.move_to(steady.shown[0] + 1.0, steady.shown[1], k / 100)
+        assert steady.shown == pressed_at
+    steady.release()
+    steady.move_to(steady.shown[0] + 1.0, steady.shown[1], 0.70)
+    assert steady.shown != pressed_at                      # released: follows again
+    assert abs(steady.hand[0] - (700 + 21)) < 1e-6         # the hand was followed underneath
+
+    steady.press(1.0)
+    pressed_at = steady.shown
+    steady.move_to(steady.shown[0] + 5.0, steady.shown[1], 1.31)   # held longer than 0.3 s (a drag)
+    assert steady.shown != pressed_at
+
+
+def test_click_freeze_can_be_switched_off():
+    steady = SteadyCursor((700, 450), BOUNDS, mode="none", freeze=False)
+    steady.press(0.0)
+    assert steady.move_to(710, 450, 0.01) == (710, 450)
+
+
+def test_response_level_sets_the_smoothing():
+    steady = SteadyCursor((700, 450), BOUNDS, mode="learned", response="balanced")
+    assert steady.filter.smoothing == {"min_cutoff": 1.0, "beta": 0.02}
+    steady.stop()
+
+
+def test_idle_updates_keep_the_detector_warm_through_a_pause():
+    # run.py feeds the filter every 10 ms while the mouse is still. Imitate a 3 s pause that way:
+    # the detector must still have a result afterwards (no new 2.56 s warm-up).
+    steady = make("learned")
+    drive(steady, 300, dx=1.0)                             # 3 s of movement
+    for k in range(300, 600):                              # 3 s still, fed every 10 ms
+        steady.move_to(steady.shown[0], steady.shown[1], k / 100)
+    assert steady.detector.result is not None
+    steady.stop()

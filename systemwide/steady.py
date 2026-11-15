@@ -23,13 +23,14 @@ import numpy as np
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT))
 from baselines.classical_filters import OneEuroFilter  # noqa: E402
-from models.corrector.live import LiveCorrector, load_corrector  # noqa: E402
+from models.corrector.live import RESPONSE_LEVELS, LiveCorrector, load_corrector  # noqa: E402
 from models.detector.predict import Detector, LiveDetector  # noqa: E402
 
 DEMO_FILE = ROOT / "server" / "demo_tremor.npz"     # the demo page's replayed tremor (test people)
 RATE = 100
 MODES = ["learned", "one_euro", "none"]
 DEMO_LEVELS = ["mild", "medium", "strong"]
+FREEZE_SECONDS = 0.3      # click freeze never holds the cursor longer than this (as on the page)
 
 
 class ReplayedTremor:
@@ -58,9 +59,14 @@ class SteadyCursor:
     bounds: (left, top, right, bottom) of the screen area the cursor may be in
     mode:   "learned" (our detector + corrector), "one_euro" or "none"
     demo_level: None, or "mild" / "medium" / "strong" replayed tremor added to the hand
+    response: "steadiest" / "balanced" / "responsive" smoothing of our model (the page's choice)
+    freeze: click freeze, as on the page: from a button press the shown cursor stays where it
+        was pressed until the release, at most 0.3 s, so shaking while the button is down
+        cannot carry the click off a button. The hand keeps being followed underneath.
     """
 
-    def __init__(self, start, bounds, mode="learned", demo_level=None, strength=1.0):
+    def __init__(self, start, bounds, mode="learned", demo_level=None, strength=1.0,
+                 response="steadiest", freeze=True):
         self.bounds = bounds
         self.hand = self.clamp(*start)
         self.shown = self.hand
@@ -69,13 +75,25 @@ class SteadyCursor:
         self.detector = None
         if mode == "learned":
             self.detector = LiveDetector(Detector())
-            self.filter = LiveCorrector(live_detector=self.detector, strength=strength, model=load_corrector())
+            self.filter = LiveCorrector(live_detector=self.detector, strength=strength, model=load_corrector(),
+                                        smoothing=RESPONSE_LEVELS[response])
         elif mode == "one_euro":
             self.filter = OneEuroFilter()
         else:
             self.filter = None
+        self.freeze = freeze
+        self.frozen_until = None      # while a click freeze holds the cursor: the time it ends
         self.updates = 0
         self.failures = 0
+
+    def press(self, t):
+        """A mouse button went down at time t: start the click freeze."""
+        if self.freeze:
+            self.frozen_until = t + FREEZE_SECONDS
+
+    def release(self):
+        """The button came up: the freeze ends (the click lands where the cursor is shown)."""
+        self.frozen_until = None
 
     def clamp(self, x, y):
         left, top, right, bottom = self.bounds
@@ -99,6 +117,9 @@ class SteadyCursor:
             self.failures += 1
             cx, cy = self.hand
         self.updates += 1
+        if self.frozen_until is not None and t < self.frozen_until:
+            return self.shown                   # click freeze: stay at the press point
+        self.frozen_until = None
         self.shown = self.clamp(cx, cy)
         return self.shown
 

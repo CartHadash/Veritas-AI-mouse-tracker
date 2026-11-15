@@ -121,7 +121,7 @@ the leader's assistant is built against that file until the real one exists.
     "distance_px": 184000, "clicks_in_app": 57, "click_accuracy": 0.84,
     "steadiness_score": 0.62         // 0 = very shaky, 1 = very steady
   },
-  "filter": {"mode": "learned", "strength": 0.7},
+  "filter": {"mode": "learned", "strength": 0.7, "response": "steadiest"},   // response: added Sun 15 Nov at the leader's request
   "model_info": {"detector_version": "v1", "missed_cases_rate": null, "false_alarm_rate": null},
   "notes": ["Tremor replay (demo mode) was ON for part of this session."]
 }

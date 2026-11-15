@@ -177,7 +177,8 @@ class SessionStats:
             "usage": {"distance_px": round(self.distance_px), "clicks_in_app": self.clicks,
                       "click_accuracy": None if self.clicks == 0 else round(self.hits / self.clicks, 3),
                       "steadiness_score": steadiness},
-            "filter": {"mode": settings["mode"], "strength": settings["strength"]},
+            "filter": {"mode": settings["mode"], "strength": settings["strength"],
+                       "response": settings["response"]},   # leader's request, Sun 15 Nov
             "model_info": {"detector_version": VERSION,
                            "missed_cases_rate": _detector_info.get("test_missed_cases_rate"),
                            "false_alarm_rate": _detector_info.get("test_false_alarm_rate")},
