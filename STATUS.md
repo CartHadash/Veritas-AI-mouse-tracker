@@ -276,6 +276,21 @@ Headlines on test people:
 
 ## Requests to another lane (open only; answered ones are in the archive)
 
+- Sun 15 Nov 12:51, team leader -> builder: **an assistant that can DO things, not only answer
+  (leader's idea; after the four practice-area features above, only if time allows before
+  the 20:00 freeze).** `assistant/` and `web/assistant/` are the leader's folders: you have
+  the leader's permission to edit them for this. Three actions: (a) change a setting (filter,
+  strength, Steadiest / Balanced / Faster, demo tremor), (b) open a tab (Practice, Analysis,
+  How it works), (c) start the calibration test. Suggested safe shape: the assistant never
+  acts by itself. Its reply may end with a line like the existing `SUGGESTIONS:` one, for
+  example `ACTIONS: set_mode=one_euro | open_tab=analysis | start_calibration`; the page
+  accepts only names and values from a fixed list written in the page's code, ignores
+  anything else, and shows each as a button ("Switch to One Euro") that the PERSON presses.
+  So text from the model can never run code or change something unseen. Keep rule 10: it
+  may suggest app settings, never anything medical. Add test questions to
+  `assistant/run_test_prompts.py` (one that asks for something outside the list must do
+  nothing).
+
 - Sun 15 Nov 12:37, team leader -> builder: **four practice-area features (leader's decision:
   the leader does the design half of the new ideas, the builder the practice-area half).**
   In the leader's order of value; cut from the bottom; all before the 20:00 freeze. They live
