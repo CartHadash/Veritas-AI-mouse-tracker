@@ -16,6 +16,7 @@ and it never leaves the screen.
 
 import math
 import sys
+from collections import deque
 from pathlib import Path
 
 import numpy as np
@@ -31,6 +32,8 @@ RATE = 100
 MODES = ["learned", "one_euro", "none"]
 DEMO_LEVELS = ["mild", "medium", "strong"]
 FREEZE_SECONDS = 0.3      # click freeze never holds the cursor longer than this (as on the page)
+AIM_HISTORY = 0.5         # s of shown positions kept for "click where you aimed"
+DEFAULT_AIM_SECONDS = 0.1 # chosen on validation by evaluation/systemwide_clicks.py's rule (0 = off)
 
 
 class ReplayedTremor:
@@ -63,10 +66,15 @@ class SteadyCursor:
     freeze: click freeze, as on the page: from a button press the shown cursor stays where it
         was pressed until the release, at most 0.3 s, so shaking while the button is down
         cannot carry the click off a button. The hand keeps being followed underneath.
+    aim_seconds: "click where you aimed" (team leader's idea, Sun 15 Nov). At the press the
+        cursor still carries some leftover shake, so the click is placed at the AVERAGE of
+        where the cursor was shown over the last aim_seconds (tremor is 4-6 shakes a second,
+        so about one shake averages out). Only while our model is correcting tremor (gate
+        over half open); a steady hand's click is never moved. 0 switches it off.
     """
 
     def __init__(self, start, bounds, mode="learned", demo_level=None, strength=1.0,
-                 response="steadiest", freeze=True):
+                 response="steadiest", freeze=True, aim_seconds=DEFAULT_AIM_SECONDS):
         self.bounds = bounds
         self.hand = self.clamp(*start)
         self.shown = self.hand
@@ -83,13 +91,24 @@ class SteadyCursor:
             self.filter = None
         self.freeze = freeze
         self.frozen_until = None      # while a click freeze holds the cursor: the time it ends
+        self.aim_seconds = aim_seconds
+        self.recent = deque()         # (t, x, y) of the shown cursor over the last AIM_HISTORY s
         self.updates = 0
         self.failures = 0
 
     def press(self, t):
-        """A mouse button went down at time t: start the click freeze."""
+        """A mouse button went down at time t. Returns where the click lands: normally where
+        the cursor is shown; while tremor is being corrected, the average of where it was
+        shown over the last aim_seconds. Then the click freeze starts there."""
+        correcting = self.mode == "learned" and self.filter.gate > 0.5
+        if self.aim_seconds > 0 and correcting:
+            points = [(x, y) for (when, x, y) in self.recent if t - when <= self.aim_seconds]
+            if points:
+                self.shown = self.clamp(sum(p[0] for p in points) / len(points),
+                                        sum(p[1] for p in points) / len(points))
         if self.freeze:
             self.frozen_until = t + FREEZE_SECONDS
+        return self.shown
 
     def release(self):
         """The button came up: the freeze ends (the click lands where the cursor is shown)."""
@@ -121,6 +140,9 @@ class SteadyCursor:
             return self.shown                   # click freeze: stay at the press point
         self.frozen_until = None
         self.shown = self.clamp(cx, cy)
+        self.recent.append((t, self.shown[0], self.shown[1]))
+        while t - self.recent[0][0] > AIM_HISTORY:
+            self.recent.popleft()
         return self.shown
 
     def stop(self):

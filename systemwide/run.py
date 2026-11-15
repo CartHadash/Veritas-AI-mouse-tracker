@@ -37,7 +37,7 @@ import sys
 import time
 
 from models.corrector.live import RESPONSE_LEVELS
-from systemwide.steady import DEMO_LEVELS, MODES, SteadyCursor
+from systemwide.steady import DEFAULT_AIM_SECONDS, DEMO_LEVELS, MODES, SteadyCursor
 
 KEY_X = 7                      # macOS key code of the X key
 IDLE_UPDATE = 0.01             # s: while the mouse is still, feed the filter this often
@@ -67,6 +67,9 @@ def main():
     parser.add_argument("--seconds", type=float, default=60.0, help="switch off after this long (max 600)")
     parser.add_argument("--response", choices=list(RESPONSE_LEVELS), default=DEFAULT_RESPONSE,
                         help="our model's smoothing: steadiest, balanced or responsive (less lag, more shake)")
+    parser.add_argument("--aim", type=float, default=DEFAULT_AIM_SECONDS,
+                        help="click where you aimed: average the shown cursor over this many seconds at the "
+                             "press, while tremor is being corrected (0 = off)")
     parser.add_argument("--no-freeze", action="store_true",
                         help="switch click freeze off (it holds the cursor at the press point, at most 0.3 s)")
     parser.add_argument("--method", choices=["event", "warp"], default="event",
@@ -86,7 +89,8 @@ def main():
     here = Q.CGEventGetLocation(Q.CGEventCreate(None))
     steady = SteadyCursor((here.x, here.y), screen_bounds(Q), mode=args.mode,
                           demo_level=None if args.demo == "none" else args.demo, strength=args.strength,
-                          response=args.response, freeze=not args.no_freeze)
+                          response=args.response, freeze=not args.no_freeze,
+                          aim_seconds=min(max(args.aim, 0.0), 0.5))
     state = {"stop": False, "last_move": time.monotonic(), "tap": None}
 
     moves = (Q.kCGEventMouseMoved, Q.kCGEventLeftMouseDragged, Q.kCGEventRightMouseDragged,
@@ -117,10 +121,10 @@ def main():
                 show(*steady.move_to(p.x, p.y, now), event=event)
                 state["last_move"] = now
             elif event_type in buttons:
-                Q.CGEventSetLocation(event, Q.CGPointMake(*steady.shown))   # click where it is shown
                 if event_type in downs:
-                    steady.press(time.monotonic())            # click freeze starts
-                else:
+                    steady.press(time.monotonic())            # may move the click to where you aimed
+                Q.CGEventSetLocation(event, Q.CGPointMake(*steady.shown))   # click where it is shown
+                if event_type in ups:
                     steady.release()
         except Exception:
             pass                                              # never block the mouse

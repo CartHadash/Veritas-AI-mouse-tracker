@@ -15,4 +15,13 @@ Produced by `python evaluation/systemwide_clicks.py --people test`. The hand rea
 | strong | Our model, Balanced | 99% / 99% | 96% / 98% |
 | strong | Our model, Faster | 98% / 98% | 96% / 98% |
 
+## Click where you aimed (our model, Steadiest, click freeze on)
+
+At the press, the click is placed at the average of where the cursor was shown over the last moments (only while tremor is being corrected). Share of clicks that land.
+
+| Averaged over | No tremor: 22 px / 10 px | Medium: 22 px / 10 px | Strong: 22 px / 10 px |
+|---|---|---|---|
+| off (click where the cursor is) | 100% / 100% | 100% / 99% | 100% / 99% |
+| 0.1 s | 100% / 100% | 100% / 99% | 100% / 100% |
+
 This project is a prototype and is not medical advice.
