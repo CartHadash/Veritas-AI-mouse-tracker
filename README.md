@@ -9,55 +9,24 @@
 
 ## The problem
 
-A person with Parkinson's disease or essential tremor who uses a laptop at home finds small
-targets hard to click, because the pointer shakes. A checkbox or the cross that closes a
-window is exactly what a shaky cursor misses. Tremor is fast and rhythmic (about 3 to 12
-shakes a second) while pointing at something is slow, and that difference is what lets a
-computer tell the two apart.
+Controlling a computer mouse may be challenging for someone with Parkinson's disease or essential tremor who uses a laptop at home owing to the involuntary hand movements that make clicking a checkbox, closing a window or selecting a small target difficult. Conventional filtering methods often trade-off diminished tremor for responsiveness which may make precise digital interaction difficult.
 
 ## What we built
 
-**In:** the movement of the pointer, read on the person's own laptop. **Out:** a score for how
-tremor-like the last 2.56 seconds were, a steadier cursor, a summary of the session, and an
-assistant that explains the numbers in plain words.
-
-The person opens a local web page with a practice area of everyday targets (a checkbox, a
-folder, a close button). It shows the raw movement and the corrected cursor side by side and
-lets them compare our model with simpler filters. On macOS one switch applies the same
-correction to the real cursor in every app. Everything runs on the laptop.
+TAG-Pointer is a mouse stabilisation tool based on a trained model that understands tremors. Users move the mouse as usual, yet the system detects involuntary tremor-like motion and corrects the pointer trajectory in real time.
 
 ## What we added
 
-Our own idea. Before the hackathon we only researched datasets and ran a short feasibility
-test; none of that code is in this repository ([docs/REUSED_CODE.md](docs/REUSED_CODE.md)).
+We have developed Click Freeze, which improves click performance when using high simulated tremor values, providing session performance summaries and focusing on user privacy by providing local tracking. Mouse data is accessed by the assistant for summary statistics.The assistant sees only summary statistics but never raw mouse movement.
 
 ## How it works
 
-**Data:** No public recordings of mouse movement from people with tremor exist, so we built
-the training data. We took real wrist and fingertip tremor from two public datasets, 484
-people in all (PADS 469, TremorDB 15), cut it into 10.24 s pieces (13764, of which 1424
-tremor), kept only the 3 to 12 Hz shaking and converted it to on-screen pixels (the
-conversion is our assumption). Each example is computer-generated mouse movement plus one
-real tremor piece, or none. The split is **by person**: 340 to train, 72 to choose settings,
-72 for the final test.
-
-**Model:** Two models that we trained ourselves.
-- The **detector** is gradient boosting on 19 measurements of the last 2.56 s (rhythm, how
-  sharp the 3 to 12 Hz peak is, the size of the shake, speed). We chose it because we can
-  say why it decided what it did.
-- The **corrector** is a small neural network that uses only past movement (the last 0.64 s)
-  to predict where the cursor was meant to be. The detector switches it on and off, so a
-  steady hand is left alone. In the app its output is then smoothed.
-
-The assistant (Claude API) sees only summary numbers and was tested on 28 questions,
-including traps such as "Do I have Parkinson's?"
-([assistant/test_prompts.md](assistant/test_prompts.md)).
+Data: Tremor data from public sources (PADS/TremorDB) and synthetic mouse data. As there is no publicly available data that can be directly used in this scenario, real-world tremor data from wrist/fingertips was mapped to simulated mouse. 
+Detection: Gradient boosting is used to identify likely tremor motion, and, besides, it also analyses the 19 explainable traits over the past 2.56 seconds
+Correction: A neural network uses the previous 0.64 seconds of cursor movement to estimate and remove tremor. Rather than the Corrector modifying all mouse movements, the Corrector is activated/deactivated by Detector v2. 
+Application: Real time pointer smoothing, Click Freeze, session analytics and AI assistant.
 
 ## Results
-
-All on the 72 **test people**, never used for training or for choosing a setting. Every
-number is from [RESULTS.md](evaluation/results/RESULTS.md), which a script checks against the
-generated result files.
 
 **Detector.** Accuracy alone misleads, so missed cases and false alarms are shown apart:
 
