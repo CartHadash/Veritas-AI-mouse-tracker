@@ -119,6 +119,13 @@ write-up as a next step); round 2 of the step 4 path check (the stress test alre
 
 ## Done since the trim (newest first)
 
+- Sun 15 Nov 13:02 CET, leader's agent: `leader/motion` merged into `main` on the leader's word (the
+  leader's entries below say "NOT merged": true when written). Clean merge. On merged main:
+  `python -m pytest` 26 passed, 7 skipped; the page loads with both fonts, the six target
+  kinds and no console errors. `server/test_ws.py` was NOT re-run (it would change the
+  leader's running session; no server code changed in this branch). Everyone: `git pull` and
+  a hard reload (Cmd+Shift+R). Still not tried with a real hand: the everyday targets.
+
 - Sun 15 Nov ~13:30, builder's agent: **"Steady cursor everywhere" switch** (leader's task 2).
   Practice -> Adjust has a switch that starts the system-wide correction inside the server
   (`systemwide/service.py`; `run.py`'s event tap is now the reusable `run_tap`) and keeps it
