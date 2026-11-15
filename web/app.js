@@ -31,6 +31,11 @@ const TARGET_RADIUS = 22;           // px; small on purpose, so a shaky cursor f
 
 let socket = null;
 let latest = null;                  // last reply from the server
+let meterStale = false;             // a reply arrived since the meter was last redrawn
+// A fast mouse reports up to 1000 movements a second; the models work at 100 a second, so the
+// page sends at most one sample per SEND_GAP_MS (plus always the newest one of each event).
+const SEND_GAP_MS = 4;
+let lastSentAt = -Infinity;
 let inside = false;                 // is the pointer inside the practice area?
 // "Lower sensitivity" uses Pointer Lock: the browser holds the real pointer still and reports
 // only how far the hand moved, so the drawn cursor (half the hand's movement) is the only
@@ -78,14 +83,21 @@ function shakeNow() {
   const now = performance.now();
   while (shakeLog.length && now - shakeLog[0].at > SHAKE_MS) shakeLog.shift();
   if (shakeLog.length < 30 || now - shakeLog[0].at < 1500) return null;      // too little yet
+  // A sliding window: `from`..`to` are the samples within SMOOTH_MS of sample s, and sumX/sumY
+  // their totals. Both ends only ever move forward, so every sample is added and removed once.
+  // (Sun 15 Nov: this used to compare every sample with every other one, which stalled the
+  // page for 5 ms on a trackpad and 38 ms with a 1000-per-second mouse, 4 times a second.)
   let raw = 0, shown = 0, n = 0;
+  let from = 0, to = 0, sumX = 0, sumY = 0;
   for (const s of shakeLog) {
-    if (s.at - shakeLog[0].at < SMOOTH_MS || now - s.at < SMOOTH_MS) continue;  // need both sides
-    let rx = 0, ry = 0, k = 0;
-    for (const q of shakeLog) {
-      if (Math.abs(q.at - s.at) <= SMOOTH_MS) { rx += q.rawX; ry += q.rawY; k += 1; }
+    while (to < shakeLog.length && shakeLog[to].at - s.at <= SMOOTH_MS) {
+      sumX += shakeLog[to].rawX; sumY += shakeLog[to].rawY; to += 1;
     }
-    rx /= k; ry /= k;
+    while (s.at - shakeLog[from].at > SMOOTH_MS) {
+      sumX -= shakeLog[from].rawX; sumY -= shakeLog[from].rawY; from += 1;
+    }
+    if (s.at - shakeLog[0].at < SMOOTH_MS || now - s.at < SMOOTH_MS) continue;  // need both sides
+    const rx = sumX / (to - from), ry = sumY / (to - from);
     raw += Math.hypot(s.rawX - rx, s.rawY - ry);
     shown += Math.hypot(s.x - rx, s.y - ry);
     n += 1;
@@ -127,7 +139,7 @@ function connect() {
       shakeLog.push({ at: performance.now(), rawX: message.raw_x, rawY: message.raw_y, x: message.x, y: message.y });
       if (trail.length > 400) trail.shift();          // never grows without limit
     }
-    updateMeter();
+    meterStale = true;                                // the meter is redrawn once per frame (draw)
   };
   socket.onclose = () => { setStatus("Connection lost - retrying..."); setConnected(false); setTimeout(connect, 1000); };
 }
@@ -188,8 +200,15 @@ area.addEventListener("pointermove", (event) => {
     const events = event.getCoalescedEvents ? event.getCoalescedEvents() : [event];
     samples = (events.length ? events : [event]).map((e) => ({ p: areaPosition(e), timeStamp: e.timeStamp }));
   }
-  for (const e of samples) {
+  for (let i = 0; i < samples.length; i++) {
+    const e = samples[i];
     const p = e.p;
+    // Skip in-between movements that follow the last sent one too closely (never the newest,
+    // so the cursor always ends exactly where the hand stopped; never during a calibration).
+    const newest = i === samples.length - 1;
+    if (!newest && !calib && e.timeStamp - lastSentAt < SEND_GAP_MS) continue;
+    if (e.timeStamp <= lastSentAt) continue;          // time must move forward for the filters
+    lastSentAt = e.timeStamp;
     const message = { t: e.timeStamp / 1000, x: p.x, y: p.y };
     if (calib && calib.phase === "waiting") {
       const dot = calibrationDot(0);
@@ -491,6 +510,7 @@ function drawLockInvite() {
 
 function draw() {
   const now = performance.now();
+  if (meterStale) { meterStale = false; updateMeter(); }
   ctx.clearRect(0, 0, area.clientWidth, area.clientHeight);
   if (calib && calib.phase === "running" && (now - calib.start) / 1000 >= CALIB_SECONDS) {
     calib.phase = "scoring";

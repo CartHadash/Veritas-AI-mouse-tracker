@@ -75,7 +75,11 @@ def is_local(host_header, origin_header):
 async def only_local_pages(request: Request, call_next):
     if not is_local(request.headers.get("host"), request.headers.get("origin")):
         return JSONResponse({"error": "only pages served by this computer may use this server"}, status_code=403)
-    return await call_next(request)
+    response = await call_next(request)
+    # "no-cache" = the browser must ask the server whether a file changed before reusing its
+    # copy. Without it, a browser kept running an old app.js after `git pull` (Sun 15 Nov).
+    response.headers.setdefault("Cache-Control", "no-cache")
+    return response
 
 # ---------------------------------------------------------------- shared state
 
@@ -149,11 +153,14 @@ class SessionStats:
         tremor = np.array([r[1] for r in results], bool)
         sizes = np.array([r[2] for r in results], float)
         freqs = np.array([r[3] for r in results], float)
-        by_time = []
-        for minute in sorted({r[0] for r in results}):
-            m = np.array([r[0] == minute for r in results])
-            by_time.append({"minute": minute, "detected_share": round(float(tremor[m].mean()), 3),
-                            "strength_px": round(float(np.median(sizes[m])), 2)})
+        # Per minute. Results are stored in time order, so each minute is one run of rows:
+        # find where each run starts instead of searching the whole list once per minute
+        # (that took half a second after a two-hour session).
+        minutes_of = np.array([r[0] for r in results], int)
+        starts = np.flatnonzero(np.diff(minutes_of, prepend=-1)) if len(results) else []
+        ends = list(starts[1:]) + [len(results)]
+        by_time = [{"minute": int(minutes_of[a]), "detected_share": round(float(tremor[a:b].mean()), 3),
+                    "strength_px": round(float(np.median(sizes[a:b])), 2)} for a, b in zip(starts, ends)]
         # Steadiness: 1 = no shaking, 0 = typical shaking of 10 px or more (simple, explainable).
         steadiness = None if len(sizes) == 0 else round(float(np.clip(1 - np.median(sizes) / 10, 0, 1)), 3)
         notes = [DEMO_NOTE] if self.demo_used else []
@@ -342,7 +349,8 @@ def replay(mode, strength, samples):
     """Run recorded samples [(t, x, y), ...] through a fresh session with one filter, in line.
     Returns the server's replies (shown cursor, detector result) for every sample."""
     session = CursorSession(SessionStats(), fixed={"mode": mode, "strength": strength,
-                                                   "demo_tremor": False, "demo_level": settings["demo_level"]})
+                                                   "demo_tremor": False, "demo_level": settings["demo_level"],
+                                                   "response": settings["response"]})
     return [session.update(t, x, y) for t, x, y in samples]
 
 
