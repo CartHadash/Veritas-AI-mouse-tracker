@@ -117,6 +117,20 @@ write-up as a next step); round 2 of the step 4 path check (the stress test alre
 
 ## Done since the trim (newest first)
 
+- Sun 15 Nov 12:54 CET, leader's agent: second pass on `leader/motion` (pushed, NOT merged) after the
+  leader's review. Fonts: Bricolage Grotesque for headings and numbers, Instrument Sans for
+  text (two files in `web/fonts/`, 41 KB and 30 KB, SIL Open Font License; the
+  easier-to-read switch still replaces both). Colours: the blue is gone; forest green, clay
+  orange and gold on cream. Widgets: cards and tiles have no outline and float on a soft
+  shadow; controls are pill-shaped. The top wave is now three faint, slow lines along the
+  bar's bottom edge. New small animations: buttons, switches and the filter chooser answer a
+  press; the "Connected" dot breathes; the assistant button wiggles once after five target
+  clicks; card titles have icons that draw themselves. This replaces the tinted cards and
+  the five-line wave described in the entry below. Checked in the browser at 1440 px (three
+  tabs, both fonts loaded, no console errors). Not checked: the nudge firing, the
+  easier-to-read switch with the new fonts, reduce motion, phone width. Text drawn inside
+  the practice area keeps the old font (`web/app.js` is the builder's today).
+
 - Sun 15 Nov 12:43 CET, leader's agent: "colour and movement" layer on branch `leader/motion` (pushed, NOT
   merged: the leader shows it to the team first). All of it is in two NEW files,
   `web/motion.css` and `web/motion.js`, plus two lines in `web/index.html`; deleting those two

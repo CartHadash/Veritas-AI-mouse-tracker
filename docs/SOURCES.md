@@ -58,6 +58,13 @@ Installed in step 1 (exact versions in `requirements.txt`). Add new ones here wh
   pop-up window in `web/index.html`. Not installed with pip or npm: the package's `browser`
   folder is copied into `web/vendor/ui-sdk/` (its licence file is there too). Added Sat 14 Nov 21:57 CET.
 
+- Fonts for the interface (added Sun 15 Nov 12:54 CET), both under the SIL Open Font License 1.1, taken
+  from the Fontsource packages `@fontsource-variable/bricolage-grotesque` and
+  `@fontsource-variable/instrument-sans` (version 5.3.0) and stored in `web/fonts/` with
+  their licence files: **Bricolage Grotesque** (Atelier Triay,
+  https://github.com/ateliertriay/bricolage) for headings and numbers; **Instrument Sans**
+  (Instrument, https://github.com/Instrument/instrument-sans) for text.
+
 ## AI tools used while building
 
 - The ui-sdk agent skill (`npx skills add vercel-labs/ui --skill ui-sdk`, saved in

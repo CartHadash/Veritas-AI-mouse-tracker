@@ -1223,3 +1223,18 @@ picture are drawn once and stand still, and the sliding and rising are switched 
 **How we know it works.** Opened in a browser: all three tabs, the moving picture and the
 session picture's drawing, with no errors in the console. Not yet checked: the header
 reacting to a real tremor score, the file download itself, the reduce-motion setting.
+
+**After the leader's review (Sun 15 Nov 12:54 CET): fonts, colours, widgets.** Three things changed in
+the same two files. *Fonts:* headings and big numbers use Bricolage Grotesque and ordinary
+text uses Instrument Sans. Both are free fonts whose files sit in `web/fonts/`, so the page
+looks the same on any computer and with no internet (before, it used a font that only Macs
+have). The "Easier-to-read text" switch still replaces both with OpenDyslexic. *Colours:*
+blue did not sit well with the green and cream, so the three section colours are now green
+(steady), clay orange (tremor) and gold (settings): neighbours on the colour wheel. Cards are
+plain white; the colour is in a small round badge in front of each title. *Widgets:* cards
+lost their outlines and float on a soft shadow, and buttons and choosers are pill-shaped.
+The wave in the top bar was made much quieter (three faint, slow lines at the bottom edge)
+so it no longer pulls the eye. In exchange there are several small movements that happen
+only as an answer to something: a button dips when pressed, a switch's knob overshoots a
+little and settles, the "Connected" dot breathes, a title's icon draws itself when its tab
+opens, and the assistant's button wiggles once after five clicks on targets.

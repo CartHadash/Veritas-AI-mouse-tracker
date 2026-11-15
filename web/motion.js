@@ -3,13 +3,14 @@
 // add-on: delete their two lines in index.html and the page is back to the plain look.
 //
 // What moves:
-//   1. the wave behind the top bar: shaky on the left, calm on the right, like the logo
+//   1. a quiet wave along the bottom of the top bar: shaky on the left, calm on the right
 //   2. the logo itself
 //   3. the picture on "How it works": a shaky line goes into the detector and comes out steady
 // Parts 1 and 2 follow the LIVE tremor score (they shake more when the detector sees tremor).
 // Part 3 is an illustration with made-up movement, and says so on the page.
 //
-// It also makes the "Save my session" picture (the last part of this file).
+// It also puts a small icon in front of the card titles, gives the assistant button one
+// nudge, and makes the "Save my session" picture (the last parts of this file).
 //
 // It reads three things other scripts own, and changes none of them:
 //   latest, threshold (app.js): the detector's last reply and its cut-off
@@ -80,22 +81,23 @@
 
   // ---------------------------------------------------------- 1. the wave behind the top bar
 
-  // Five lines flow across the bar. Each is a slow swell plus a fast shake; the shake is
-  // strong at the left edge and fades to nothing by the middle. `t` is the time in seconds.
+  // Three thin lines flow along the bottom edge of the bar. Each is a slow swell plus a
+  // small fast shake; the shake is there at the left edge and gone by the middle. It is kept
+  // faint and slow on purpose, so it never pulls the eye from the page. `t` is in seconds.
   function drawWave(t) {
     const { ctx, W, H } = fit(wave);
     if (W === 0) return;
-    const shakeSize = 3.5 + 9 * level;                 // px; grows with the live tremor score
-    for (let k = 0; k < 5; k++) {
+    const shakeSize = 1.5 + 5 * level;                 // px; grows with the live tremor score
+    for (let k = 0; k < 3; k++) {
       ctx.beginPath();
       for (let x = -4; x <= W + 4; x += 5) {
-        const swell = 7 * Math.sin(x / 190 + t * 0.5 + k * 1.3);
-        const shake = shakeSize * (1 - ramp(0.12, 0.55, x / W)) * Math.sin(x * 0.42 + t * 13 + k * 2.1);
-        const y = H * (0.2 + 0.15 * k) + swell + shake;
+        const swell = 3 * Math.sin(x / 210 + t * 0.3 + k * 1.3);
+        const shake = shakeSize * (1 - ramp(0.1, 0.5, x / W)) * Math.sin(x * 0.42 + t * 7 + k * 2.1);
+        const y = H * (0.3 + 0.22 * k) + swell + shake;
         if (x === -4) ctx.moveTo(x, y); else ctx.lineTo(x, y);
       }
-      ctx.lineWidth = k === 2 ? 2 : 1.3;
-      ctx.strokeStyle = k === 2 ? "rgba(169, 230, 204, 0.6)" : "rgba(255, 255, 255, 0.22)";
+      ctx.lineWidth = 1.3;
+      ctx.strokeStyle = k === 1 ? "rgba(169, 230, 204, 0.38)" : "rgba(255, 255, 255, 0.13)";
       ctx.stroke();
     }
   }
@@ -120,7 +122,7 @@
   // ---------------------------------------------------------- 3. the "How it works" picture
 
   // One line crosses the picture from left to right, drawn by a travelling dot:
-  //   left third   blue, shaky   = the hand's movement as the page reads it
+  //   left third   gold, shaky   = the hand's movement as the page reads it
   //   the middle   orange ring   = the detector noticing the fast rhythm
   //   right third  green, calm   = the corrected cursor
   // The movement here is made up for the picture (a slow curve plus a fast shake).
@@ -139,8 +141,8 @@
     ctx.lineWidth = 4;
     ctx.lineCap = "round";
     ctx.lineJoin = "round";
-    // Draw the line in two colours: blue up to the detector, green after it.
-    for (const [from, to, colour] of [[24, gate, "#2f5d9b"], [gate, W - 24, "#1f6f57"]]) {
+    // Draw the line in two colours: gold up to the detector, green after it.
+    for (const [from, to, colour] of [[24, gate, "#d39a16"], [gate, W - 24, "#1f6f57"]]) {
       const end = Math.min(to, reach);
       if (end <= from) continue;
       ctx.beginPath();
@@ -163,16 +165,16 @@
 
     // The travelling dot, in the colour of the part it is on.
     if (!still && reach > 24 && reach < W - 24) {
-      ctx.fillStyle = reach < gate ? "#2f5d9b" : "#1f6f57";
+      ctx.fillStyle = reach < gate ? "#d39a16" : "#1f6f57";
       ctx.beginPath();
       ctx.arc(reach, lineY(reach), 8, 0, 2 * Math.PI);
       ctx.fill();
     }
 
     // A word under each part.
-    ctx.font = '600 15px "Avenir Next", "Segoe UI", system-ui, sans-serif';
+    ctx.font = '600 15px "Instrument Sans", "Avenir Next", "Segoe UI", system-ui, sans-serif';
     ctx.textAlign = "center";
-    const words = [[W * 0.2, "your hand's movement", "#2f5d9b"], [gate, "the detector", "#c2540f"], [W * 0.8, "the corrected cursor", "#1f6f57"]];
+    const words = [[W * 0.2, "your hand's movement", "#8a5d00"], [gate, "the detector", "#c2540f"], [W * 0.8, "the corrected cursor", "#1f6f57"]];
     for (const [x, word, colour] of words) {
       ctx.fillStyle = colour;
       ctx.fillText(word, x, H - 10);
@@ -198,6 +200,44 @@
     requestAnimationFrame(frame);
   }
 
+  // ---------------------------------------------------------- icons in front of card titles
+
+  // Each entry: which title, the badge's colour, and the icon's lines (SVG shapes on a 24 x 24
+  // grid). pathLength="1" tells the browser to treat every line as 1 long, whatever its real
+  // length, so one CSS rule can make them all "draw themselves" (see motion.css, part g).
+  const ICONS = [
+    { title: ".meter-card h2", colour: "", lines: '<path pathLength="1" d="M2 12h4l2-6 4 12 3-9 2 3h5"/>' },            // a pulse
+    { title: ".card:has(#strength) h2", colour: "gold",                                                                // sliders
+      lines: '<path pathLength="1" d="M4 7h16M4 17h16"/><circle pathLength="1" cx="9" cy="7" r="2.6"/><circle pathLength="1" cx="15" cy="17" r="2.6"/>' },
+    { title: ".card:has(#tally) h2", colour: "clay",                                                                   // a target
+      lines: '<circle pathLength="1" cx="12" cy="12" r="9"/><circle pathLength="1" cx="12" cy="12" r="4"/>' },
+    { title: ".chart-panel h2", colour: "clay", lines: '<path pathLength="1" d="M5 20V11M12 20V4M19 20v-6"/>' },        // bars
+    { title: "#history h2", colour: "gold", lines: '<circle pathLength="1" cx="12" cy="12" r="9"/><path pathLength="1" d="M12 7v5l3 3"/>' },   // a clock
+    { title: "#laptop h2", colour: "ink", lines: '<path pathLength="1" d="M5 6h14v10H5zM2 19h20"/>' },                  // a laptop
+  ];
+  for (const icon of ICONS) {
+    const title = document.querySelector(icon.title);
+    if (!title) continue;                              // that card is not on this page
+    const badge = document.createElement("span");
+    badge.className = "title-icon " + icon.colour;
+    badge.innerHTML = `<svg viewBox="0 0 24 24" aria-hidden="true">${icon.lines}</svg>`;
+    title.prepend(badge);
+  }
+
+  // ---------------------------------------------------------- one nudge from the assistant button
+
+  // After five clicks on targets there are numbers worth asking about, so the assistant's
+  // button wiggles once. `tally` belongs to app.js; we only read it, every two seconds.
+  const nudgeTimer = setInterval(() => {
+    if (typeof tally === "undefined") return;
+    const clicks = Object.values(tally).reduce((sum, row) => sum + row.hits + row.misses, 0);
+    const button = document.querySelector(".assistant-launcher");
+    if (clicks >= 5 && button) {
+      button.classList.add("nudge");
+      clearInterval(nudgeTimer);                       // once is enough
+    }
+  }, 2000);
+
   // ---------------------------------------------------------- "Save my session": a picture to keep
 
   // Draws the main numbers of the Analysis tab on one 1200 x 630 picture and saves it as a
@@ -211,7 +251,7 @@
     canvas.width = W;
     canvas.height = H;
     const ctx = canvas.getContext("2d");
-    const FONT = '"Avenir Next", "Segoe UI", system-ui, sans-serif';
+    const FONT = '"Bricolage Grotesque", "Instrument Sans", "Avenir Next", "Segoe UI", system-ui, sans-serif';
     const text = (words, x, y, font, colour, align = "left") => {
       ctx.font = `${font} ${FONT}`;
       ctx.fillStyle = colour;
@@ -220,7 +260,7 @@
     };
 
     // Paper background and the green band with the name and the date.
-    ctx.fillStyle = "#fbf3e7";
+    ctx.fillStyle = "#f5ecdd";
     ctx.fillRect(0, 0, W, H);
     ctx.fillStyle = "#1a5c49";
     ctx.fillRect(0, 0, W, 104);
