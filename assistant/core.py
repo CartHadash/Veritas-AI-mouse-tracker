@@ -6,6 +6,7 @@ clearly non-AI summary from the numbers with ordinary code.
 """
 
 import os
+import re
 import sys
 from pathlib import Path
 
@@ -18,7 +19,9 @@ MODEL = "claude-sonnet-5-5"      # DECISION L2 (team leader): Sonnet 5.5
 EFFORT = "low"                   # recommended start for chat on this model: quick, cheap
 MAX_TOKENS = 8000                # room for its thinking plus a short answer
 MAX_MESSAGES = 20                # only the latest messages are sent
-MAX_CHARS = 2000                 # per message; typing is hard for our user anyway
+MAX_WORDS = 200                  # per message (Oleksandr, Sun 15 Nov): enough for a real question,
+                                 # no room to paste a long document or program for it to work on
+MAX_CHARS = 2000                 # and never more characters than this, whatever the words are
 
 # The key is read from the file .env (ignored by git) or the shell. It is never printed.
 load_dotenv(Path(__file__).resolve().parent.parent / ".env")
@@ -31,6 +34,12 @@ def ai_available():
     return bool(os.environ.get("ANTHROPIC_API_KEY"))
 
 
+def shorten(text):
+    """The first MAX_WORDS words of a message (its spacing kept), and at most MAX_CHARS characters."""
+    first = re.match(r"\s*(?:\S+\s+){0,%d}\S+" % (MAX_WORDS - 1), text)
+    return (first.group(0) if first else text)[:MAX_CHARS]
+
+
 def clean_messages(messages):
     """Keep only well-formed user/assistant text messages, newest last, ending with the user."""
     cleaned = []
@@ -39,7 +48,7 @@ def clean_messages(messages):
             continue
         role, content = message.get("role"), message.get("content")
         if role in ("user", "assistant") and isinstance(content, str) and content.strip():
-            cleaned.append({"role": role, "content": content[:MAX_CHARS]})
+            cleaned.append({"role": role, "content": shorten(content)})
     while cleaned and cleaned[0]["role"] != "user":       # must start with the user
         cleaned.pop(0)
     while cleaned and cleaned[-1]["role"] != "user":      # and end with the user
@@ -47,10 +56,61 @@ def clean_messages(messages):
     return cleaned
 
 
+# Anything that looks like an API key ("sk-" followed by a long run of key characters).
+KEY_SHAPE = re.compile(r"sk-[A-Za-z0-9_\-]{16,}")
+REMOVED = "[removed]"
+
+
+def scrub(text):
+    """Blank out our own API key and anything shaped like a key."""
+    key = os.environ.get("ANTHROPIC_API_KEY")
+    if key and len(key) >= 8:
+        text = text.replace(key, REMOVED)
+    return KEY_SHAPE.sub(REMOVED, text)
+
+
+# The end of some text that could be the beginning of a key still arriving: "s", "sk", or
+# "sk-" followed by key characters right up to the end.
+KEY_ARRIVING = re.compile(r"(sk-[A-Za-z0-9_\-]*|sk|s)$")
+
+
+def scrubbed(pieces):
+    """Pass a stream of text pieces on with every key-like string blanked out.
+
+    The model is never shown the key, so it cannot know it. This is a second lock on the same
+    door: whatever text comes back, nothing shaped like a key can reach the page. A key could
+    arrive split over several pieces, so text that could be the start of one is held back
+    until the next character shows whether it is (then it is removed) or not (then it is
+    passed on). Ordinary words that end in "s" are held for only one piece."""
+    key = os.environ.get("ANTHROPIC_API_KEY") or ""
+    held = ""
+    for piece in pieces:
+        held += piece
+        starts = []
+        arriving = KEY_ARRIVING.search(held)
+        if arriving:
+            starts.append(arriving.start())
+        for k in range(min(len(key) - 1, len(held)), 0, -1):     # the tail is the start of OUR key
+            if key.startswith(held[-k:]):
+                starts.append(len(held) - k)
+                break
+        cut = min(starts) if starts else len(held)
+        if cut > 0:
+            yield scrub(held[:cut])
+            held = held[cut:]
+    if held:
+        yield scrub(held)
+
+
 def stream_reply(summary, messages, past=None):
     """Yield the assistant's reply piece by piece. Never raises: problems become friendly text.
+    Every piece goes through scrubbed(), so nothing shaped like an API key can come out.
 
     past: short versions of earlier sessions saved on this laptop (assistant/history.py)."""
+    return scrubbed(_reply(summary, messages, past))
+
+
+def _reply(summary, messages, past=None):
     messages = clean_messages(messages)
     if not messages:
         yield "Please type a question, or tap one of the buttons."
@@ -64,8 +124,8 @@ def stream_reply(summary, messages, past=None):
     # A key made outside a workspace must say which workspace to bill. The workspace ID is
     # not a secret; put ANTHROPIC_WORKSPACE_ID=... in .env if the API asks for it.
     workspace = os.environ.get("ANTHROPIC_WORKSPACE_ID")
-    client = anthropic.Anthropic(default_headers={"anthropic-workspace-id": workspace} if workspace else None)
     try:
+        client = anthropic.Anthropic(default_headers={"anthropic-workspace-id": workspace} if workspace else None)
         # Beta endpoint only for the refusal fallback ("fallbacks"): if Anthropic's safety
         # filter declines, the API may retry on another model automatically.
         with client.beta.messages.stream(
@@ -95,6 +155,12 @@ def stream_reply(summary, messages, past=None):
         # The details go to the terminal for us (they never contain the key), not to the user.
         print("assistant: API error %s: %s" % (error.status_code, error.message), file=sys.stderr)
         yield "The assistant had a problem (error %s). Please try again." % error.status_code
+        return
+    except Exception as error:
+        # Anything unexpected: only the KIND of error goes to the terminal, never its text
+        # (it could quote part of a request), and the person gets a plain sentence.
+        print("assistant: unexpected error (%s)" % type(error).__name__, file=sys.stderr)
+        yield "The assistant had a problem. The rest of the app still works; please try again."
         return
 
     if final.stop_reason == "refusal":

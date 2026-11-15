@@ -106,3 +106,6 @@
 /* Action buttons under an answer (builder, Sun 15 Nov): things the person can do with one tap. */
 .assistant-actions { margin: 6px 0 10px; }
 .assistant-action { border: 2px solid var(--steady, #1f6f57); color: var(--steady, #1f6f57); font-weight: 600; }
+
+/* The fixed reminder under every answer (builder, Sun 15 Nov). Small, but always there. */
+.assistant-reminder { margin: 2px 0 8px; font-size: 13.5px; line-height: 1.35; color: var(--muted, #6a5241); }

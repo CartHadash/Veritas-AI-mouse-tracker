@@ -74,7 +74,7 @@
     <form class="assistant-form">
       <label class="assistant-label" for="assistant-input">Or type your own question</label>
       <div class="assistant-row">
-        <input id="assistant-input" type="text" autocomplete="off" maxlength="500"
+        <input id="assistant-input" type="text" autocomplete="off" maxlength="1500"
                placeholder="For example: how steady was I?">
         <button type="submit">Send</button>
       </div>
@@ -171,6 +171,18 @@
     return bubble;
   }
 
+  // Under EVERY answer, the same fixed reminder (Oleksandr, Sun 15 Nov). It is written here,
+  // by the page, so it is always there whatever the model wrote.
+  const REMINDER = "Reminder: these numbers are estimates from a student prototype trained on public " +
+    "research recordings. They can be wrong and are not medical advice. For advice or treatment, " +
+    "please talk to your doctor.";
+  function addReminder(bubble) {
+    const note = document.createElement("p");
+    note.className = "assistant-reminder";
+    note.textContent = REMINDER;
+    bubble.after(note);
+  }
+
   // "Read aloud" under an answer: the browser's built-in speech (no API, no key, works
   // offline on macOS). Reading is easier than small text for many of our users.
   function addReadAloud(bubble) {
@@ -253,6 +265,7 @@
     }
     const { answer, suggestions, actions } = splitReply(reply);
     renderHighlighted(bubble, answer);
+    addReminder(bubble);
     addReadAloud(bubble);
     addActions(log.lastElementChild, parseActions(actions));
     history.push({ role: "assistant", content: answer.trim() });
