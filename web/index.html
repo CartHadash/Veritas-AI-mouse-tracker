@@ -156,6 +156,25 @@
               <ui-switch id="tracking-toggle"><ui-switch-thumb></ui-switch-thumb></ui-switch>
             </label>
 
+            <!-- Builder, Sun 15 Nov: the corrector on the REAL cursor, in every app (systemwide/).
+                 Greyed out with the reason when this computer cannot run it. -->
+            <label class="option" id="systemwide-row">
+              <span><b>Steady cursor everywhere</b>
+                <small id="systemwide-note">Corrects the real cursor in every app, with the filter chosen
+                  here. With a steady hand you will see no change: it only acts on tremor-like
+                  movement. Off switch from anywhere: Control + Option + X.</small></span>
+              <ui-switch id="systemwide-toggle"><ui-switch-thumb></ui-switch-thumb></ui-switch>
+            </label>
+            <label class="option" id="systemwide-demo-row" hidden>
+              <span><b>...with demo tremor</b>
+                <small>Also shakes the real cursor with the replayed tremor, to show the effect.</small></span>
+              <ui-switch id="systemwide-demo-toggle"><ui-switch-thumb></ui-switch-thumb></ui-switch>
+            </label>
+            <div id="systemwide-banner" class="banner" hidden>
+              Steady cursor everywhere is ON: your real cursor is being corrected in every app.
+              Press Control + Option + X to switch it off.
+            </div>
+
             <button class="btn wide" id="calibrate"
                     title="Hold the cursor on a blue dot, then follow it for a few seconds">Calibrate for my mouse (10 s)</button>
             <span class="small hint">Hold a blue dot, then follow it. Shows which filter kept your cursor closest.</span>

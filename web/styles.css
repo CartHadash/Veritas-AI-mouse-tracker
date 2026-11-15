@@ -387,6 +387,11 @@ footer { padding: 6px 28px 110px; text-align: center; color: var(--muted); font-
    space under each tab's content, so the last lines can always be scrolled clear of it. */
 .practice, .page { padding-bottom: 104px; }
 
+/* "Steady cursor everywhere" where this computer cannot run it: greyed out, reason shown. */
+.option.unavailable b { color: var(--muted); }
+.option.unavailable [data-slot="switch"] { opacity: 0.45; }
+#systemwide-banner { margin-top: 10px; }
+
 /* The meter while no movement arrives (app.js sets "paused" after one second): old values greyed. */
 .meter-card.paused #score-meter, .meter-card.paused .readings, .meter-card.paused .correcting { opacity: 0.4; }
 .meter-card.paused .meter-word { color: var(--muted); }

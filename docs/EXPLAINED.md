@@ -818,6 +818,20 @@ fixed before running: clicks landing on a 10 px button with strong tremor rose f
 for all three, with nothing worse for medium or no tremor, and a tie goes to the shortest. On
 test people, once: 99% to 100%. `python -m systemwide.run --aim 0` switches it off.
 
+**As a switch on the page (Sun 15 Nov).** Until now the real-cursor correction only ran from
+the terminal for a set time. "Steady cursor everywhere" (Practice -> Adjust) runs the same
+code inside the server, on its own thread, until it is switched off. `systemwide/service.py`
+starts and stops it and passes on the page's settings: a new filter restarts the corrector
+where the cursor is; strength and Steadiest / Balanced / Faster change without a restart.
+Because there is no time limit here, the off switches matter: the page's switch, Control +
+Option + X from any app (the page asks the server every 2 s, so its switch follows), and
+stopping the server. The macOS permission is only checked; without it the switch is greyed
+out and says what a human must switch on. How we know the logic works: tests replace macOS
+with a stand-in that behaves the same for start, stop and the off key (14 tests pass). What
+we do not know from the builder's Mac: how it feels on a real cursor; the team leader checks
+that on the demo Mac. With a steady hand nothing visible happens, which is correct: the
+detector sees no tremor, so nothing is corrected.
+
 ## Can someone else reproduce it? (step 15)
 
 Yes. A fresh copy of the repository from GitHub, set up with the commands in `docs/RUNNING.md`,

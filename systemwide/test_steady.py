@@ -137,3 +137,60 @@ def test_click_lands_at_the_average_of_recent_positions_only_while_correcting():
     drive(steady, 100)
     here = steady.shown
     assert steady.press(0.99) == here
+
+
+# ---- "Steady cursor everywhere" as a switch (systemwide/service.py), with a stand-in for macOS
+
+import time  # noqa: E402
+
+from systemwide.service import FakeBackend, SystemwideService, config_from  # noqa: E402
+
+PAGE = {"mode": "learned", "strength": 0.7, "response": "balanced", "demo_level": "strong", "systemwide_demo": False}
+
+
+def wait_until(condition, seconds=3.0):
+    end = time.time() + seconds
+    while time.time() < end and not condition():
+        time.sleep(0.01)
+    return condition()
+
+
+def test_switch_on_passes_the_pages_settings_and_switch_off_stops_it():
+    stopped = []
+    service = SystemwideService(backend=FakeBackend(), on_stopped=lambda: stopped.append(True))
+    assert service.start(config_from(PAGE)) and service.is_on()
+    steady = service.state["steady"]
+    assert steady.mode == "learned" and steady.filter.strength == 0.7 and steady.demo is None
+    assert steady.filter.smoothing == {"min_cutoff": 1.0, "beta": 0.02}
+    service.stop()
+    assert not service.is_on() and stopped == [True]
+
+
+def test_settings_changes_reach_the_running_corrector():
+    service = SystemwideService(backend=FakeBackend())
+    service.start(config_from(PAGE))
+    service.update(config_from({**PAGE, "strength": 0.3, "response": "steadiest"}))
+    assert wait_until(lambda: service.state["steady"].filter.strength == 0.3)
+    assert service.state["steady"].filter.smoothing["beta"] == 0.004
+    service.update(config_from({**PAGE, "mode": "one_euro", "systemwide_demo": True}))   # another filter: rebuilt
+    assert wait_until(lambda: service.state["steady"].mode == "one_euro")
+    assert service.state["steady"].demo is not None
+    service.update(config_from({**PAGE, "mode": "low_sensitivity"}))                     # page-only filter
+    assert wait_until(lambda: service.state["steady"].mode == "learned")
+    service.stop()
+
+
+def test_off_key_stops_it_and_tells_the_server():
+    stopped = []
+    backend = FakeBackend()
+    service = SystemwideService(backend=backend, on_stopped=lambda: stopped.append(True))
+    service.start(config_from(PAGE))
+    assert wait_until(lambda: backend.state is not None)
+    backend.press_off_key()                                  # Control + Option + X
+    assert wait_until(lambda: not service.is_on()) and stopped == [True]
+
+
+def test_without_the_permission_it_never_starts_and_says_why():
+    service = SystemwideService(backend=FakeBackend(ok=False, why="needs a permission only a human can give"))
+    assert service.start(config_from(PAGE)) is False and not service.is_on()
+    assert "human" in service.error

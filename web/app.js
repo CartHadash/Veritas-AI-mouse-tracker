@@ -54,6 +54,7 @@ let lockRefusals = 0;               // refusals in a row (Chrome refuses for ~1 
                                     // browsers, like the app's built-in pane, always refuse)
 let hand = null;                    // while locked: the hand's position, added up from its movement
 let settings = { mode: "learned", strength: 1, demo_tremor: false, tracking: false };
+let systemwideAvailable = false;    // can "Steady cursor everywhere" run on this computer? (from /api/status)
 let threshold = 0.165;
 let target = null;                  // {x, y, shownAt}
 const tally = {};                   // per mode (+ click freeze): {hits, misses, totalTime}
@@ -171,6 +172,17 @@ async function loadStatus() {
   document.getElementById("cutoff-mark").style.left = `${threshold * 100}%`;
   const parts = [`tracker: ${status.tracker}`, `assistant: ${status.assistant}`];
   setStatus(statusText + " " + parts.join(", "));
+  // Steady cursor everywhere: usable only where the server says so; otherwise greyed out
+  // with the reason (for example the macOS permission only a human can give).
+  const sw = String(status.systemwide ?? "not available");
+  systemwideAvailable = sw === "available" || sw === "on";
+  const swToggle = document.getElementById("systemwide-toggle");
+  setControl(swToggle, "disabled", !systemwideAvailable);
+  document.getElementById("systemwide-row").classList.toggle("unavailable", !systemwideAvailable);
+  if (!systemwideAvailable) {
+    document.getElementById("systemwide-note").textContent =
+      "Not available here: " + sw.replace(/^not available:?\s*/, "") + ".";
+  }
   // The tracking button only appears when the leader's tracker can run on this computer.
   document.getElementById("tracking-row").hidden = !String(status.tracker).startsWith("available")
     && !String(status.tracker).startsWith("running");
@@ -397,6 +409,10 @@ function showSettings() {
   setControl(document.getElementById("strength"), "value", Number(settings.strength));
   setControl(document.getElementById("demo-toggle"), "checked", Boolean(settings.demo_tremor));
   setControl(document.getElementById("tracking-toggle"), "checked", Boolean(settings.tracking));
+  setControl(document.getElementById("systemwide-toggle"), "checked", Boolean(settings.systemwide));
+  setControl(document.getElementById("systemwide-demo-toggle"), "checked", Boolean(settings.systemwide_demo));
+  document.getElementById("systemwide-banner").hidden = !settings.systemwide;
+  document.getElementById("systemwide-demo-row").hidden = !systemwideAvailable;
   if (settings.demo_level) setControl(document.getElementById("demo-levels"), "value", settings.demo_level);
   if (settings.response) setControl(document.getElementById("response"), "value", settings.response);
   document.getElementById("response-row").hidden = settings.mode !== "learned";
@@ -425,6 +441,22 @@ onChange("strength", "valuecommit", (value) => postSettings({ strength: Number(v
 onChange("demo-toggle", "checkedchange", (value) => postSettings({ demo_tremor: value }));
 onChange("freeze-toggle", "checkedchange", (value) => { freezeOn = value; });
 onChange("tracking-toggle", "checkedchange", (value) => postSettings({ tracking: value }));
+// Steady cursor everywhere (the real cursor). If the server could not start it, the answer
+// has systemwide false again and loadStatus() shows why.
+onChange("systemwide-toggle", "checkedchange", async (value) => {
+  await postSettings({ systemwide: value });
+  if (value && !settings.systemwide) loadStatus();
+});
+onChange("systemwide-demo-toggle", "checkedchange", (value) => postSettings({ systemwide_demo: value }));
+// It can also be switched off from outside the page (Control + Option + X), so while it is on
+// the page asks the server every 2 seconds whether it still is.
+setInterval(async () => {
+  if (!settings.systemwide) return;
+  try {
+    settings = await (await fetch("/api/settings")).json();
+    showSettings();
+  } catch (error) { /* server not reachable: the connection status already says so */ }
+}, 2000);
 document.getElementById("reset").addEventListener("click", async () => {
   await fetch("/api/reset", { method: "POST" });
   for (const key of Object.keys(tally)) delete tally[key];
