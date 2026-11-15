@@ -1,0 +1,125 @@
+/* motion.css - the "colour and movement" layer (team leader, Sun 15 Nov).
+
+   This file and motion.js are an ADD-ON on top of styles.css. To go back to the plain look,
+   delete the two lines in index.html that load motion.css and motion.js; nothing else needs
+   to change. It is loaded after styles.css, so a rule here wins over the same rule there.
+
+   What it adds:
+     1. a colour for each kind of thing (green top bar, tinted cards, coloured tiles and steps)
+     2. the moving wave behind the top bar (drawn by motion.js)
+     3. movement when a tab opens (the page slides in, cards arrive one after another)
+     4. the animated picture on "How it works" and the "Save my session" card
+
+   Everything that moves stops when the computer is set to "reduce motion" (see the end). */
+
+:root {
+  --band: #1a5c49;              /* the green top bar */
+  --blue: #2f5d9b;              /* settings and "reading the pointer" (the calibration dot is blue too) */
+}
+
+/* ------------------------------------------------------------ 1a. the green top bar */
+.topbar {
+  position: relative;           /* so the wave can sit behind everything in the bar */
+  overflow: hidden;
+  background: var(--band);
+  color: var(--surface);
+  margin-bottom: 18px;
+}
+/* The wave is a drawing behind the bar's content; clicks pass straight through it. */
+#wave { position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; }
+.topbar > *:not(#wave) { position: relative; z-index: 1; }
+
+.brand { color: var(--surface); }
+.brand svg { color: #a9e6cc; }
+.status { color: #dcefe6; }
+.status::before { background: #7fe3b9; }
+.status.off::before { background: #ffb37a; }
+
+/* Tabs on the green bar: a see-through trough, and a light pill behind the chosen tab. */
+[data-slot="tabs-list"] { background: rgba(255, 255, 255, 0.15); }
+[data-slot="tabs-tab"] { color: #e6f3ec; }
+[data-slot="tabs-tab"][data-selected] { color: var(--ink); }
+[data-slot="tabs-indicator"] { background: var(--surface); }
+/* On green, the orange focus ring is hard to see, so it is a light one here. */
+.topbar :focus-visible { outline-color: #ffe2b8; }
+
+/* ------------------------------------------------------------ 1b. tinted cards on Practice
+   Each card has its own soft colour. The troughs inside (meter, slider, bars) and the thin
+   lines take a slightly darker shade of the same colour, by changing the colour names
+   (variables) for everything inside that card. */
+.rail .meter-card {                                   /* the tremor meter: green */
+  background: #eef6f0; border-color: #cde2d4;
+  --sunk: #d9eadf; --ui-muted: #d9eadf; --line: #cde2d4; --paper: #fbfdfb;
+}
+.rail .card:has(#strength) {                          /* Adjust: blue */
+  background: #eef2f9; border-color: #d0daec;
+  --sunk: #d9e2f1; --ui-muted: #d9e2f1; --line: #d0daec;
+}
+.rail .card:has(#tally) {                             /* Your targets: orange */
+  background: #fff1e3; border-color: #f2d3b1;
+  --sunk: #f8dfc4; --ui-muted: #f8dfc4; --line: #f2d3b1;
+}
+.rail .card:has(#strength) h2 { color: var(--blue); }
+.rail .meter-card h2 { color: var(--steady); }
+.rail .card:has(#tally) h2 { color: var(--tremor); }
+
+/* ------------------------------------------------------------ 1c. coloured tiles on Analysis */
+#tiles .tile:nth-child(2) { background: #eef2f9; border-color: #d0daec; }      /* rhythm: blue */
+#tiles .tile:nth-child(2) .value { color: var(--blue); }
+#tiles .tile:nth-child(3) { background: #fff1e3; border-color: #f2d3b1; }      /* size of the shaking: orange */
+#tiles .tile:nth-child(3) .value { color: var(--tremor); }
+#tiles .tile:nth-child(4) { background: #eef6f0; border-color: #cde2d4; --sunk: #d9eadf; --ui-muted: #d9eadf; }  /* steadiness: green */
+#tiles .tile:nth-child(4) .value { color: var(--steady); }
+
+/* ------------------------------------------------------------ 1d. How it works: one colour per step
+   Blue = reading the pointer, orange = spotting tremor, green = the steadied result.
+   The moving picture above the steps uses the same three colours. */
+.steps li:nth-child(1)::before { background: var(--blue); }
+.steps li:nth-child(2)::before { background: var(--tremor); }
+.steps li:nth-child(3)::before { background: var(--steady); }
+
+.how-art { background: var(--surface); border: 1px solid var(--line); border-radius: 18px; padding: 10px 14px 12px; }
+#how-art { display: block; width: 100%; height: 190px; }
+.how-art p { font-size: 14px; color: var(--muted); text-align: center; margin-top: 2px; }
+
+/* ------------------------------------------------------------ 3. movement when a tab opens */
+
+/* The page that opens slides in from the side its tab is on. ui-sdk marks the first frame
+   with data-starting-style and says which way the choice moved. */
+[data-slot="tabs-panel"] { transition: opacity 0.28s ease, translate 0.28s ease; }
+[data-slot="tabs-panel"][data-starting-style] { opacity: 0; }
+[data-slot="tabs-panel"][data-starting-style][data-activation-direction="right"] { translate: 36px 0; }
+[data-slot="tabs-panel"][data-starting-style][data-activation-direction="left"] { translate: -36px 0; }
+
+/* Cards and tiles rise into place one after another. An animation starts again every time
+   its element is shown, so this replays on each tab change with no JavaScript. */
+@keyframes rise { from { opacity: 0; translate: 0 16px; } }
+.stage, .rail > .card, .page > *, .tiles > .tile, .steps > li { animation: rise 0.45s cubic-bezier(0.2, 0.7, 0.2, 1) backwards; }
+.rail > .card:nth-child(1), .page > *:nth-child(2), .tiles > .tile:nth-child(2), .steps > li:nth-child(1) { animation-delay: 0.06s; }
+.rail > .card:nth-child(2), .page > *:nth-child(3), .tiles > .tile:nth-child(3), .steps > li:nth-child(2) { animation-delay: 0.12s; }
+.rail > .card:nth-child(3), .page > *:nth-child(4), .tiles > .tile:nth-child(4), .steps > li:nth-child(3) { animation-delay: 0.18s; }
+.page > *:nth-child(5), .tiles > .tile:nth-child(5) { animation-delay: 0.24s; }
+.page > *:nth-child(6), .tiles > .tile:nth-child(6) { animation-delay: 0.30s; }
+.page > *:nth-child(n+7), .tiles > .tile:nth-child(n+7) { animation-delay: 0.36s; }
+
+/* Under the pointer: a card gets a soft shadow. Cards that hold controls do NOT move, so a
+   shaky hand never has to chase a button. Tiles hold no controls, so they may lift a little. */
+.card, .tile { transition: box-shadow 0.2s ease, translate 0.2s ease; }
+.card:hover { box-shadow: 0 12px 26px -18px rgba(47, 29, 16, 0.5); }
+.tile:hover { translate: 0 -3px; box-shadow: 0 14px 26px -16px rgba(47, 29, 16, 0.5); }
+
+/* The step circles pulse once, in order, when "How it works" opens. */
+@keyframes pop { 0% { scale: 0.4; } 70% { scale: 1.12; } 100% { scale: 1; } }
+.steps li::before { animation: pop 0.5s ease backwards; }
+.steps li:nth-child(2)::before { animation-delay: 0.25s; }
+.steps li:nth-child(3)::before { animation-delay: 0.5s; }
+
+/* ------------------------------------------------------------ 4. the session card button */
+.page-head .actions { margin-top: 0; }
+
+/* ------------------------------------------------------------ smaller screens, reduced motion */
+@media (max-width: 700px) {
+  #how-art { height: 150px; }
+}
+/* styles.css already switches off every transition and animation for people who ask their
+   computer for less motion; motion.js checks the same setting and draws still pictures. */

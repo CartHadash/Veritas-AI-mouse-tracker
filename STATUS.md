@@ -117,6 +117,21 @@ write-up as a next step); round 2 of the step 4 path check (the stress test alre
 
 ## Done since the trim (newest first)
 
+- Sun 15 Nov 12:43 CET, leader's agent: "colour and movement" layer on branch `leader/motion` (pushed, NOT
+  merged: the leader shows it to the team first). All of it is in two NEW files,
+  `web/motion.css` and `web/motion.js`, plus two lines in `web/index.html`; deleting those two
+  lines gives the plain look back. Adds: a green top bar with a moving wave (shaky on the
+  left, calm on the right) and a logo that both shake more as the live tremor score rises;
+  a colour per card (meter green, Adjust blue, targets orange) and per Analysis tile; tabs
+  that slide in and cards that arrive one after another; a moving picture on "How it works"
+  (marked on the page as an illustration with made-up movement); a "Save my session as a
+  picture" button (a 1200 x 630 PNG made in the browser, with the demo note and the
+  disclaimer). Cards that hold controls do not move under the pointer, on purpose. Checked in
+  the browser at 1440 px: three tabs, the moving picture, the session picture's drawing, no
+  console errors; `python -m pytest` as before. Not checked: the wave and logo reacting to a
+  real tremor score, the real file download, the "reduce motion" setting, phone width.
+  The earlier "one-minute tour" idea is dropped: the builder's `web/tutorial.js` already does it.
+
 - Sun 15 Nov 12:18-12:20, team leader + leader's agent: **B3 re-check after the builder's click
   fixes** (demo Mac, `--demo strong --seconds 40`, then `--response balanced`; click freeze on
   in both). Steadiest 3,918 updates, Balanced 3,846, 0 filter failures. The leader: clicking

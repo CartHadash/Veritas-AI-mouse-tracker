@@ -1179,3 +1179,47 @@ Checked in the app's browser: speech starts and stops.
 ("Our model"). The AI prompt now knows those names, the Steadiest / Balanced / Faster choice,
 Click freeze and the calibration test. Re-tested: 18/18 test questions safe
 (`assistant/test_prompts.md`, version 5).
+
+### Colour and movement (Sun 15 Nov 12:43 CET, team leader's lane, branch `leader/motion`)
+
+**What it is.** A layer on top of the interface, kept in two files of its own
+(`web/motion.css` for the look, `web/motion.js` for what moves). `web/index.html` loads them
+with two lines; delete those two lines and the page looks as it did before. That was the
+point of keeping it separate: the team can try it and drop it without undoing anything.
+
+**Colour with a meaning.** Before, everything was the same cream. Now the top bar is green,
+and each kind of thing has a colour: green for the tremor meter and anything "steady", blue
+for settings and for reading the pointer, orange for tremor and for targets. The three steps
+on "How it works" use the same three colours, so the colour itself tells you which part you
+are looking at.
+
+**The wave and the logo.** Behind the top bar five thin lines drift from left to right. On
+the left they shake; by the middle they are calm, which is the project in one picture. How
+hard they shake follows the detector's live score, so the header gets restless when the
+detector sees tremor and settles when it does not. The logo's zigzag does the same. The
+pictures follow the score slowly (a little closer on every frame) so they swell and settle
+instead of flickering.
+
+**Movement when a tab opens.** The new page slides in from the side its tab is on, and its
+cards arrive one after another. This is done in CSS alone: an animation starts again whenever
+its element is shown, so nothing has to be programmed.
+
+**Nothing you need to click moves.** Cards that hold switches and buttons only get a soft
+shadow under the pointer; they never shift. A person with tremor should not have to chase a
+button. Tiles on the Analysis tab hold no controls, so they may lift a little.
+
+**The picture on "How it works".** A dot draws a shaky blue line, passes through an orange
+ring (the detector) and continues as a calm green line. The movement in it is made up for
+the picture, and the page says so underneath: it is an illustration, not a result.
+
+**Save my session as a picture.** A button on the Analysis tab draws the main numbers on one
+picture and saves it through the browser's normal download. It is made entirely in the
+browser, so nothing is sent anywhere. If demo tremor was on, the picture says so, and it
+always carries "This project is a prototype and is not medical advice."
+
+**Less motion.** If the computer is set to "reduce motion", the wave, the logo and the
+picture are drawn once and stand still, and the sliding and rising are switched off.
+
+**How we know it works.** Opened in a browser: all three tabs, the moving picture and the
+session picture's drawing, with no errors in the console. Not yet checked: the header
+reacting to a real tremor score, the file download itself, the reduce-motion setting.
