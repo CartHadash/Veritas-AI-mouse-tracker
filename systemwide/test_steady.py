@@ -110,3 +110,30 @@ def test_idle_updates_keep_the_detector_warm_through_a_pause():
         steady.move_to(steady.shown[0], steady.shown[1], k / 100)
     assert steady.detector.result is not None
     steady.stop()
+
+
+def test_click_lands_at_the_average_of_recent_positions_only_while_correcting():
+    # "Click where you aimed": with strong tremor being corrected, the click is the average of
+    # the shown positions of the last 0.1 s, so it is closer to the hold point than a single
+    # shaky position is on average.
+    steady = make("learned", demo="strong")
+    drive(steady, 600)                                     # 6 s: the gate is open by now
+    assert steady.filter.gate > 0.5
+    recent = [(x, y) for (when, x, y) in steady.recent if 5.99 - when <= 0.1]
+    expected = np.mean(recent, axis=0)
+    landed = steady.press(5.99)
+    assert np.allclose(landed, expected) and len(recent) >= 5
+    steady.stop()
+
+    # A steady hand (no tremor, gate closed): the click is exactly where the cursor is.
+    steady = make("learned")
+    drive(steady, 400, dx=2.0)
+    here = steady.shown
+    assert steady.filter.gate < 0.5 and steady.press(3.99) == here
+    steady.stop()
+
+    # Switched off: never moved.
+    steady = SteadyCursor((700, 450), BOUNDS, mode="none", demo_level="strong", aim_seconds=0.0)
+    drive(steady, 100)
+    here = steady.shown
+    assert steady.press(0.99) == here

@@ -66,7 +66,8 @@ submission Sun 23:00 · final fixes until the deadline **Mon 16 Nov 05:59**.
       by default; try `--response balanced` too and say which feels better).
 
 **Builder, NEXT (leader's decision, Sun 15 Nov 12:30; both before the 20:00 freeze, task 1 first):**
-- [ ] **1. "Click where you aimed" (about 45 min).** Why: the leader's B3 re-check (12:18) found
+- [x] (system-wide part DONE Sun 15 Nov ~13:00, see "Done since the trim"; the leader re-checks
+      by hand; the page's click freeze not done yet) **1. "Click where you aimed" (about 45 min).** Why: the leader's B3 re-check (12:18) found
       the click still lands away from where they meant to click; click freeze only helps
       AFTER the press, and at the press the cursor still carries leftover shake and about
       72 ms of lag. Do: when a button goes down, place the click (and the freeze point) at the
@@ -145,6 +146,17 @@ write-up as a next step); round 2 of the step 4 path check (the stress test alre
   console errors; `python -m pytest` as before. Not checked: the wave and logo reacting to a
   real tremor score, the real file download, the "reduce motion" setting, phone width.
   The earlier "one-minute tour" idea is dropped: the builder's `web/tutorial.js` already does it.
+
+- Sun 15 Nov ~13:00, builder's agent: **"click where you aimed" in the system-wide corrector**
+  (leader's task 1). At the press the click and the freeze point go to the average of the
+  shown cursor positions of the last 0.1 s, only while our model's gate is over half open
+  (`systemwide/steady.py` `press`; `--aim 0` switches it off). Window chosen on validation
+  people by the leader's rule (`python evaluation/systemwide_clicks.py`,
+  `systemwide_clicks_val.md`): 10 px button, strong tremor, with freeze: 91% -> 95% for 0.1,
+  0.2 and 0.3 s (shortest taken); medium and no tremor not worse. Test people once
+  (`systemwide_clicks_test.md`): 99% -> 100%. `python -m pytest systemwide/test_steady.py`:
+  10 passed. **Leader: please re-check by hand** (`git pull`, `python -m systemwide.run
+  --demo strong`). Not done yet: the same idea in the page's click freeze (`web/app.js`).
 
 - Sun 15 Nov 12:18-12:20, team leader + leader's agent: **B3 re-check after the builder's click
   fixes** (demo Mac, `--demo strong --seconds 40`, then `--response balanced`; click freeze on

@@ -806,6 +806,18 @@ does not jolt when pressing, and a real person steers by watching a cursor that 
 hand. So "still hard for a real hand" stays a limit to report, not something these numbers
 disprove. New tests in `systemwide/test_steady.py` cover the freeze, the level and the pause.
 
+**"Click where you aimed" (Sun 15 Nov, the team leader's idea after re-checking by hand).**
+Click freeze only helps after the button is down. At the moment of the press the cursor still
+carries a little leftover shake, so the click can start off the button. Tremor repeats 4-6
+times a second, so the average of where the cursor was over the last moments sits near the
+middle of the shake, which is where the person was aiming. So at the press, the click (and the
+freeze point) is put at the average of the shown positions of the last 0.1 s. It only happens
+while our model is correcting tremor (its gate is more than half open), so a steady hand's
+click is never moved. The window (0.1, 0.2 or 0.3 s) was chosen on validation people by a rule
+fixed before running: clicks landing on a 10 px button with strong tremor rose from 91% to 95%
+for all three, with nothing worse for medium or no tremor, and a tie goes to the shortest. On
+test people, once: 99% to 100%. `python -m systemwide.run --aim 0` switches it off.
+
 ## Can someone else reproduce it? (step 15)
 
 Yes. A fresh copy of the repository from GitHub, set up with the commands in `docs/RUNNING.md`,
