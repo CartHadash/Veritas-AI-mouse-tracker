@@ -67,16 +67,20 @@ work, all recorded in `STATUS.md` and `docs/EXPLAINED.md`:
 - **A number hid a problem that a person saw in two seconds.** The first corrector scored well
   on "distance from the intended path", but when the leader tried the demo it looked jumpy.
   We measured it (about 3x jerkier than no filter at browser speed), found two causes (a
-  resampling bug and training that never asked for smoothness), added a smoothness measure
-  and trained a smoother version. (`STATUS.md` "Problems and things that did not work";
-  `docs/EXPLAINED.md` "A smoother corrector (v4)"; `RESULTS.md` corrector table, jerkiness
-  column)
+  resampling bug and training that never asked for smoothness) and trained smoother versions.
+  By eye it was still jittery, so we measured what the eye sees (leftover shake, jumpiness):
+  the app now combines corrector v5 with One Euro smoothing switched on by our detector. It
+  shakes least of all filters but lags a moving hand, so the person chooses Steadiest /
+  Balanced / Faster. An honest trade-off, not a free win. (`STATUS.md` "Problems";
+  `docs/EXPLAINED.md` "Why our model looked worse than One Euro by eye"; `RESULTS.md`
+  "On the demo page" and "What we tried that did not work")
 - **Ideas we tested that did not help, and we kept the honest result.** Corrector v2 (trained
   on larger and smaller tremor) did not help and was dropped; letting the calibration test
   choose the filter did worse than always using our model, so it only reports. (`RESULTS.md`
   "What we tried that did not work")
 - **Team ideas turned into measured features.** Click freeze (Timofey) measured in a
-  simulation; calibration (Godson) tested and kept as a report only. (`RESULTS.md` "Click
+  simulation; calibration (Godson) tested and kept as a report only; a notch canceller
+  (Oleksandr) tested and dropped. Status of every idea: `IDEAS.md`. (`RESULTS.md` "Click
   freeze"; `docs/EXPLAINED.md` "Calibration test")
 - **Privacy by design.** Everything runs on the user's own laptop; the assistant sees only
   summary numbers, never raw movement; a "delete my data" button exists.
@@ -92,9 +96,10 @@ filters."*
 
 From `IDEAS.md` and the limits in `RESULTS.md`:
 - Test with real people who have tremor (the biggest missing piece; nothing replaces it).
-- Correct the real cursor in every app, not only on our page (stretch goal B3; say whether it
-  was finished, `STATUS.md`).
-- Sticky targets: buttons gently pull the cursor in when tremor is detected.
+- Correct the real cursor in every app, not only on our page (B3, `systemwide/`: built; its
+  real-cursor check on the demo Mac is due Sun 15:00, so read `STATUS.md` for whether it worked).
+- Less lag: our steadiest setting trails a moving hand (`RESULTS.md` "On the demo page").
+- Sticky targets: buttons gently pull the cursor in when tremor is detected (idea, not built).
 - A movement-aware detector that is stricter during fast, deliberate movement, where most
   false alarms happen.
 - Trends across days (the app now keeps local session history; trends would need care to stay
@@ -107,7 +112,7 @@ Recorded on the leader's Mac, where the app and the assistant's API key work.
 | Part | Length | Show |
 |---|---|---|
 | The problem | ~15 s | The user: someone with tremor who cannot click small targets. One sentence on why it matters |
-| The demo | ~60 s | Demo page: turn on "Demo tremor: Strong"; grey dot shakes, dark dot is steadier in "Our model"; switch to "No filter" and "One Euro" to compare; tremor meter reacts; click a small target with "Click freeze"; open the summary page and tap one of the assistant's one-tap questions |
+| The demo | ~60 s | Practice tab: switch demo tremor on (it starts at Strong); grey dot shakes, dark dot is steadier in "Our model" (the "Shake (2 s)" readout shows raw -> shown); switch to "No filter" and "One Euro" to compare; show the Steadiest / Faster choice; click a small target with "Click freeze"; open the Analysis tab and tap one of the assistant's one-tap questions. If B3 worked: 10 s of the real cursor steadier in another app |
 | How it works | ~30 s | Data (real tremor + computer-made paths, split by person), the two models, one baseline comparison from `RESULTS.md` |
 | Next steps | ~15 s | One limit (not yet tested by people with tremor) and one next step. End on the "prototype, not medical advice" line |
 
