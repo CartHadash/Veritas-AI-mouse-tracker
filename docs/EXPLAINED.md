@@ -1250,3 +1250,28 @@ so it no longer pulls the eye. In exchange there are several small movements tha
 only as an answer to something: a button dips when pressed, a switch's knob overshoots a
 little and settles, the "Connected" dot breathes, a title's icon draws itself when its tab
 opens, and the assistant's button wiggles once after five clicks on targets.
+
+### Everyday targets (Sun 15 Nov 12:59 CET, team leader's lane)
+
+**What changed.** The target in the practice area used to be the same orange circle every
+time. Now it takes turns being six things people really click: a round button, a checkbox,
+a folder, a close button, a link and a "Save" button (`web/targets.js`). They have different
+sizes: the checkbox and the close button are small (26 px), the "Save" button is wide.
+
+**Why.** Tremor does not make every click equally hard. It is the small things, a checkbox
+or the cross that closes a window, that a shaky cursor misses. Showing them makes the
+practice area look like the problem the project is about.
+
+**What counts as a hit.** Exactly the shape you see: a circle for the round kinds, a
+rectangle for the others (`targetContains`). A label next to a target ("Remember me",
+"Photos") is only there to make it look real; clicking the label does not count. As before,
+the button must be pressed and released on the target.
+
+**Why a fixed order.** The kinds come round in the same order, not at random. If they were
+random, one filter might by luck get more easy targets than another and look better than it
+is. With a fixed order every filter meets the same mix. One thing to keep in mind: "time per
+target" now averages easy and hard shapes, so it only means something over several targets.
+
+**How we know it works.** In a browser, a simulated click on the centre of each of the six
+kinds counted as a hit, a click 90 px to the side counted as a miss, and points just inside
+and just outside each shape's edge were classified correctly. Not yet tried with a real hand.

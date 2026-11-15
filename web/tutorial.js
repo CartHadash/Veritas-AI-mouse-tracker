@@ -11,7 +11,8 @@
       text: "Move your mouse or trackpad inside the box. The dark dot is the cursor that counts; " +
             "the faint grey dot is your raw movement." },
     { part: "#area", title: "2. Click the orange target",
-      text: "Press and release on the orange circle. A hit moves it somewhere new, and your hits " +
+      text: "Press and release on the orange target. It takes turns being things you click every day " +
+            "(a button, a checkbox, a folder, a close button, a link). A hit moves it somewhere new, and your hits " +
             "are counted per filter under \"Your targets\"." },
     { part: "#demo-toggle", title: "3. Switch on Demo tremor",
       text: "It adds a real tremor recording (from a public dataset) to your movement. The grey dot " +

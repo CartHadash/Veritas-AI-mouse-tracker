@@ -46,7 +46,7 @@ h1, h2, .brand, .meter-word, .readings dd, .tile .value, .steps li::before, .str
 [data-slot="popover-title"] { font-family: var(--font-display); }
 h1 { font-weight: 700; letter-spacing: -0.02em; }
 h2 { font-weight: 650; letter-spacing: -0.01em; }
-.brand { font-size: 23px; font-weight: 700; }
+.brand { font-size: 21px; font-weight: 700; }
 .tile .value, .readings dd { font-weight: 650; letter-spacing: -0.01em; }
 
 /* ------------------------------------------------------------ 3. widgets: soft and floating */
@@ -104,9 +104,25 @@ h2:has(.title-icon) { display: flex; align-items: center; gap: 10px; }
   background: var(--band);
   color: #fffefb;
   margin-bottom: 20px;
+  /* One slim row: logo | tabs in the middle | the small tools | status. (Before, the tools
+     had a row of their own, which made the bar twice as tall.) */
+  display: flex;
+  flex-wrap: wrap;              /* on a narrow window the pieces wrap onto a second row */
+  align-items: center;
+  gap: 8px 16px;
+  padding: 9px 28px;
 }
-/* The wave is a quiet drawing along the bottom edge of the bar; clicks pass through it. */
-#wave { position: absolute; left: 0; right: 0; bottom: 0; width: 100%; height: 34px; pointer-events: none; }
+.topbar [data-slot="tabs-list"] { margin-inline: auto; padding: 4px; }   /* the free space goes either side of the tabs */
+.topbar [data-slot="tabs-tab"] { height: 38px; padding: 0 18px; font-size: 16px; }
+.topbar .topbar-tools { order: 2; gap: 6px; }
+.topbar .status { order: 3; }
+/* The three small tools ("How to use", the two reading switches) as see-through pills. */
+.topbar .topbar-tools button { border-color: transparent; background: rgba(255, 255, 255, 0.14); color: #fffefb; font-size: 14px; padding: 5px 12px; }
+.topbar .topbar-tools button:hover { background: rgba(255, 255, 255, 0.24); }
+.topbar .topbar-tools button[aria-pressed="true"] { background: #fffefb; color: var(--ink); }
+
+/* The wave fills the whole bar, behind its content; clicks pass straight through it. */
+#wave { position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; }
 .topbar > *:not(#wave) { position: relative; z-index: 1; }
 
 .brand { color: #fffefb; }

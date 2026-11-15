@@ -55,7 +55,7 @@ let lockRefusals = 0;               // refusals in a row (Chrome refuses for ~1 
 let hand = null;                    // while locked: the hand's position, added up from its movement
 let settings = { mode: "learned", strength: 1, demo_tremor: false, tracking: false };
 let threshold = 0.165;
-let target = null;                  // {x, y, shownAt}
+let target = null;                  // {x, y, shownAt, kind}: made by makeTarget() in targets.js
 const tally = {};                   // per mode (+ click freeze): {hits, misses, totalTime}
 const FREEZE_MS = 300;              // click freeze never holds the cursor longer than this
 let freezeOn = false;
@@ -75,7 +75,8 @@ function calibrationDot(seconds) {
   return { x: calib.centre.x + calib.radius * Math.sin(angle),
            y: calib.centre.y - calib.radius * (1 - Math.cos(angle)) };
 }
-function onTarget(p) { return Math.hypot(p.x - target.x, p.y - target.y) <= TARGET_RADIUS; }
+// The target's shape and size decide this (a checkbox is a small square, a link a wide strip).
+function onTarget(p) { return targetContains(target, p); }
 
 // The last moments of movement, drawn as two fading lines behind the cursors: where the hand
 // went (raw) and where the corrected cursor went. Only real positions from the server.
@@ -308,13 +309,9 @@ area.addEventListener("pointerup", () => {
 
 // ------------------------------------------------------------ targets and tally
 
+// The next everyday thing to click (targets.js takes the kinds in turn), at a random place.
 function newTarget() {
-  const margin = 50;
-  target = {
-    x: margin + Math.random() * (area.clientWidth - 2 * margin),
-    y: margin + Math.random() * (area.clientHeight - 2 * margin),
-    shownAt: performance.now(),
-  };
+  target = makeTarget(area.clientWidth, area.clientHeight);
 }
 
 function showStreak() {
@@ -563,9 +560,7 @@ function draw() {
     circle(dot.x, dot.y, 14, CALIB);
     circle(dot.x, dot.y, 4, PAPER);
   } else if (target) {
-    circle(target.x, target.y, TARGET_RADIUS + 7, "rgba(217, 102, 26, 0.16)");   // soft halo
-    circle(target.x, target.y, TARGET_RADIUS, TARGET);
-    circle(target.x, target.y, 5, PAPER);
+    drawTarget(ctx, target);                          // a button, a checkbox, a folder... (targets.js)
   }
   drawEffects(now);
   if (settings.mode === "low_sensitivity" && !locked) drawLockInvite();

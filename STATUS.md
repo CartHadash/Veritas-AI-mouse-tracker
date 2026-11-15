@@ -118,6 +118,17 @@ write-up as a next step); round 2 of the step 4 path check (the stress test alre
 
 ## Done since the trim (newest first)
 
+- Sun 15 Nov 12:59 CET, leader's agent, on `leader/motion` (pushed, NOT merged): (1) the top bar is one
+  slim row (64 px at a 1440 px window; before, the tools had a second row) and the wave
+  fills the whole bar; (2) **everyday targets**: the practice target takes turns being a
+  round button, a checkbox, a folder, a close button, a link and a "Save" button, each with
+  its own size, and the drawn shape is exactly the area that counts as a hit
+  (`web/targets.js`). The kinds come in a fixed order so every filter meets the same mix.
+  Checked in the browser with simulated clicks: a click on the centre of each of the six
+  kinds counted as a hit and a click 90 px to the side as a miss; no console errors. Not
+  checked with a real hand. Note for the write-up: "time per target" now mixes easy and hard
+  shapes, so compare filters over several targets, not one.
+
 - Sun 15 Nov 12:54 CET, leader's agent: second pass on `leader/motion` (pushed, NOT merged) after the
   leader's review. Fonts: Bricolage Grotesque for headings and numbers, Instrument Sans for
   text (two files in `web/fonts/`, 41 KB and 30 KB, SIL Open Font License; the
@@ -334,8 +345,10 @@ Headlines on test people:
   (3) **Hold to peek** (about 30 min): while the space bar is held, the correction is off (the
   shown cursor and the click position follow the raw movement), so the person feels the
   difference; release to switch it back on. Show a small "correction paused" note meanwhile.
-  (4) **Everyday targets** (about 1.5-2 h, first to cut): instead of circles, things that are
-  hard in real life: a small close button, a checkbox, a link inside a sentence.
+  (4) **Everyday targets: DONE by the leader's agent (Sun 15 Nov 12:59 CET, branch `leader/motion`), not
+  yours any more.** New file `web/targets.js`; `web/app.js` changed in three small places
+  only (`onTarget`, `newTarget`, and the line in `draw` that draws the target). If your
+  spiral or fair test need the target, use `target.kind` and `targetContains()`.
   The leader meanwhile works on branch `leader/motion` and keeps new code in NEW files
   (`web/motion.js`, `web/motion.css`), touching `web/app.js` as little as possible, so the
   two lanes do not collide. Styling of whatever you add is the leader's afterwards: plain

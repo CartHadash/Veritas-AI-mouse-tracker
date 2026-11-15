@@ -3,7 +3,7 @@
 // add-on: delete their two lines in index.html and the page is back to the plain look.
 //
 // What moves:
-//   1. a quiet wave along the bottom of the top bar: shaky on the left, calm on the right
+//   1. a quiet wave across the top bar: shaky on the left, calm on the right, like the logo
 //   2. the logo itself
 //   3. the picture on "How it works": a shaky line goes into the detector and comes out steady
 // Parts 1 and 2 follow the LIVE tremor score (they shake more when the detector sees tremor).
@@ -81,23 +81,24 @@
 
   // ---------------------------------------------------------- 1. the wave behind the top bar
 
-  // Three thin lines flow along the bottom edge of the bar. Each is a slow swell plus a
-  // small fast shake; the shake is there at the left edge and gone by the middle. It is kept
-  // faint and slow on purpose, so it never pulls the eye from the page. `t` is in seconds.
+  // Four lines flow across the whole bar, spread from its top to its bottom. Each is a slow
+  // swell plus a fast shake; the shake is there at the left edge and gone by the middle.
+  // The lines are faint and slow, so they give the bar life without pulling the eye from
+  // the page. `t` is the time in seconds.
   function drawWave(t) {
     const { ctx, W, H } = fit(wave);
     if (W === 0) return;
-    const shakeSize = 1.5 + 5 * level;                 // px; grows with the live tremor score
-    for (let k = 0; k < 3; k++) {
+    const shakeSize = 2 + 6 * level;                   // px; grows with the live tremor score
+    for (let k = 0; k < 4; k++) {
       ctx.beginPath();
       for (let x = -4; x <= W + 4; x += 5) {
-        const swell = 3 * Math.sin(x / 210 + t * 0.3 + k * 1.3);
-        const shake = shakeSize * (1 - ramp(0.1, 0.5, x / W)) * Math.sin(x * 0.42 + t * 7 + k * 2.1);
-        const y = H * (0.3 + 0.22 * k) + swell + shake;
+        const swell = H * 0.09 * Math.sin(x / 200 + t * 0.35 + k * 1.3);
+        const shake = shakeSize * (1 - ramp(0.1, 0.5, x / W)) * Math.sin(x * 0.42 + t * 8 + k * 2.1);
+        const y = H * (0.2 + 0.2 * k) + swell + shake;
         if (x === -4) ctx.moveTo(x, y); else ctx.lineTo(x, y);
       }
-      ctx.lineWidth = 1.3;
-      ctx.strokeStyle = k === 1 ? "rgba(169, 230, 204, 0.38)" : "rgba(255, 255, 255, 0.13)";
+      ctx.lineWidth = 1.4;
+      ctx.strokeStyle = k === 2 ? "rgba(169, 230, 204, 0.42)" : "rgba(255, 255, 255, 0.16)";
       ctx.stroke();
     }
   }
