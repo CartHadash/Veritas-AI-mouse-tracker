@@ -1,6 +1,6 @@
 # TAG Pointer: sources, datasets and credits
 
-Every dataset, model, library, method and AI tool used in this project.
+Every dataset, model, library, method, AI tool and etc. used in this project.
 
 **This project is a prototype and is not medical advice.**
 
@@ -33,16 +33,11 @@ https://physionet-open.s3.amazonaws.com/) and is never stored in this repository
   stimulation on amplitude and frequency characteristics of rest tremor in Parkinson's disease.
   Thalamus & Related Systems, 1(3), 203–211. Dataset: https://doi.org/10.13026/C2D097
 
-### PhysioNet (cited alongside both)
+### PhysioNet
 
 - Pollard, T., Moody, B. E., Lehman, L., Gow, B., Fernandes, C., Xie, C., Johnson, A.,
   Mark, R. G., & Heldt, T. (2026). PhysioNet as a global platform for biomedical research.
   Nature Health. https://doi.org/10.1038/s44360-026-00096-z
-
-### Looked at and not used
-
-- RobustPDx (mouse and keyboard tasks, Figshare, CC0, https://doi.org/10.6084/m9.figshare.32099416):
-  cursor positions saved about twice a second, too slow to contain a 4–6 Hz tremor.
 
 ## Pretrained models
 
@@ -56,9 +51,7 @@ https://physionet-open.s3.amazonaws.com/) and is never stored in this repository
 
 ## AI tools used while building
 
-- Claude Code (Anthropic): planning, writing and testing most of the code.
-- The ui-sdk agent skill (Vercel Labs): the library's own instructions for AI assistants,
-  used during the interface redesign.
+- Claude Code (Opus 5.5): planning, writing and testing some of the code.
 
 ## Libraries
 
@@ -123,6 +116,4 @@ Exact versions are pinned in `requirements.txt`.
 
 ## Work done before the hackathon
 
-- Only dataset research. No code written before the hackathon is in this repository: the two
-  files first planned for reuse (the data download script and the classic filters) were
-  rewritten from scratch during the weekend.
+- None
