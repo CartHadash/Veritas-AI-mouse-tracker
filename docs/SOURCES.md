@@ -115,4 +115,6 @@ Installed in step 1 (exact versions in `requirements.txt`). Add new ones here wh
 
 ## Tutorials and other code
 
-- None so far.
+- Web Speech API (`speechSynthesis`), built into the browser: the "Read aloud" button under the
+  assistant's answers. No library, no key; on macOS it uses the system's own voices
+  (https://developer.mozilla.org/en-US/docs/Web/API/SpeechSynthesis).

@@ -10,8 +10,9 @@ from here into the write-up without checking `evaluation/results/RESULTS.md`.
    then follow it; it reports each filter's distance from the dot, the samples per second and
    the shaking. Letting it choose the filter was tested in a simulation
    (`evaluation/calibration_sim.py`, validation) and, with the network alone, did worse than
-   always using our model, so it never switches the filter. Re-run with the app's current model,
-   choosing would now help, but there was no time to re-test it properly. Explained in
+   always using our model, so it never switches the filter by itself. Re-run with the app's
+   current model, choosing would now help, so since Sun 15 Nov a "Use <filter>" button after the
+   test lets the person switch with one tap (never automatic). Explained in
    `docs/EXPLAINED.md` "Calibration test".
 
 ## Timofey
@@ -34,6 +35,7 @@ from here into the write-up without checking `evaluation/results/RESULTS.md`.
 2. **Notch canceller** (remove the tremor's own rhythm). **Tested, not kept:**
    `evaluation/results/notch_canceller.md`.
 3. **Accessibility** (read aloud, dyslexia-friendly font, colour-blind-safe colours, larger
-   text). **In progress (leader's UI work):** read aloud and larger text first; the rest if time allows.
-4. **"Feels laggy" → let the user choose.** **Built:** Steadiest / Balanced / Faster control
+   text). **Read aloud built** (assistant answers, browser speech, no API). Larger text,
+   dyslexia-friendly font and colour-blind-safe colours: not yet.
+4. **"Feels laggy" -> let the user choose.** **Built:** Steadiest / Balanced / Faster control
    (`evaluation/response_levels.py`).

@@ -68,10 +68,19 @@ shaking was flagged.
 and the share that hit the target.
 - usage.steadiness_score: 0 = very shaky, 1 = very steady. It is a simple score from the \
 typical shake size: 10 pixels or more of shaking gives 0.
-- filter.mode: how the cursor is smoothed in the app. "none" = no smoothing, \
-"low_sensitivity" = the pointer moves less for the same hand movement, "one_euro" = a \
-standard smoothing filter, "learned" = our trained model that removes shaking. \
-filter.strength goes from 0 (off) to 1 (full).
+- filter.mode: how the cursor is smoothed in the app. Always use the names the person sees \
+on the page, never the internal ones: "none" = "No filter" (no smoothing), \
+"low_sensitivity" = "Lower sensitivity" (the pointer moves half as far for the same hand \
+movement), "one_euro" = "One Euro" (a standard smoothing filter), "learned" = "Our model" \
+(our trained model plus smoothing, switched on only when tremor-like shaking is detected). \
+filter.strength goes from 0 (off) to 1 (full). filter.response (only sometimes present, \
+"Our model" only): "steadiest" = "Steadiest" (shakes least but trails a moving hand most), \
+"balanced" = "Balanced", "responsive" = "Faster" (follows quicker but shakes more). Other \
+settings on the page you may suggest: "Click freeze" (holds the cursor still while the button \
+is pressed, so a click lands where it started) and "Calibrate for my mouse" (a 10 second test \
+that shows which filter kept the cursor closest).
+- session.minutes_active: minutes the pointer was moving. Under 1 means "less than a minute"; \
+never say "0 minutes".
 - model_info: the detector version and, when known, how often it missed real tremor and \
 how often it raised false alarms on test data.
 - whole_laptop (only sometimes present): the same kind of numbers for pointer movement \

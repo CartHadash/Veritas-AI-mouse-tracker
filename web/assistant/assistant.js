@@ -123,6 +123,30 @@
     return bubble;
   }
 
+  // "Read aloud" under an answer: the browser's built-in speech (no API, no key, works
+  // offline on macOS). Reading is easier than small text for many of our users.
+  function addReadAloud(bubble) {
+    if (!("speechSynthesis" in window)) return;     // a browser without speech: no button
+    const button = document.createElement("button");
+    button.type = "button";
+    button.className = "assistant-speak";
+    button.textContent = "Read aloud";
+    button.addEventListener("click", () => {
+      if (speechSynthesis.speaking) {                // second tap stops it
+        speechSynthesis.cancel();
+        return;
+      }
+      const speech = new SpeechSynthesisUtterance(bubble.textContent);
+      speech.lang = "en-US";
+      speech.rate = 0.95;                            // a little slower than normal
+      speech.onstart = () => { button.textContent = "Stop reading"; };
+      speech.onend = speech.onerror = () => { button.textContent = "Read aloud"; };
+      speechSynthesis.speak(speech);
+    });
+    bubble.after(button);
+    log.scrollTop = log.scrollHeight;
+  }
+
   function setBusy(on) {
     busy = on;
     for (const button of panel.querySelectorAll("button")) button.disabled = on;
@@ -157,6 +181,7 @@
     }
     const { answer, suggestions } = splitReply(reply);
     renderHighlighted(bubble, answer);
+    addReadAloud(bubble);
     history.push({ role: "assistant", content: answer.trim() });
     const next = parseSuggestions(suggestions);
     showQuestions(next.length ? next : STARTERS);

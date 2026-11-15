@@ -91,3 +91,14 @@
 
 .assistant-disclaimer { font-size: 15px; color: var(--muted, #6e5444); margin: 12px 0 0; }
 .assistant-mode { margin-top: 0; }
+
+/* "Read aloud" under each answer: smaller than the question buttons, but still easy to hit. */
+.assistant button.assistant-speak {
+  display: block;
+  min-height: 40px;
+  padding: 6px 14px;
+  margin: -2px 8% 10px 0;
+  font-size: 15px;
+  font-weight: 600;
+  background: none;
+}

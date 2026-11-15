@@ -53,9 +53,12 @@
             </div>
             <label class="field-inline">
               <span class="field-name">Demo tremor</span>
-              <ui-switch id="demo-toggle"><ui-switch-thumb></ui-switch-thumb></ui-switch>
+              <ui-switch id="demo-toggle" title="Adds a real patient's recorded tremor to your movement, so you can see the filters work"><ui-switch-thumb></ui-switch-thumb></ui-switch>
             </label>
           </div>
+
+          <!-- One plain sentence about the chosen filter (text set in app.js, MODE_HINTS). -->
+          <p class="mode-hint" id="mode-hint"></p>
 
           <!-- Shown whenever demo tremor is on (required wording). -->
           <div id="demo-banner" class="banner" hidden>
@@ -116,6 +119,7 @@
                 </ui-slider-track>
               </ui-slider-control>
             </ui-slider>
+            <span class="small hint">How much of the filter is used: 0 = off, 1 = full.</span>
 
             <!-- Builder, Sun 15 Nov: how quickly "Our model" follows a moving hand.
                  Less lag always means more shake (evaluation/results/tune_lag.md). -->
@@ -154,7 +158,10 @@
 
             <button class="btn wide" id="calibrate"
                     title="Hold the cursor on a blue dot, then follow it for a few seconds">Calibrate for my mouse (10 s)</button>
+            <span class="small hint">Hold a blue dot, then follow it. Shows which filter kept your cursor closest.</span>
             <p class="small" id="calib-result" hidden></p>
+            <!-- After a test: switch to the filter that did best, but only when the person taps it. -->
+            <button class="btn wide quiet" id="calib-apply" hidden></button>
           </section>
 
           <section class="card">
