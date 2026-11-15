@@ -60,7 +60,10 @@ researchers. So:
     and fast (well under 8 ms per sample on the laptop's CPU).
 12. **Cite as you go.** The moment you use a new dataset, library, tutorial, pretrained
     model or AI tool, add it to `docs/SOURCES.md`.
-13. **Do not edit `README.md`** until the team leader says the write-up phase has started.
+13. **`README.md` is the write-up.** The team leader started the write-up phase on Sun 15 Nov
+    15:20 CET; only the writer (and the leader's agent when asked) edits it.
+14. **Feature freeze since Sun 15 Nov 15:20 CET:** bug fixes, docs and checks only; no new
+    features, models or retraining unless the team leader lifts it (see `STATUS.md`).
 
 ## Git rules
 

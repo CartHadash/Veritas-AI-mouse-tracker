@@ -17,14 +17,14 @@ First message to give the agent:
 
 - [x] Saturday: sources verified, scope checked, first results read, rewrite of the two
       pre-hackathon files ordered (no reused code is left, so no email to the organisers is needed).
-- [ ] **By 15:00: the demo-Mac checks** listed in `STATUS.md` ("What is left"): B3 real
-      cursor, trackpad check of the current model in Safari and Chrome, `time_live.py` on a
-      quiet Mac. You are the only one with the demo Mac; paste results and error text into `STATUS.md`.
+- [x] **The demo-Mac checks** (Sun 11:04-15:00): B3, Steady cursor everywhere, the page, the
+      trackpad, `time_live.py`, the assistant with the real key (results in `STATUS.md`).
+- [x] **Feature freeze called at 15:20** (earlier than the planned 20:00) and the write-up
+      phase started. Only the leader can lift the freeze.
 - [ ] **By 18:00:** read `evaluation/results/RESULTS.md` and `docs/EXPLAINED.md` end to end.
       Anything you cannot explain to a judge gets fixed or removed.
-- [ ] **20:00: feature freeze.** Tell everyone to stop adding things; only fixes after this.
-- [ ] **20:00-23:00:** tell the writer the write-up phase has started; fill `README.md` from the
-      official template (`docs/COMPETITION_RULES.md`) using `docs/WRITER_BRIEF.md`. Record the video.
+- [ ] **Until 23:00:** with the writer, fill `README.md` from the official template
+      (`docs/COMPETITION_RULES.md`) using `docs/WRITER_BRIEF.md`. Record the video.
 - [ ] **23:00: first submission.** Open every link in a private browser window first.
 - [ ] **Before Mon 05:59:** final resubmission after last fixes.
 
