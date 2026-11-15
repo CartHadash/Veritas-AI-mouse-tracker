@@ -57,7 +57,6 @@ https://physionet-open.s3.amazonaws.com/) and is never stored in this repository
 ## AI tools used while building
 
 - Claude Code (Anthropic): planning, writing and testing most of the code.
-- ChatGPT (OpenAI): drafting the write-up and the video script.
 - The ui-sdk agent skill (Vercel Labs): the library's own instructions for AI assistants,
   used during the interface redesign.
 

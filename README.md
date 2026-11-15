@@ -1,6 +1,7 @@
 # TAG Pointer
 
 **Track:** Health
+**Team:** Names on the submission form
 
 **This project is a prototype and is not medical advice.**
 
@@ -14,19 +15,21 @@ TAG-Pointer is a mouse stabilisation tool based on a trained model that understa
 
 ## What we added
 
-We have developed Click Freeze, which improves click performance when using high simulated tremor values, providing session performance summaries and focusing on user privacy by providing local tracking. Mouse data is accessed by the assistant for summary statistics. The assistant sees only summary statistics but never raw mouse movement.
+Our own idea. We also developed Click Freeze, which improves click performance with strong simulated tremor, session performance summaries, and local-only tracking for privacy. The assistant sees only summary statistics, never raw mouse movement.
 
 ## How it works
 
-**Data:** Tremor data from public sources (PADS/TremorDB) and synthetic mouse data. As there is no publicly available data that can be directly used in this scenario, real-world tremor data from wrist/fingertips was mapped to simulated mouse.
+**Data:** Tremor data from public sources (PADS/TremorDB) and synthetic mouse data. As there is no publicly available data that can be directly used in this scenario, real-world tremor data from wrist/fingertips was mapped to simulated mouse. The recordings come from 484 people (PADS 469, TremorDB 15), split by person: 340 for training, 72 for choosing settings and 72 for the final test, so test people were never seen in training.
 
-**Detection:** Gradient boosting is used to identify likely tremor motion, and, besides, it also analyses the 19 explainable traits over the past 2.56 seconds.
+**Detection:** Gradient boosting identifies likely tremor motion from 19 explainable traits of the past 2.56 seconds.
 
 **Correction:** A neural network uses the previous 0.64 seconds of cursor movement to estimate and remove tremor. Rather than the Corrector modifying all mouse movements, the Corrector is activated/deactivated by Detector v2.
 
 **Application:** Real time pointer smoothing, Click Freeze, session analytics and AI assistant.
 
 ## Results
+
+All results are on the 72 test people.
 
 ### 1. Tremor Detection Model
 
@@ -46,47 +49,59 @@ There are several crucial aspects where we think TAG missed:
 - Small tremor is missed: 34.2% of tremor under 3 px, against 2.9% over 10 px. It is hidden under deliberate movement tens of pixels large.
 - Some "false alarms" look exactly like tremors. They are 41.7% on tasks where the patient moved on purpose, against 19.5% at rest; our labelling rule probably left real tremor unmarked there. The chart shows the most confident one, a strong, regular 5 Hz shake.
 
+![The most confident false alarm: a strong, regular 5 Hz shake](evaluation/results/failures/detector_false_alarm_1.png)
+
 ### 2. Tremor Correction Model
 
 **Table 2: Quantitative evaluation**
 
-| Evaluation Metric | No Filter | Lower Sensitivity | One Euro | Our Model (Name remains uncertain) |
+| Evaluation Metric | No Filter | Lower Sensitivity | One Euro | TAG Pointer |
 |---|---|---|---|---|
-| Distance from intended path (moving / still, px) | 13.17 / 12.74 | 6.59 / 6.40 | 15.32 / 6.98 | 7.30 / 5.17 |
-| Tremor removed (%) | 0% | 75% | 49% | 86% |
-| Jerkiness (px) | 1.69 | N/A | 0.98 | 1.12 |
-| Simulated click success (strong tremor) | 24% | N/A | 88% | 89% |
+| Distance from intended path (moving / still, px) | 13.17 / 12.74 | 6.59 / 6.40 | 15.32 / 6.98 | 7.32 / 4.29 |
+| Tremor removed (%) | 0% | 75% | 49% | 88% |
+| Jerkiness (px) | 1.69 | N/A | 0.98 | 1.27 |
+| Simulated click success (strong tremor, 10 px target) | 24% | N/A | 88% | 99% |
 | Processing latency (ms) | 0 | 0 | 20 | 0 |
 
-In terms of reducing tremors and maintaining the target trajectory, TAG-Pointer offers certain advantages in terms of stability compared to traditional methods; yet on the other hand, when it comes to movement smoothness — the answer is no.
+The rows above measure our network alone. In the app its output is also smoothed: the cursor then shakes less than with One Euro (2.56 vs 3.39 px), but trails a moving hand by 72 ms. The click test is a simulation with perfect aim; by hand, real buttons were still harder to hit.
 
-Compared to the One Euro filter, we have achieved a relative improvement of approximately (86% - 49%) / 49% = 75.5% in removing the tremor. This is about a design choice of the "One Euro" filter: it is a low-pass filter with a dynamically tuned cutoff frequency depending on the speed of the movement, to achieve a trade-off jitter reduction against lag. (Casiez, G. (n.d.)) Simply put, our neural network uses the motion of the last 0.64 seconds to estimate the current, more stable position. It then subtracts the estimated tremor component. This means our model uses a correction mechanism different from traditional filters, rather than just increasing the intensity of the filter.
-
-Despite minor jerkiness drawback, TAG-Pointer achieves a better combination of positional accuracy, tremor removal, and response speed, though it has not yet reached the level of motion smoothness provided by One Euro.
+TAG-Pointer removes more tremor and stays closer to the intended path than traditional methods, but the network alone is less smooth than One Euro. Compared to the One Euro filter, we achieved a relative improvement of approximately (88% - 49%) / 49% = 79.6% in removing the tremor. One Euro is a low-pass filter whose cut-off changes with movement speed, trading jitter against lag (Casiez et al., 2012). Our network instead uses the last 0.64 seconds of motion to estimate the tremor component and subtract it, rather than just filtering harder.
 
 **Table 3: Cases where TAG underperforms traditional methods**
 
 | Area/Feature | TAG-Point vs One Euro | Interpretation |
 |---|---|---|
-| Jerkiness | 1.12 vs 0.98 | One Euro smoother |
-| Stationary Tremor in Demo | TAG-Point performs poorer in certain cases | One Euro can be better when the hand is still |
-| Mild tremor in Demo | 3% closer to intended path during reaching | Quite limited advantage |
+| Jerkiness (network alone) | 1.27 vs 0.98 | One Euro smoother |
+| Still hand, mild tremor in demo | 0.43 vs 0.29 px | One Euro better when the hand is still and tremor is mild |
+| Reaching, mild tremor in demo | 6.53 vs 7.04 px (no filter 1.55) | The smoothing lags, so both filters do worse than no filter |
+| Lag while reaching | 72 ms (app, Steadiest) vs 20 ms (Table 2) | One Euro follows the hand faster |
 
-This is only a slight increase. We did not measure the average time taken to complete tasks as TAG's performance also depends on the severity of the tremor. Oftentimes with mild tremor it will be much harder to detect and correct. Therefore TAG should be used as a complementary method.
+We did not measure the average time taken to complete tasks as TAG's performance also depends on the severity of the tremor. Oftentimes with mild tremor it will be much harder to detect and correct. Therefore TAG should be used as a complementary method.
 
 ## What we'd do next
 
 - Test it with people who have tremor. Nothing we measured replaces real-world testing with intended users.
-- Retrain the detector to be stricter during fast, deliberate movement, where most false alarms happen.
-- Changing the cut-off alone did not help; we tried it.
+- Retrain the detector to be stricter during fast, deliberate movement, where most false alarms happen. Changing the cut-off alone did not help; we tried it.
 - Test sudden direction changes to determine whether the corrector introduces lag or incorrectly suppresses intentional movement when users change direction rapidly.
 - Test irregular tremor patterns to evaluate whether the model can reliably distinguish tremor from intentional movement when tremor frequency and amplitude vary.
 
+## Run it
+
+```bash
+python3.12 -m venv .venv && source .venv/bin/activate
+python -m pip install -r requirements.txt
+python -m uvicorn server.main:app          # then open http://127.0.0.1:8000
+```
+
+No dataset download is needed to run the app. The assistant needs an Anthropic API key in a `.env` file; without one it shows a plain summary instead.
+
 ## Bibliography
+
+The full list of sources, with licences, is in [SOURCES.md](SOURCES.md).
 
 **AI tools:** Claude Code (code development and testing); Claude API (AI assistant in the product)
 
-**Datasets:** PADS, Parkinsons Disease Smartwatch dataset v1.0.0, PhysioNet, https://doi.org/10.13026/m0w9-zx22 (CC BY-NC-SA 4.0). Effect of Deep Brain Stimulation on Parkinsonian Tremor (TremorDB), PhysioNet, https://doi.org/10.13026/C2D097 (ODC-By 1.0). (Original datasets and their licenses.)
+**Datasets:** PADS, Parkinsons Disease Smartwatch dataset v1.0.0, PhysioNet, https://doi.org/10.13026/m0w9-zx22 (CC BY-NC-SA 4.0). Effect of Deep Brain Stimulation on Parkinsonian Tremor (TremorDB), PhysioNet, https://doi.org/10.13026/C2D097 (ODC-By 1.0).
 
 **Pretrained model:** None. Both models were trained by us.
 
@@ -94,6 +109,4 @@ This is only a slight increase. We did not measure the average time taken to com
 
 **Libraries:** NumPy, pandas, SciPy, scikit-learn, Matplotlib, PyTorch, FastAPI, Uvicorn, Anthropic Python SDK, python-dotenv, certifi, pytest, PyObjC, ui-sdk web components.
 
-**Methods:** One Euro filter (Casiez, Roussel and Vogel, 2012, https://github.com/casiez/OneEuroFilter), used as a baseline; gradient boosting (Friedman, 2001); dilated causal convolutions (van den Oord et al., 2016, arXiv:1609.03499); related work on tremor in cursor movement (White and Horvitz, 2019, https://doi.org/10.1038/s41746-019-0171-4).
-
-Casiez, G., Roussel, N., Vogel, D., & Lifl. (n.d.). E filter: A simple speed-based low-pass filter for noisy input in interactive systems. Retrieved November 14, 2026, from https://direction.bordeaux.inria.fr/~roussel/publications/2012-CHI-one-euro-filter.pdf
+**Methods:** One Euro filter, used as a baseline: Casiez, G., Roussel, N., & Vogel, D. (2012). 1€ Filter: A Simple Speed-based Low-pass Filter for Noisy Input in Interactive Systems. CHI 2012. https://github.com/casiez/OneEuroFilter. Gradient boosting (Friedman, 2001); dilated causal convolutions (van den Oord et al., 2016, arXiv:1609.03499); related work on tremor in cursor movement (White and Horvitz, 2019, https://doi.org/10.1038/s41746-019-0171-4).
