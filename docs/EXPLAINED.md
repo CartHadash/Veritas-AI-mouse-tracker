@@ -958,6 +958,21 @@ because screenshots go out of date every time the page changes and would not fol
 larger text or the dyslexia font; pointing at the live page always matches. The controls stay
 usable while it is open, so the person can do each step straight away.
 
+**Three practice exercises (Sun 15 Nov, the team leader's ideas; `web/exercises.js`).**
+*Trace the spiral.* Drawing a spiral is a familiar way to see shaking in a line. The page
+draws a faint spiral; the person follows it from the middle outwards. For every position the
+server sends back, the page finds the nearest point of the spiral close to where the tracing
+has got to (only close by, so the next turn of the spiral, which is not far away, cannot be
+picked by mistake) and adds up the distance, once for the raw position and once for the
+corrected one. At the end it shows both averages in pixels. It is an exercise: the page says
+it is not a test of anything. *Fair test.* Ten targets with No filter, then the very same ten
+(same things, same places) with Our model, and a small table. Using the same targets both
+times is what makes it fair: otherwise one round could simply have got easier targets.
+*Hold to peek.* While the space bar is held, the page shows and clicks with the raw
+movement, so the difference can be felt at once. How we know they work: simulated pointer
+movement in the browser (spiral traced to its end, both fair-test rounds, space held); a
+first version of the spiral ended early with strong tremor, which that check found.
+
 **Easier-to-read text (Sun 15 Nov, Oleksandr's idea).** A button in the top bar
 (`web/reading.js`) switches the page to OpenDyslexic, a free font designed for readers with
 dyslexia (the letters are heavier at the bottom, so they are harder to mix up), with a little

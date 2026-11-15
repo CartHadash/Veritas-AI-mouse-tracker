@@ -119,6 +119,23 @@ write-up as a next step); round 2 of the step 4 path check (the stress test alre
 
 ## Done since the trim (newest first)
 
+- Sun 15 Nov ~14:15, builder's agent: **three practice exercises** (leader's requests;
+  new file `web/exercises.js`, five small hooks in `web/app.js`, plain markup under the
+  practice area in `web/index.html`, ids `spiral-start`, `fair-start`, `exercise-status`,
+  `exercise-result`). **Trace the spiral:** a faint spiral, start at the middle dot, raw line
+  grey and corrected line green, average distance of each from the spiral in px; the finished
+  drawing is `window.lastSpiral` (`raw`, `corrected` point lists, `rawDistance`,
+  `correctedDistance`, `filter`, `demoTremor`, `complete`, `at`). **Fair test:** 10 targets with
+  No filter, then the SAME 10 (same things, same places) with Our model; table of targets
+  hit, clicks that missed, time per target; says whether demo tremor was on; the result is
+  also `window.lastFairTest`; the filter in use before is restored. **Hold to peek:** space
+  bar held with the pointer in the area = shown cursor and click follow the raw movement,
+  with a note on the area. Wording everywhere: a practice exercise, not a test or a
+  measurement of the person. Checked in the app's browser with simulated pointer events
+  (spiral traced to the end with strong demo tremor, fair test run through both rounds,
+  space held and released); a bug found on the way (the spiral's progress ran ahead of the
+  hand with strong tremor and ended early) is fixed. Not tried with a real hand.
+
 - Sun 15 Nov ~14:00, builder's agent: **the first-use guide is now a live walkthrough**
   (Oleksandr's idea; `web/tutorial.js` rewritten). Seven steps; each dims the page except the
   real part it is about, points a speech bubble with an arrow at it, and a drawn "demo"
@@ -363,7 +380,8 @@ Headlines on test people:
   `assistant/run_test_prompts.py` (one that asks for something outside the list must do
   nothing).
 
-- Sun 15 Nov 12:37, team leader -> builder: **four practice-area features (leader's decision:
+- (1), (2), (3) DONE by the builder (Sun 15 Nov ~14:15, see "Done since the trim"); (4) was the
+  leader's. Sun 15 Nov 12:37, team leader -> builder: **four practice-area features (leader's decision:
   the leader does the design half of the new ideas, the builder the practice-area half).**
   In the leader's order of value; cut from the bottom; all before the 20:00 freeze. They live
   in the click and drawing code of `web/app.js`, which is why they are yours.

@@ -387,6 +387,14 @@ footer { padding: 6px 28px 110px; text-align: center; color: var(--muted); font-
    space under each tab's content, so the last lines can always be scrolled clear of it. */
 .practice, .page { padding-bottom: 104px; }
 
+/* Practice exercises under the practice area (web/exercises.js). */
+.exercises { display: flex; flex-wrap: wrap; align-items: center; gap: 10px 14px; margin-top: 12px; }
+.exercises .small { margin: 0; }
+#exercise-status, #exercise-result { flex-basis: 100%; }
+#exercise-status { font-weight: 600; color: var(--ink); }
+#fair-result { border-collapse: collapse; margin: 8px 0; }
+#fair-result th, #fair-result td { text-align: left; padding: 6px 18px 6px 0; border-bottom: 1px solid var(--line); }
+
 /* "Steady cursor everywhere" where this computer cannot run it: greyed out, reason shown. */
 .option.unavailable b { color: var(--muted); }
 .option.unavailable [data-slot="switch"] { opacity: 0.45; }
