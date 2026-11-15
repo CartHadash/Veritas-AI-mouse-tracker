@@ -31,7 +31,7 @@ freeze). The program is finished as it is:
 
 - [ ] **Team:** confirm the final project name (the page says "Steady Pointer").
 - [ ] **Writer + leader:** `README.md` from the official template, using `docs/WRITER_BRIEF.md`.
-- [ ] **Leader:** record the demo video (plan in `docs/WRITER_BRIEF.md` section 5). Clips
+- [ ] **Leader:** record the demo video (script: `docs/VIDEO_SCRIPT.md`; outline in `docs/WRITER_BRIEF.md` section 6). Clips
       already recorded: B3 real cursor (leader's laptop, `~/Desktop/screenshots/veritas-b3/`).
 - [ ] **Leader and Oleksandr:** read `evaluation/results/RESULTS.md` end to end (step 14);
       Oleksandr also `failures/failures.md` (step 9). Anything you cannot explain: ask.

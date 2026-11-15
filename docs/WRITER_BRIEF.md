@@ -154,6 +154,8 @@ whole Mac, built without any patient's mouse data and tested honestly against si
 ## 6. Demo video (up to 2 minutes; official structure in `docs/COMPETITION_RULES.md`)
 
 Recorded on the leader's Mac, where the app, the permission and the assistant's key work.
+**The full script, word for word with timings, sources and a recording checklist:
+`docs/VIDEO_SCRIPT.md`.** The table below is the outline it follows.
 
 | Part | Length | Show |
 |---|---|---|
