@@ -57,7 +57,7 @@ A checkbox should be a one-click thing, and not a moving target. For someone wit
 >
 > One switch applies the same correction to the real cursor in every app.
 >
-> And the AI-powered assistant explains the session in plain words.
+### calibration speeed up clip(3 sec)
 
 Do not say a number for the fair test: it is whatever the recording shows. Read the two
 numbers off the result card if there is time.
