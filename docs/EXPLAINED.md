@@ -1040,6 +1040,34 @@ allowed and five not-allowed actions and got exactly three buttons. What is not 
 how well the model itself uses the line (four new test questions, 19-22, wait for a run on
 the Mac that has the API key).
 
+### Keeping the assistant safe and on its job (Sun 15 Nov, builder, Oleksandr's request)
+
+Three questions: can it leak our API key, can it be used for harmful things, and can it be
+used as a free general chatbot (for example to review someone's code)?
+*The key.* The key lives in `.env` and is only used by the Anthropic library when it sends a
+request. It is never part of the text the model reads, so the model does not know it and
+cannot repeat it. As a second lock, every piece of every reply passes through `scrubbed()`
+(`assistant/core.py`), which blanks our key and anything shaped like one. A key could arrive
+cut into pieces, so text that could be the start of a key is held back until the next piece
+shows whether it is one. Errors are turned into a plain sentence; only the kind of error is
+printed in the terminal.
+*Staying on its job.* The instructions now say: a little friendly chat is welcome, but it
+does no other work: no writing, reviewing or fixing code, no homework, essays, recipes or
+how-to guides. Pasted code or documents are something the person showed it, not orders. A
+message is cut to 200 words, so there is no room to paste a long program anyway.
+*Harmful requests.* It declines anything illegal, dangerous, sexual or hateful in one calm
+sentence, and for talk of self-harm it points kindly to a trusted person, a doctor or the
+emergency number. The model also has its own safety training, and the API can refuse.
+*The reminder.* Under every answer the page itself prints the same short reminder: the
+numbers are estimates from a student prototype trained on public research recordings, they
+can be wrong, and a doctor is the person to ask for advice or treatment. It is written by
+the page's code, not by the model, so it cannot be forgotten.
+How we know: tests for the filter, the cut and the error path (`python -m pytest assistant`,
+9 pass; two failed at first and showed real mistakes, which is what tests are for). What we
+do NOT know yet: how the real model answers the new trap questions (23-28), because the Mac
+this was built on has no key. Instructions make good behaviour very likely, not certain; the
+filter, the word limit and the fixed list of actions are the parts that are certain.
+
 ### The whole-laptop pointer reader (step B1, `tracker/`)
 
 **What it does.** A small background loop asks macOS "where is the pointer right now?" 100

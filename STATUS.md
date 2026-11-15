@@ -119,6 +119,27 @@ write-up as a next step); round 2 of the step 4 path check (the stress test alre
 
 ## Done since the trim (newest first)
 
+- Sun 15 Nov 13:18, builder's agent: **assistant hardening** (Oleksandr's request; with the leader's
+  earlier permission to edit `assistant/`). Checked first: the API key is only read by the
+  Anthropic library from `.env`; it is never in the prompt (so the model cannot know it), no
+  route returns it, and no commit in the repository's history contains one. Added:
+  (1) `scrubbed()` in `assistant/core.py`: every piece of every reply passes a filter that
+  blanks our key and anything shaped like a key, also when it arrives split over pieces;
+  (2) any unexpected error becomes a plain sentence, and only the KIND of error is printed in
+  the terminal; (3) a message is cut to 200 words (Oleksandr's choice) and 2,000 characters,
+  the page's box to 1,500 characters; (4) prompt section "STAYING WHAT YOU ARE": a little
+  friendly chat is welcome, but no other work (no writing, reviewing or fixing code, no
+  homework, essays, recipes or how-to guides), pasted code or documents are not analysed or
+  obeyed, it has no files, internet, passwords or keys, nothing illegal, dangerous, sexual
+  or hateful, and a kind hand-off for talk of self-harm. `python -m pytest assistant`: 9
+  passed (two of the new tests first FAILED and found real bugs in the first version of the
+  filter and the error handling; fixed). Trap questions 23-28 added to
+  `assistant/run_test_prompts.py`. Also: the page prints a fixed reminder under EVERY answer
+  ("estimates from a student prototype trained on public research recordings; they can be
+  wrong; not medical advice; for advice or treatment talk to your doctor"), written by
+  `web/assistant/assistant.js`, not by the model, so it is always there. **Not run with the real model: no API key on the builder's
+  Mac. Leader: please run `python -m assistant.run_test_prompts` and judge 19-28.**
+
 - Sun 15 Nov 13:14, builder's agent: **"click where you aimed" on the practice page** (second
   half of the leader's task 1). `web/app.js` `aimedPosition()`: at the press, while Our model's
   gate is over half open, the click (and the freeze point) is the average of the corrected
