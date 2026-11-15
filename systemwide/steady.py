@@ -74,7 +74,8 @@ class SteadyCursor:
     """
 
     def __init__(self, start, bounds, mode="learned", demo_level=None, strength=1.0,
-                 response="steadiest", freeze=True, aim_seconds=DEFAULT_AIM_SECONDS):
+                 response="steadiest", freeze=True, aim_seconds=DEFAULT_AIM_SECONDS,
+                 detector_model=None, corrector_model=None):
         self.bounds = bounds
         self.hand = self.clamp(*start)
         self.shown = self.hand
@@ -82,8 +83,10 @@ class SteadyCursor:
         self.demo = ReplayedTremor(demo_level) if demo_level else None
         self.detector = None
         if mode == "learned":
-            self.detector = LiveDetector(Detector())
-            self.filter = LiveCorrector(live_detector=self.detector, strength=strength, model=load_corrector(),
+            # (The server passes the models it has already loaded, so switching on is quick.)
+            self.detector = LiveDetector(detector_model or Detector())
+            self.filter = LiveCorrector(live_detector=self.detector, strength=strength,
+                                        model=corrector_model or load_corrector(),
                                         smoothing=RESPONSE_LEVELS[response])
         elif mode == "one_euro":
             self.filter = OneEuroFilter()

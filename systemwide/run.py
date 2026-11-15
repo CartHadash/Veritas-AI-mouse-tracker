@@ -58,6 +58,98 @@ def screen_bounds(Q):
             max(r.origin.x + r.size.width for r in rects), max(r.origin.y + r.size.height for r in rects))
 
 
+def run_tap(Q, state, method="event", seconds=None, on_idle=None):
+    """
+    Correct the real cursor until state["stop"] becomes True (or `seconds` pass, if given).
+    Blocks; call it on the thread that should own the event tap. Used by the terminal test
+    mode below and by the page's switch (systemwide/service.py).
+
+    state: a dict with "steady" (the SteadyCursor in use; it may be swapped for another one
+           between events, for example when the page's settings change) and "stop".
+    on_idle(state, now): called about every 10 ms, between events.
+    Safety: Control + Option + X sets state["stop"]; any error inside the event handler lets
+    the event through unchanged; the tap is always removed on the way out.
+    """
+    state.setdefault("stop", False)
+    state["last_move"] = time.monotonic()
+    state["tap"] = None
+
+    moves = (Q.kCGEventMouseMoved, Q.kCGEventLeftMouseDragged, Q.kCGEventRightMouseDragged,
+             Q.kCGEventOtherMouseDragged)
+    downs = (Q.kCGEventLeftMouseDown, Q.kCGEventRightMouseDown)
+    ups = (Q.kCGEventLeftMouseUp, Q.kCGEventRightMouseUp)
+    buttons = downs + ups
+
+    def show(x, y, event=None):
+        if method == "event" and event is not None:
+            Q.CGEventSetLocation(event, Q.CGPointMake(x, y))
+        else:
+            Q.CGWarpMouseCursorPosition(Q.CGPointMake(x, y))
+
+    def callback(proxy, event_type, event, refcon):
+        try:
+            steady = state["steady"]
+            if event_type in (Q.kCGEventTapDisabledByTimeout, Q.kCGEventTapDisabledByUserInput):
+                Q.CGEventTapEnable(state["tap"], True)        # macOS paused the tap: resume
+            elif event_type == Q.kCGEventKeyDown:
+                code = Q.CGEventGetIntegerValueField(event, Q.kCGKeyboardEventKeycode)
+                flags = Q.CGEventGetFlags(event)
+                if code == KEY_X and flags & Q.kCGEventFlagMaskControl and flags & Q.kCGEventFlagMaskAlternate:
+                    state["stop"] = True                      # the off switch
+                    return None                               # do not type the X
+            elif event_type in moves:
+                p = Q.CGEventGetLocation(event)
+                now = time.monotonic()
+                show(*steady.move_to(p.x, p.y, now), event=event)
+                state["last_move"] = now
+            elif event_type in buttons:
+                if event_type in downs:
+                    steady.press(time.monotonic())            # may move the click to where you aimed
+                Q.CGEventSetLocation(event, Q.CGPointMake(*steady.shown))   # click where it is shown
+                if event_type in ups:
+                    steady.release()
+        except Exception:
+            pass                                              # never block the mouse
+        return event
+
+    mask = 0
+    for kind in moves + buttons + (Q.kCGEventKeyDown,):
+        mask |= Q.CGEventMaskBit(kind)
+    tap = Q.CGEventTapCreate(Q.kCGSessionEventTap, Q.kCGHeadInsertEventTap, Q.kCGEventTapOptionDefault,
+                             mask, callback, None)
+    if tap is None:
+        raise RuntimeError("macOS refused the event tap (permission missing?). Nothing was changed.")
+    state["tap"] = tap
+    source = Q.CFMachPortCreateRunLoopSource(None, tap, 0)
+    loop = Q.CFRunLoopGetCurrent()
+    Q.CFRunLoopAddSource(loop, source, Q.kCFRunLoopCommonModes)
+    Q.CGEventTapEnable(tap, True)
+    Q.CGSetLocalEventsSuppressionInterval(0.0)                # moving the cursor must not freeze the mouse
+
+    end = None if seconds is None else time.monotonic() + seconds
+    try:
+        while not state["stop"] and (end is None or time.monotonic() < end):
+            Q.CFRunLoopRunInMode(Q.kCFRunLoopDefaultMode, IDLE_UPDATE, False)
+            now = time.monotonic()
+            if on_idle is not None:
+                on_idle(state, now)
+            steady = state["steady"]
+            # While the mouse sends nothing, keep the filter fed every 10 ms. With demo tremor
+            # this shows the replayed shaking; without it, it keeps the detector's 2.56 s of
+            # history alive, so the correction does not have to warm up again after a pause.
+            if steady.filter is not None or steady.demo is not None:
+                if now - state["last_move"] >= IDLE_UPDATE:
+                    before = steady.shown
+                    after = steady.move_to(before[0], before[1], now)
+                    if abs(after[0] - before[0]) + abs(after[1] - before[1]) > 0.01:
+                        show(*after)                          # only move the cursor if it changed
+                    state["last_move"] = now
+    finally:
+        Q.CGEventTapEnable(tap, False)
+        Q.CFRunLoopRemoveSource(loop, source, Q.kCFRunLoopCommonModes)
+        Q.CFMachPortInvalidate(tap)
+
+
 def main():
     parser = argparse.ArgumentParser(description="Steadier real cursor in every app (macOS, prototype).")
     parser.add_argument("--mode", choices=MODES, default="learned")
@@ -91,83 +183,17 @@ def main():
                           demo_level=None if args.demo == "none" else args.demo, strength=args.strength,
                           response=args.response, freeze=not args.no_freeze,
                           aim_seconds=min(max(args.aim, 0.0), 0.5))
-    state = {"stop": False, "last_move": time.monotonic(), "tap": None}
-
-    moves = (Q.kCGEventMouseMoved, Q.kCGEventLeftMouseDragged, Q.kCGEventRightMouseDragged,
-             Q.kCGEventOtherMouseDragged)
-    downs = (Q.kCGEventLeftMouseDown, Q.kCGEventRightMouseDown)
-    ups = (Q.kCGEventLeftMouseUp, Q.kCGEventRightMouseUp)
-    buttons = downs + ups
-
-    def show(x, y, event=None):
-        if args.method == "event" and event is not None:
-            Q.CGEventSetLocation(event, Q.CGPointMake(x, y))
-        else:
-            Q.CGWarpMouseCursorPosition(Q.CGPointMake(x, y))
-
-    def callback(proxy, event_type, event, refcon):
-        try:
-            if event_type in (Q.kCGEventTapDisabledByTimeout, Q.kCGEventTapDisabledByUserInput):
-                Q.CGEventTapEnable(state["tap"], True)        # macOS paused the tap: resume
-            elif event_type == Q.kCGEventKeyDown:
-                code = Q.CGEventGetIntegerValueField(event, Q.kCGKeyboardEventKeycode)
-                flags = Q.CGEventGetFlags(event)
-                if code == KEY_X and flags & Q.kCGEventFlagMaskControl and flags & Q.kCGEventFlagMaskAlternate:
-                    state["stop"] = True                      # the off switch
-                    return None                               # do not type the X
-            elif event_type in moves:
-                p = Q.CGEventGetLocation(event)
-                now = time.monotonic()
-                show(*steady.move_to(p.x, p.y, now), event=event)
-                state["last_move"] = now
-            elif event_type in buttons:
-                if event_type in downs:
-                    steady.press(time.monotonic())            # may move the click to where you aimed
-                Q.CGEventSetLocation(event, Q.CGPointMake(*steady.shown))   # click where it is shown
-                if event_type in ups:
-                    steady.release()
-        except Exception:
-            pass                                              # never block the mouse
-        return event
-
-    mask = 0
-    for kind in moves + buttons + (Q.kCGEventKeyDown,):
-        mask |= Q.CGEventMaskBit(kind)
-    tap = Q.CGEventTapCreate(Q.kCGSessionEventTap, Q.kCGHeadInsertEventTap, Q.kCGEventTapOptionDefault,
-                             mask, callback, None)
-    if tap is None:
-        steady.stop()
-        raise SystemExit("macOS refused the event tap (permission missing?). Nothing was changed.")
-    state["tap"] = tap
-    source = Q.CFMachPortCreateRunLoopSource(None, tap, 0)
-    loop = Q.CFRunLoopGetCurrent()
-    Q.CFRunLoopAddSource(loop, source, Q.kCFRunLoopCommonModes)
-    Q.CGEventTapEnable(tap, True)
-    Q.CGSetLocalEventsSuppressionInterval(0.0)                # moving the cursor must not freeze the mouse
+    state = {"stop": False, "steady": steady}
     signal.signal(signal.SIGINT, lambda *a: state.update(stop=True))
-
-    end = time.monotonic() + seconds
     print("Steady cursor ON: %s (%s), demo tremor %s, click freeze %s, method %s." % (
         args.mode, args.response, args.demo, "off" if args.no_freeze else "on", args.method))
     print("Switch off: Control + Option + X (any app), Ctrl+C here, or wait %.0f s." % seconds)
     try:
-        while not state["stop"] and time.monotonic() < end:
-            Q.CFRunLoopRunInMode(Q.kCFRunLoopDefaultMode, IDLE_UPDATE, False)
-            now = time.monotonic()
-            # While the mouse sends nothing, keep the filter fed every 10 ms. With demo tremor
-            # this shows the replayed shaking; without it, it keeps the detector's 2.56 s of
-            # history alive, so the correction does not have to warm up again after a pause.
-            if steady.filter is not None or steady.demo is not None:
-                if now - state["last_move"] >= IDLE_UPDATE:
-                    before = steady.shown
-                    after = steady.move_to(before[0], before[1], now)
-                    if abs(after[0] - before[0]) + abs(after[1] - before[1]) > 0.01:
-                        show(*after)                          # only move the cursor if it changed
-                    state["last_move"] = now
+        run_tap(Q, state, method=args.method, seconds=seconds)
+    except RuntimeError as error:
+        raise SystemExit(str(error))
     finally:
-        Q.CGEventTapEnable(tap, False)
-        Q.CFRunLoopRemoveSource(loop, source, Q.kCFRunLoopCommonModes)
-        Q.CFMachPortInvalidate(tap)
+        steady = state["steady"]
         steady.stop()
         print("Steady cursor OFF. %d updates, %d filter failures (cursor followed the hand)." % (
             steady.updates, steady.failures))

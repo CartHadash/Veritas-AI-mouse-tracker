@@ -81,7 +81,8 @@ submission Sun 23:00 · final fixes until the deadline **Mon 16 Nov 05:59**.
       (more clicks landing on a 10 px button with strong tremor, no worse on medium or with
       no tremor); test people once. Add a test to `systemwide/test_steady.py`. The leader
       re-checks by hand on the demo Mac.
-- [ ] **2. System-wide correction as a real feature, not only a timed test (about 1.5 h).**
+- [x] (BUILT Sun 15 Nov ~13:30, see "Done since the trim"; **not yet run on a real cursor: the
+      leader checks it on the demo Mac**) **2. System-wide correction as a real feature, not only a timed test (about 1.5 h).**
       Why: B3 is proven (it steadies the real cursor in every app), but today it only runs
       from the terminal for at most 10 minutes. The leader wants the corrector to work across
       the whole Mac as a feature. Do:
@@ -117,6 +118,24 @@ submission Sun 23:00 · final fixes until the deadline **Mon 16 Nov 05:59**.
 write-up as a next step); round 2 of the step 4 path check (the stress test already answered it).
 
 ## Done since the trim (newest first)
+
+- Sun 15 Nov ~13:30, builder's agent: **"Steady cursor everywhere" switch** (leader's task 2).
+  Practice -> Adjust has a switch that starts the system-wide correction inside the server
+  (`systemwide/service.py`; `run.py`'s event tap is now the reusable `run_tap`) and keeps it
+  on until switched off: by the switch, by Control + Option + X (the page notices within 2 s),
+  or by stopping the server. It uses the page's filter (Lower sensitivity falls back to Our
+  model), strength and Steadiest / Balanced / Faster, live; click freeze and "click where you
+  aimed" are on. An extra "...with demo tremor" switch shakes the real cursor for the video.
+  A banner shows while it is ON. Without the permission (this Mac) or off macOS the switch is
+  greyed out with the reason; the code only checks the permission, never asks.
+  `POST /api/settings` takes `systemwide` and `systemwide_demo`; `GET /api/status` has
+  `systemwide` ("available", "on" or "not available: why"). `python -m pytest
+  systemwide/test_steady.py`: 14 passed (on/off, settings passed on and changed live, off key,
+  no permission), using a stand-in for macOS. Checked in the app's browser: greyed out with
+  the reason, and the server refuses to start it. **NOT run on a real cursor** (the builder's
+  Mac has no permission): **leader, please check on the demo Mac**: start the server from the
+  terminal that has the Accessibility permission, switch it on, try Control + Option + X,
+  switch filters while it is on, and stop the server with Ctrl+C while it is on.
 
 - Sun 15 Nov 12:59 CET, leader's agent, on `leader/motion` (pushed, NOT merged): (1) the top bar is one
   slim row (64 px at a 1440 px window; before, the tools had a second row) and the wave

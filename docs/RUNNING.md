@@ -70,6 +70,9 @@ python -m systemwide.run --demo strong --response balanced   # less lag, a littl
 python -m systemwide.run --demo strong --no-freeze     # without click freeze (on by default)
 python -m systemwide.run --demo strong --aim 0         # without "click where you aimed" (0.1 s by default)
 python -m pytest systemwide/test_steady.py             # the logic, no permission needed
+# Or without a time limit: start the server from a terminal that has the permission, open the
+# page, Practice -> Adjust -> "Steady cursor everywhere". Off: the switch, Control + Option + X,
+# or stopping the server.
 ```
 
 Switch off at any time with Control + Option + X, or Ctrl+C in the terminal; it also stops by
