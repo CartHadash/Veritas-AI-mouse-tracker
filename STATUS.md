@@ -324,8 +324,11 @@ Headlines on test people:
   (3) **Hold to peek** (about 30 min): while the space bar is held, the correction is off (the
   shown cursor and the click position follow the raw movement), so the person feels the
   difference; release to switch it back on. Show a small "correction paused" note meanwhile.
-  (4) **Everyday targets** (about 1.5-2 h, first to cut): instead of circles, things that are
-  hard in real life: a small close button, a checkbox, a link inside a sentence.
+  (4) **Everyday targets: TAKEN and done by the leader's agent (Sun 15 Nov 13:02, branch
+  `leader/motion`, not merged yet). Do not start it.** New file `web/targets.js`; `web/app.js`
+  changes in three small places only (`onTarget`, `newTarget`, the line in `draw` that draws
+  the target). If your spiral or fair test need the target, use `target.kind` and
+  `targetContains()` once the branch is merged.
   The leader meanwhile works on branch `leader/motion` and keeps new code in NEW files
   (`web/motion.js`, `web/motion.css`), touching `web/app.js` as little as possible, so the
   two lanes do not collide. Styling of whatever you add is the leader's afterwards: plain
