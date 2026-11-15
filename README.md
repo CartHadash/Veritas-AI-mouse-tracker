@@ -15,7 +15,7 @@ TAG-Pointer is a mouse stabilisation tool based on a trained model that understa
 
 ## What we added
 
-Our own idea. We also developed Click Freeze, which improves click performance with strong simulated tremor, session performance summaries, and local-only tracking for privacy. The assistant sees only summary statistics, never raw mouse movement.
+We developed Click Freeze, which improves click performance with strong simulated tremor, session performance summaries, and local-only tracking for privacy. The assistant sees only summary statistics, never raw mouse movement.
 
 ## How it works
 
