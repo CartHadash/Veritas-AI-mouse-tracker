@@ -9,8 +9,8 @@ Newest entries at the top of each list. Use local time (CET) and say who you are
 
 | Lane | Working on | Blocked by |
 |---|---|---|
-| Builder | Next: movement-aware detector (cheap version, 1.5 h, below). Also waiting for the leader's B3 result | - |
-| Team leader | Demo-Mac checks (B3 first, by 15:00), then the UI fixes the leader took over | - |
+| Builder | Next: movement-aware detector (cheap version, 1.5 h, below). B3 works on the demo Mac | - |
+| Team leader | B3 off-switch check and video clip, then the UI fixes the leader took over | - |
 | Writer | IN PROGRESS: drafting the write-up from `docs/WRITER_BRIEF.md` | Final project name |
 
 **Time line (CET):** feature freeze **Sun 20:00** (leader's decision, Sun 10:45) · first full
@@ -19,14 +19,11 @@ submission Sun 23:00 · final fixes until the deadline **Mon 16 Nov 05:59**.
 ## What is left (tick or delete lines as they finish)
 
 **Team leader (only possible on the demo Mac):**
-- [ ] **B3 real-cursor check, by Sun 15:00.** Grant the Accessibility permission (a human
-      does this), then `docs/RUNNING.md` "System-wide correction": `--demo strong --mode none`,
-      then `--demo strong`. Report here: does the cursor move (else `--method warp`), is it
-      visibly steadier, does Control + Option + X always stop it, do clicks land where shown.
-      If it works: a 30 s screen recording for the video. If not: write why; it becomes a
-      "we tried" line.
-- [ ] Trackpad check of the CURRENT "Our model" (v5 + gated One Euro, Steadiest / Balanced /
-      Faster) in Safari and Chrome: smooth enough? lag acceptable? Then the builder ticks step 11.
+- [x] **B3 real-cursor check: WORKS** (Sun 11:04, see "Done since the trim").
+- [ ] B3 leftovers: press Control + Option + X during a run to prove the off-switch; record
+      a 30 s clip (Cmd+Shift+5) of `--demo strong --mode none` then `--demo strong` for the video.
+- [x] Trackpad check of the CURRENT "Our model" (Sun ~11:00, leader: "good enough"). The
+      builder can tick step 11.
 - [ ] Re-run `python models/corrector/time_live.py` on a quiet Mac (last loaded run: worst 7.4 ms).
 - [ ] Read `evaluation/results/RESULTS.md` end to end (step 14 tick).
 
@@ -68,6 +65,17 @@ write-up as a next step); round 2 of the step 4 path check (the stress test alre
 
 ## Done since the trim (newest first)
 
+- Sun 15 Nov 11:04, team leader + leader's agent: **B3 checked on the real cursor, demo Mac.**
+  Accessibility switched on for the Claude app by the leader (a human). A 3 s pass-through run
+  (no tremor, no correction) worked. Then `python -m systemwide.run --demo strong --mode none
+  --seconds 25` (2,289 updates, 0 filter failures) and `--demo strong --seconds 25` (our model;
+  2,416 updates, 0 filter failures), default `--method event`. The leader's observations:
+  without correction the cursor shook "a lot" in every app; with our model it was visibly
+  steadier "but after some time" (expected: the detector needs 2.56 s of movement before it
+  switches the correction on); clicks landed where the cursor was shown "almost always".
+  Not yet checked: Control + Option + X during a run (both runs ended on their timer); no
+  screen recording yet.
+
 - Sun 15 Nov, leader's agent (branch `leader/hints-calibration`): one-line hints on the
   controls (a sentence per filter under the filter buttons; Strength; Calibrate); a
   "Use <filter>" button after the calibration test (the person taps it, never automatic);
@@ -87,7 +95,7 @@ write-up as a next step); round 2 of the step 4 path check (the stress test alre
 - Click freeze, a 10 s calibration test (reports only), Lower sensitivity with Pointer Lock,
   a first-use guide, session history, and the Claude assistant (`claude-sonnet-5-5`, sees
   summary numbers only; plain non-AI summary without a key).
-- B3 (`systemwide/`): built and logic-tested, not yet checked on a real cursor.
+- B3 (`systemwide/`): works on the real cursor on the demo Mac (Sun 11:04).
 
 ## Results (current; the full, checked list is `evaluation/results/RESULTS.md`)
 

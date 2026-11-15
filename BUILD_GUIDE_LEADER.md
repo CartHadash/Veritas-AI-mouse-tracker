@@ -44,7 +44,9 @@ non-AI summary without a key. Session history (L1 = B) in `local_logs/sessions/`
 as pointer numbers only, never health trends. 18/18 trap questions safe
 (`assistant/test_prompts.md`). Before changing any Claude API code, load the `claude-api` skill.
 
-### - [ ] B3 check (built by the builder in `systemwide/`; the leader runs the check)
+### - [x] B3 check (built by the builder in `systemwide/`; the leader runs the check)
+
+Done Sun 11:04: works (results in `STATUS.md`). Left: an off-switch press during a run, and the clip.
 
 Makes the real macOS cursor steadier in every app. Needs the **Accessibility permission**
 for the terminal app (System Settings → Privacy & Security → Accessibility; a human switches

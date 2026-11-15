@@ -765,9 +765,11 @@ imitating macOS): with strong replayed tremor and a still hand, our model keeps 
 clearly closer to the hand than no correction; a steady glide is left alone (under 1 px off);
 movement adds up correctly; a failing filter falls back to the hand; the cursor stays on the
 screen. On the builder's Mac (no permission) it stopped with the explanation, as designed.
-**Not yet checked on a real cursor:** that needs the demo Mac with the permission switched on by
-the team leader. Some macOS details are uncertain (for example whether changing an event's
-position moves the visible cursor), so `--method warp` moves the cursor directly instead.
+**Checked on a real cursor (Sun 15 Nov 11:04, demo Mac, leader's eyes):** with replayed strong
+tremor and no correction the cursor shook a lot in every app; with our model it became visibly
+steadier after a moment, because the detector first needs 2.56 s of movement before it switches
+the correction on; clicks landed where the cursor was shown almost always. Both runs logged
+0 filter failures. Before that check it was only tested on the builder's Mac without the permission. The default way of moving the cursor (changing the event) worked, so `--method warp` was not needed.
 
 ## Can someone else reproduce it? (step 15)
 

@@ -96,8 +96,10 @@ filters."*
 
 From `IDEAS.md` and the limits in `RESULTS.md`:
 - Test with real people who have tremor (the biggest missing piece; nothing replaces it).
-- Correct the real cursor in every app, not only on our page (B3, `systemwide/`: built; its
-  real-cursor check on the demo Mac is due Sun 15:00, so read `STATUS.md` for whether it worked).
+- B3 (`systemwide/`) WORKS: the real macOS cursor is steadier in every app, checked by the
+  leader on the demo Mac (`STATUS.md`). Say what it still needs: it switches on only after
+  2.56 s of movement, needs a permission, and is macOS only. Possible next step: making it an
+  app a person can switch on once.
 - Less lag: our steadiest setting trails a moving hand (`RESULTS.md` "On the demo page").
 - Sticky targets: buttons gently pull the cursor in when tremor is detected (idea, not built).
 - A movement-aware detector that is stricter during fast, deliberate movement, where most

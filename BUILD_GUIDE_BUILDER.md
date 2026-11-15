@@ -40,13 +40,13 @@ When you come back after a break: *"Read STATUS.md and BUILD_GUIDE_BUILDER.md an
 | 8 Corrector v1 | [x] | `models/corrector/`, `evaluation/evaluate_corrector.py` |
 | 9 Where it fails | [ ] waiting | `evaluation/find_failures.py`, `failure_extras.py` -> `evaluation/results/failures/`. Tick when Oleksandr has read `failures.md` |
 | 10 Server | [x] | `server/main.py`, `server/test_ws.py` |
-| 11 Live demo page | [ ] waiting | `web/`. Tick after the leader's trackpad check of the current model in Safari and Chrome |
+| 11 Live demo page | [x] | `web/`. Leader's trackpad check of the current model, Sun ~11:00: "good enough" |
 | 12 One improvement per model | [x] | Detector v2 kept; then corrector v3, v4, and v5 + gated One Euro (the app now), with Steadiest / Balanced / Faster |
 | 13 Summary page | [x] | Now the Analysis tab of `web/index.html` (`summary.html` forwards there) |
 | 14 Results package | [ ] waiting | `evaluation/results/RESULTS.md`, `check_results.py`. Tick when Oleksandr and the leader have read it |
 | 15 Fresh-clone test | [x] | Passed on both Macs (`docs/STATUS_ARCHIVE.md`) |
 | 16 Desktop window | cut | Leader's decision, Sun 10:45: the demo uses the browser |
-| B3 System-wide correction | [ ] waiting | `systemwide/` built, 5 logic tests pass. Needs the leader's real-cursor check on the demo Mac by Sun 15:00 |
+| B3 System-wide correction | [x] | `systemwide/` works on the real cursor on the demo Mac (leader, Sun 11:04): visibly steadier after the detector's 2.56 s warm-up. Off-switch check and video clip: leader |
 
 Extras built on team members' ideas: click freeze (`evaluation/click_sim.py`), calibration
 test (`evaluation/calibration_sim.py`, reports only), first-use guide (`web/tutorial.js`),
