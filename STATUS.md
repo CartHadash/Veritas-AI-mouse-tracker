@@ -60,7 +60,8 @@ submission Sun 23:00 · final fixes until the deadline **Mon 16 Nov 05:59**.
       report missed cases and false alarms separately. If it does not help: one honest line in
       "What we tried that did not work".
 
-- [x] B3 click fixes (Sun 15 Nov, see "Done since the trim"). **Leader: please re-check on the
+- [x] B3 click fixes (Sun 15 Nov, see "Done since the trim"). Re-checked by the leader 12:18
+      (a bit better; Steadiest kept). Original note: **Leader: please re-check on the
       demo Mac** (`git pull`, then `python -m systemwide.run --demo strong`; click freeze is on
       by default; try `--response balanced` too and say which feels better).
 
@@ -76,6 +77,14 @@ submission Sun 23:00 · final fixes until the deadline **Mon 16 Nov 05:59**.
 write-up as a next step); round 2 of the step 4 path check (the stress test already answered it).
 
 ## Done since the trim (newest first)
+
+- Sun 15 Nov 12:18-12:20, team leader + leader's agent: **B3 re-check after the builder's click
+  fixes** (demo Mac, `--demo strong --seconds 40`, then `--response balanced`; click freeze on
+  in both). Steadiest 3,918 updates, Balanced 3,846, 0 filter failures. The leader: clicking
+  real buttons is "a bit better" than in the morning; Steadiest felt "just a bit better", very
+  close to Balanced (so Steadiest stays B3's default); what still goes wrong: at the moment of
+  the click the cursor is in a different place from where the leader meant to click, so they
+  try again. Also, the leader checked the page after the UI fixes: the earlier issues are gone.
 
 - Sun 15 Nov (afternoon), builder's agent: "Easier-to-read text" now uses the real OpenDyslexic
   font (Oleksandr's request) instead of Verdana: two `.woff2` files (about 115 KB and 120 KB)
