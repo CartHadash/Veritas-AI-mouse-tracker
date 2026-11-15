@@ -1021,6 +1021,22 @@ and, for saving, with history pointed at a scratch folder.
 
 ## The pointer reader and the assistant
 
+### Action buttons: the assistant can offer to do things (Sun 15 Nov, builder, leader's idea)
+
+Until now the assistant could only write text. Now, when it helps (or when the person asks
+"switch me to One Euro"), its reply may end with one extra line such as
+`ACTIONS: set_mode=one_euro | open_tab=analysis`. The page hides that line and shows a button
+for each action. Three rules keep this safe. (1) The assistant never does anything: only the
+person pressing a button changes something. (2) The page has its own short list of what an
+action may be (change the filter, strength, Steadiest / Balanced / Faster, demo tremor; open
+a tab; start the calibration test) with the exact values allowed; anything else in that line
+is thrown away, so text from the model can never run code or touch something unseen. (3) The
+buttons use the same functions as the page's own controls, so pressing one is exactly like
+using the control. How we know the page side works: we fed it a made-up reply with three
+allowed and five not-allowed actions and got exactly three buttons. What is not known yet:
+how well the model itself uses the line (four new test questions, 19-22, wait for a run on
+the Mac that has the API key).
+
 ### The whole-laptop pointer reader (step B1, `tracker/`)
 
 **What it does.** A small background loop asks macOS "where is the pointer right now?" 100

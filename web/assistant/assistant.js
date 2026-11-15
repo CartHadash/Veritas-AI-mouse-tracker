@@ -6,6 +6,12 @@
 //
 // Each reply ends with a line "SUGGESTIONS: question | question | question" (see
 // assistant/prompt.py). We hide that line and turn it into the one-tap buttons.
+//
+// A reply may also carry a line "ACTIONS: set_mode=one_euro | open_tab=analysis" (builder,
+// Sun 15 Nov, the team leader's idea). The assistant never does anything itself: each action
+// becomes a button, and only the PERSON pressing it changes something. The page accepts only
+// the names and values in ACTIONS below and ignores everything else, so text from the model
+// can never run code or change something that is not on this list.
 
 (function () {
   const panel = document.getElementById("assistant-panel");
@@ -21,6 +27,42 @@
   const STARTERS = ["Explain my summary", "When was my tremor strongest?", "What settings do you suggest?"];
   const COMPARE = "How does today compare with before?";   // added when earlier sessions exist
   const MARKER = "SUGGESTIONS:";
+  const ACTION_MARKER = "ACTIONS:";
+
+  // The ONLY things an action button can do. name -> the values allowed, the button's words,
+  // and what pressing it does (all through the page's own functions, as if the person had
+  // used the control themselves). MODE_NAMES, postSettings and openTab are app.js's.
+  const RESPONSE_NAMES = { steadiest: "Steadiest", balanced: "Balanced", responsive: "Faster" };
+  const TAB_NAMES_SHOWN = { practice: "Practice", analysis: "Analysis", how: "How it works" };
+  const ACTIONS = {
+    set_mode: { ok: (v) => ["none", "low_sensitivity", "one_euro", "learned"].includes(v),
+                label: (v) => `Switch to ${MODE_NAMES[v]}`, run: (v) => postSettings({ mode: v }) },
+    set_strength: { ok: (v) => /^(0(\.\d)?|1(\.0)?)$/.test(v),
+                    label: (v) => `Set strength to ${Number(v)}`, run: (v) => postSettings({ strength: Number(v) }) },
+    set_response: { ok: (v) => v in RESPONSE_NAMES,
+                    label: (v) => `Use ${RESPONSE_NAMES[v]}`, run: (v) => postSettings({ response: v }) },
+    set_demo: { ok: (v) => v === "on" || v === "off",
+                label: (v) => `Turn demo tremor ${v}`, run: (v) => postSettings({ demo_tremor: v === "on" }) },
+    open_tab: { ok: (v) => v in TAB_NAMES_SHOWN,
+                label: (v) => `Open ${TAB_NAMES_SHOWN[v]}`, run: (v) => openTab(v) },
+    start_calibration: { ok: (v) => v === "",
+                         label: () => "Start the calibration test",
+                         run: () => { openTab("practice"); document.getElementById("calibrate").click(); } },
+  };
+  // On the assistant's own test page (assistant/standalone.py) there is no practice page to act on.
+  const canAct = typeof postSettings === "function" && typeof openTab === "function";
+
+  // "set_mode=one_euro | run=evil | open_tab=analysis" -> the allowed ones only, at most three.
+  function parseActions(line) {
+    if (!line || !canAct) return [];
+    const found = [];
+    for (const piece of line.split("|")) {
+      const [name, value = ""] = piece.replace(/\*/g, "").trim().split("=").map((t) => t.trim().toLowerCase());
+      const action = Object.prototype.hasOwnProperty.call(ACTIONS, name) ? ACTIONS[name] : null;
+      if (action && action.ok(value)) found.push({ label: action.label(value), run: () => action.run(value) });
+    }
+    return found.slice(0, 3);
+  }
 
   panel.classList.add("panel", "assistant");
   panel.innerHTML = `
@@ -81,13 +123,19 @@
   // Split a (possibly half-received) reply into the answer and the suggestions line.
   // While streaming, the start of "SUGGESTIONS:" may have arrived only partly ("SUGG"),
   // so a trailing piece that could be the start of the marker is held back.
+  // The "ACTIONS:" line (wherever it is) is taken out the same way and returned apart.
   function splitReply(text) {
+    let actions = null;
+    const line = text.match(/^[ \t]*ACTIONS:(.*)$/m);
+    if (line) { actions = line[1]; text = text.replace(line[0], ""); }
     const at = text.indexOf(MARKER);
-    if (at >= 0) return { answer: text.slice(0, at), suggestions: text.slice(at + MARKER.length) };
-    for (let k = Math.min(MARKER.length - 1, text.length); k > 0; k--) {
-      if (MARKER.startsWith(text.slice(-k))) return { answer: text.slice(0, -k), suggestions: null };
+    if (at >= 0) return { answer: text.slice(0, at), suggestions: text.slice(at + MARKER.length), actions };
+    for (const marker of [MARKER, ACTION_MARKER]) {
+      for (let k = Math.min(marker.length - 1, text.length); k > 0; k--) {
+        if (marker.startsWith(text.slice(-k))) return { answer: text.slice(0, -k), suggestions: null, actions };
+      }
     }
-    return { answer: text, suggestions: null };
+    return { answer: text, suggestions: null, actions };
   }
 
   function parseSuggestions(line) {
@@ -147,6 +195,30 @@
     log.scrollTop = log.scrollHeight;
   }
 
+  // One button per allowed action, under the answer. Pressing it is the person's own act.
+  function addActions(after, actions) {
+    if (!actions.length) return;
+    const row = document.createElement("div");
+    row.className = "buttons assistant-actions";
+    for (const action of actions) {
+      const button = document.createElement("button");
+      button.type = "button";
+      button.className = "assistant-action";
+      button.textContent = action.label;
+      button.addEventListener("click", async () => {
+        try {
+          await action.run();
+          button.textContent = action.label + " \u2713";
+        } catch (error) {
+          button.textContent = action.label + " (did not work)";
+        }
+      });
+      row.appendChild(button);
+    }
+    after.after(row);
+    log.scrollTop = log.scrollHeight;
+  }
+
   function setBusy(on) {
     busy = on;
     for (const button of panel.querySelectorAll("button")) button.disabled = on;
@@ -179,9 +251,10 @@
     } catch (error) {
       reply = reply || "Sorry, the assistant could not be reached. The rest of the app still works.";
     }
-    const { answer, suggestions } = splitReply(reply);
+    const { answer, suggestions, actions } = splitReply(reply);
     renderHighlighted(bubble, answer);
     addReadAloud(bubble);
+    addActions(log.lastElementChild, parseActions(actions));
     history.push({ role: "assistant", content: answer.trim() });
     const next = parseSuggestions(suggestions);
     showQuestions(next.length ? next : STARTERS);

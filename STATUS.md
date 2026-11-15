@@ -119,6 +119,21 @@ write-up as a next step); round 2 of the step 4 path check (the stress test alre
 
 ## Done since the trim (newest first)
 
+- Sun 15 Nov 13:11, builder's agent: **assistant action buttons** (leader's request, with the
+  leader's permission to edit `assistant/` and `web/assistant/`). The prompt
+  (`assistant/prompt.py`, "ACTION BUTTONS") lets a reply carry one line `ACTIONS: ...` from a
+  fixed list: `set_mode`, `set_strength`, `set_response`, `set_demo`, `open_tab`,
+  `start_calibration`. `web/assistant/assistant.js` hides that line, accepts only names and
+  values in its own `ACTIONS` table, ignores everything else, shows at most three buttons
+  ("Switch to One Euro"), and only the person pressing one changes anything (through the
+  page's own `postSettings` / `openTab`). Checked in the app's browser with a made-up reply
+  holding three allowed and five not-allowed actions (among them `run=alert(1)` and an
+  `<img onerror>`): three buttons, nothing inserted as HTML, pressing them switched the filter
+  and opened Analysis. `python -m pytest assistant`: 5 passed. Four test questions (19-22)
+  were added to `assistant/run_test_prompts.py`, which now records the ACTIONS line and flags
+  any action outside the list. **Not run: there is no API key on the builder's Mac**, so how
+  the model itself uses ACTIONS is unchecked until the leader runs it.
+
 - Sun 15 Nov 13:09, builder's agent: **three practice exercises** (leader's requests;
   new file `web/exercises.js`, five small hooks in `web/app.js`, plain markup under the
   practice area in `web/index.html`, ids `spiral-start`, `fair-start`, `exercise-status`,
@@ -365,7 +380,10 @@ Headlines on test people:
 
 ## Requests to another lane (open only; answered ones are in the archive)
 
-- Sun 15 Nov 12:51, team leader -> builder: **an assistant that can DO things, not only answer
+- BUILT by the builder (Sun 15 Nov 13:11, see "Done since the trim"); **the model-side test
+  questions 19-22 are NOT run yet: no API key on the builder's Mac. Leader, please run
+  `python -m assistant.run_test_prompts` and judge 19-22 in `assistant/test_prompts.md`.**
+  Sun 15 Nov 12:51, team leader -> builder: **an assistant that can DO things, not only answer
   (leader's idea; after the four practice-area features above, only if time allows before
   the 20:00 freeze).** `assistant/` and `web/assistant/` are the leader's folders: you have
   the leader's permission to edit them for this. Three actions: (a) change a setting (filter,
