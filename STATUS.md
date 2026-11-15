@@ -52,6 +52,9 @@ submission Sun 23:00 · final fixes until the deadline **Mon 16 Nov 05:59**.
       report missed cases and false alarms separately. If it does not help: one honest line in
       "What we tried that did not work".
 
+- [ ] B3 click fixes (optional, about 1 h, after the detector task): see the request at the
+      bottom ("three optional fixes for clicking real buttons").
+
 **Oleksandr:**
 - [ ] Read `evaluation/results/failures/failures.md` (step 9 tick) and `RESULTS.md` (step 14 tick).
 
@@ -156,6 +159,20 @@ Headlines on test people:
 - Retraining the corrector on another Mac is not bit-identical (same conclusions); the detector is.
 
 ## Requests to another lane (open only; answered ones are in the archive)
+
+- Sun 15 Nov ~11:20, team leader -> builder: **B3 counts as DONE (leader's decision); three
+  optional fixes for clicking real buttons**, which the leader found still hard with our model
+  (`--demo strong`, demo Mac). Likely causes, read from the code, not measured:
+  (1) after a pause over 1 s (`models/resample.py` `MAX_GAP`) the models start fresh and the
+  correction is off for the detector's 2.56 s warm-up, exactly when the person aims after
+  stopping; partly a demo effect (a still mouse sends no events, so the replayed tremor stops;
+  a real tremor hand never stops). Fix idea: in demo mode keep a 100 Hz timer that applies the
+  replayed tremor while the mouse is still, and/or a longer gap (for example 5 s) for B3 only.
+  (2) No click freeze in B3: hold the cursor at the press point until release (at most 0.3 s),
+  as on the page. (3) About 72 ms lag at Steadiest, so the cursor drifts past a button after
+  stopping; maybe `--response balanced` for B3. Time box about 1 h, after the movement-aware
+  detector task; checked with `systemwide/test_steady.py` (add a test per fix); the leader
+  re-checks on the demo Mac. If not done, it is a "limits" line in the write-up.
 
 - Sun 15 Nov, team leader -> builder (small, optional): please add the response level to the
   summary's filter block (`server/main.py`, `"filter": {"mode": ..., "strength": ...,
