@@ -1,5 +1,5 @@
 """
-tremor_library.py - step 3: build one tidy file of real tremor segments, in screen pixels.
+tremor_library.py - build one tidy file of real tremor segments, in screen pixels.
 
 For every recording in both datasets we:
   1. cut it into segments of 10.24 s (1024 samples at 100 per second);
@@ -13,7 +13,7 @@ evaluation/results/figures/tremor_library_examples.png.
 Run from the repository folder:
     python data_pipeline/tremor_library.py
 
-THE TREMOR-MARKING RULE (fixed on Sat 14 Nov, before any model was trained; never change it
+THE TREMOR-MARKING RULE (fixed before any model was trained; never change it
 after seeing model results). It is measured on the ORIGINAL recording segment (not filtered):
   - "band strength" = how much movement there is between 3 and 12 Hz (from the spectrum);
   - "rhythm" = share of that 3-12 Hz movement lying within +-1 Hz of its strongest frequency.
@@ -25,13 +25,13 @@ after seeing model results). It is measured on the ORIGINAL recording segment (n
   movement (above 0.5 Hz) lies in 3-12 Hz. (b) is the same. These are rest recordings, so
   there is no deliberate movement to confuse the check.
 
-THE PIXEL FACTOR (DECISION 1, option A): one number per dataset, chosen so that the median
+THE PIXEL FACTOR: one number per dataset, chosen so that the median
 tremor-marked Parkinson's segment has an on-screen size ("strength") of 6 px, where
 strength = root-mean-square distance of the cursor from its centre. TremorDB's factor is
 chosen so its median tremor-marked segment is also 6 px. Results are later re-checked at half
 and double this factor.
 
-TASK TYPES (DECISION 2, option A): all PADS tasks, labelled rest / postural / action.
+TASK TYPES: all PADS tasks, labelled rest / postural / action.
 """
 
 import json
@@ -51,7 +51,7 @@ FIGURES = ROOT / "evaluation" / "results" / "figures"
 
 RATE = 100            # samples per second (both datasets)
 SEG = 1024            # samples per segment = 10.24 seconds
-TARGET_PX = 6.0       # DECISION 1: median tremor-marked segment size in pixels
+TARGET_PX = 6.0       # median tremor-marked segment size in pixels
 TASK_TYPE = {
     "Relaxed": "rest", "RelaxedTask": "rest",
     "StretchHold": "postural", "LiftHold": "postural", "HoldWeight": "postural", "Entrainment": "postural",
@@ -187,7 +187,7 @@ def mark_tremor(rows):
 
 
 def apply_pixel_factor(rows):
-    """DECISION 1: one factor per dataset so the median tremor-marked segment is 6 px."""
+    """One factor per dataset so the median tremor-marked segment is 6 px."""
     factors = {}
     for dataset, reference in [("PADS", "Parkinson's"), ("TremorDB", "Parkinson's")]:
         sizes = [strength_of(r["xy"]) for r in rows

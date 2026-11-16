@@ -10,7 +10,7 @@ predict.py - use the trained detector: on stored windows, or live, sample by sam
     result = live.update(x, y, t)            # call for every pointer sample; None until full
 
 The score is 0-1 (how tremor-like the last 2.56 s were). "tremor" applies the cut-off chosen
-in DECISION 4 (models/detector/detector_<version>_threshold.json). It flags tremor-LIKE movement;
+on validation (models/detector/detector_<version>_threshold.json). It flags tremor-LIKE movement;
 it does not diagnose anything.
 """
 
@@ -29,7 +29,7 @@ sys.path.insert(0, str(ROOT))
 from models.detector.features import FEATURE_NAMES, compute_features  # noqa: E402
 from models.resample import Resampler  # noqa: E402
 
-# The version the app uses. Step 12 kept v2 (better on pause-free movement); see
+# The version the app uses: v2 (better on pause-free movement); see
 # evaluation/results/improvements.md.
 VERSION = "v2"
 MODEL_FILE = ROOT / "models" / "detector" / f"detector_{VERSION}.joblib"
@@ -49,7 +49,7 @@ class Detector:
                 self.threshold = json.load(f)["threshold"]
         self.peak_column = FEATURE_NAMES.index("peak frequency in 3-12 Hz")
         # For ONE window, scikit-learn's parallel worker threads cost far more than they save
-        # (about 20 ms instead of 2 ms on the builder's Mac), so live calls use one thread.
+        # (about 20 ms instead of 2 ms on a MacBook), so live calls use one thread.
         self.threads = ThreadpoolController()
 
     def predict(self, window):

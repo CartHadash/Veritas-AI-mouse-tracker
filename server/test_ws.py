@@ -1,6 +1,6 @@
 """
 test_ws.py - check the running server: send 500 pointer samples over /ws/cursor, expect 500
-replies, and print the average reply time. Also checks /api/summary has Contract 2's shape.
+replies, and print the average reply time. Also checks /api/summary has the expected keys.
 
 First start the server in another terminal:
     python -m uvicorn server.main:app

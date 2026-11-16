@@ -54,7 +54,7 @@ def test_saved_file_holds_summary_numbers_only(monkeypatch, tmp_path):
     assert set(saved) == {"session", "tremor", "usage", "filter", "notes"}
 
 
-# ---- guards in assistant/core.py (Sun 15 Nov): nothing key-shaped comes out; inputs are capped
+# ---- guards in assistant/core.py: nothing key-shaped comes out; inputs are capped
 
 def test_nothing_shaped_like_a_key_reaches_the_page(monkeypatch):
     from assistant import core

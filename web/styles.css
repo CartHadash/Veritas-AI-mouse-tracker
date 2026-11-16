@@ -1,4 +1,4 @@
-/* Style C (DECISION 6): warm and friendly, now polished. Large text, big controls and strong
+/* Warm and friendly, now polished. Large text, big controls and strong
    contrast, because the user is often older and has a tremor.
 
    How this file is organised:
@@ -433,7 +433,7 @@ body > main { display: flex; gap: 20px; align-items: flex-start; flex-wrap: wrap
 .right { flex: 2 1 340px; display: flex; flex-direction: column; gap: 14px; min-width: 0; }
 .panel { background: var(--surface); border: 1px solid var(--line); border-radius: 18px; padding: 16px 18px; }
 
-/* Short hints under controls (leader's agent, Sun 15 Nov): quiet, but large enough to read. */
+/* Short hints under controls: quiet, but large enough to read. */
 .mode-hint { font-size: 15px; color: var(--muted); margin: 10px 2px 0; line-height: 1.4; max-width: 72ch; }
 .small.hint { display: block; margin-top: 6px; font-size: 14px; line-height: 1.35; }
 #calib-apply { margin-top: 10px; }

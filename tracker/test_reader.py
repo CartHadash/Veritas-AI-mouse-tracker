@@ -33,7 +33,7 @@ def run_with_fake_pointer(monkeypatch, positions, seconds):
 def test_moving_pointer_gives_about_100_per_second(monkeypatch):
     samples = run_with_fake_pointer(monkeypatch, lambda i: (float(i), 0.0), 1.0)
     assert 85 <= len(samples) <= 105
-    assert set(samples[0]) == {"t", "x", "y"}          # Contract 1 shape, nothing else
+    assert set(samples[0]) == {"t", "x", "y"}          # only t, x, y; nothing else
 
 
 def test_still_pointer_stops_sending(monkeypatch):

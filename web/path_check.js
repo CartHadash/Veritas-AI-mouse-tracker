@@ -1,4 +1,4 @@
-// path_check.js - the team's blind step 4 check (see data_pipeline/make_path_check.py).
+// path_check.js - the team's blind check of the generated paths (see data_pipeline/make_path_check.py).
 // Plain JavaScript. Replays each generated path at real speed, collects a 1-5 rating and
 // what looks wrong, and at the end shows a text report to paste into the group chat.
 // Nothing is saved or sent anywhere: the ratings live only in this browser tab.

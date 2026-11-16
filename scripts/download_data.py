@@ -1,8 +1,7 @@
 """
 download_data.py - fetch the two public tremor datasets from PhysioNet into data/.
 
-Written from scratch during the hackathon (Sat 14 Nov 2026), replacing the pre-hackathon
-script (team leader's decision; see docs/REUSED_CODE.md).
+Written from scratch during the hackathon.
 
 How it works, for each dataset:
   1. download PhysioNet's list of files with their SHA-256 checksums (a fingerprint of each
@@ -18,7 +17,7 @@ Run from anywhere (it finds the repository folder itself):
     python scripts/download_data.py --only tremordb  # just the small one (about 4 MB)
     python scripts/download_data.py --check          # only check the files on disk, download nothing
 
-Data licences and citations: docs/DATASETS.md. The data folder is never committed to git.
+Data licences and citations: SOURCES.md. The data folder is never committed to git.
 """
 
 import argparse

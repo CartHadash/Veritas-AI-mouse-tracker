@@ -1,4 +1,4 @@
-// motion.js - the moving parts of the "colour and movement" layer (team leader, Sun 15 Nov).
+// motion.js - the moving parts of the "colour and movement" layer.
 // Plain JavaScript in its own file, so it never clashes with app.js. With motion.css it is an
 // add-on: delete their two lines in index.html and the page is back to the plain look.
 //
@@ -243,7 +243,7 @@
 
   // Draws the main numbers of the Analysis tab on one 1200 x 630 picture and saves it as a
   // PNG file through the browser's normal download. Nothing is sent anywhere.
-  // (When the builder's spiral exercise exists, its drawing can be added here.)
+  // (The spiral exercise's drawing could be added here.)
   function saveCard() {
     const s = typeof lastSummary === "undefined" ? null : lastSummary;
     if (!s) return;

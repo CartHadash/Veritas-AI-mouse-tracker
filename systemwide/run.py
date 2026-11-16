@@ -1,7 +1,7 @@
 """
 run.py - B3: make the REAL macOS cursor steadier in every app (stretch goal, macOS only).
 
-Written fresh during the hackathon (Sat 14 Nov); nothing from the pre-hackathon experiment.
+Written from scratch during the hackathon.
 
     python -m systemwide.run                          # our model, 60 seconds
     python -m systemwide.run --demo strong            # add replayed tremor (to see the effect)

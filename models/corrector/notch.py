@@ -1,6 +1,6 @@
 """
-notch.py - a tremor canceller tuned to the person's own tremor rhythm (Oleksandr's idea,
-Sat 14 Nov): remove one narrow band of frequencies around the rhythm the detector measures,
+notch.py - a tremor canceller tuned to the person's own tremor rhythm (tested, not kept):
+remove one narrow band of frequencies around the rhythm the detector measures,
 and let everything else (slow, deliberate movement) through.
 
 A "notch" filter is a standard tool from signal processing. This one is the usual second-order

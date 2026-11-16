@@ -1,5 +1,5 @@
 """
-train.py - step 8: train corrector version 1.
+train.py - train the corrector (version 1 by default).
 
 Each training example: a random moment in a shaky training sequence. The network sees the 64
 movement steps before it and must output the offset that moves the raw (shaky) cursor
@@ -11,14 +11,14 @@ so it loads on any computer). Test people are never used here.
 
 Run from the repository folder:
     python models/corrector/train.py
-    python models/corrector/train.py --version v2 --scale-augment   # step 12
-    python models/corrector/train.py --version v3 --loss distance    # after step 12 (see below)
+    python models/corrector/train.py --version v2 --scale-augment
+    python models/corrector/train.py --version v3 --loss distance    # (see below)
       (v3: learns to minimise the plain distance instead of the squared distance; squaring
        makes strong tremor's big errors dominate, so v1 helps medium tremor much less)
     python models/corrector/train.py --version v4_s2 --loss distance --smooth 2
-    python models/corrector/train.py --version v5_k1 --loss distance --smooth 2 --shake 1   # option B
+    python models/corrector/train.py --version v5_k1 --loss distance --smooth 2 --shake 1
       (v4: also penalises a jerky corrected cursor: the change in its velocity from one 10 ms
-       tick to the next, compared with the intended path's. The team leader saw v1 look jumpy.)
+       tick to the next, compared with the intended path's. v1 looked jumpy by hand.)
       (v2: each training sequence's tremor is randomly made 0.5x-2x as large, so the network
        sees the range of sizes different mouse settings (DPI) would produce)
 Also saves the loss-curve chart to evaluation/results/figures/corrector_v1_loss.png.
@@ -100,7 +100,7 @@ def main():
     parser.add_argument("--smooth", type=float, default=0.0,
                         help="weight of the jerkiness penalty on the corrected cursor (0 = off)")
     parser.add_argument("--shake", type=float, default=0.0,
-                        help="option B (Sat 14 Nov): weight of the penalty on the error wobbling around "
+                        help="weight of the penalty on the error wobbling around "
                              "its own average over the last 0.3 s, i.e. the shake the eye sees (0 = off)")
     args = parser.parse_args()
     weights = WEIGHTS if args.version == "v1" else WEIGHTS.with_name(f"weights_{args.version}.pt")

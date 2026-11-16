@@ -1,6 +1,6 @@
 """Reads where the pointer is, anywhere on the laptop, about 100 times a second.
 
-Contract 1 (docs/PROJECT_PLAN.md):
+What it offers:
     start(callback)  -> calls callback({"t": seconds, "x": points, "y": points}) per sample
     stop()
 
@@ -39,7 +39,7 @@ def start(callback, save_log=False):
     """Start reading the pointer in the background and call callback(sample) for each sample.
 
     save_log=True also appends every sample to a file in local_logs/ (see tracker/log.py).
-    By default nothing is written to disk (DECISION L1 = A: the session lives in memory).
+    By default nothing is written to disk (the session lives in memory).
     """
     global _thread
     if sys.platform != "darwin":

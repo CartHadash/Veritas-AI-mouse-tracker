@@ -1,15 +1,15 @@
-// app.js - the live demo page (step 11). Plain JavaScript, no build tools (DECISION 7).
+// app.js - the live demo page. Plain JavaScript, no build tools.
 //
 // The controls (tabs, filter choice, switches, slider, meter, assistant window) are ui-sdk web
 // components: custom HTML tags such as <ui-switch>. They tell us about a change with an event
 // (for example "checkedchange") whose new value is in event.detail.value.
 //
 // Clicks work like real buttons: a hit needs the button pressed AND released on the target.
-// "Click freeze" (an idea from Timofey, a team member) holds the shown cursor still from the
+// "Click freeze" holds the shown cursor still from the
 // press until the release (at most 0.3 s), so tremor while the button is down cannot carry
 // it off the target.
 //
-// "Calibrate for my mouse" (an idea from Godson, a team member): a 10 s test. Hold the cursor
+// "Calibrate for my mouse": a 10 s test. Hold the cursor
 // on a blue dot (4 s), then follow it slowly round a circle. The page sends the dot's position
 // with every sample; the server tries each filter on this recorded test and reports how close
 // each kept the cursor to the dot (server/main.py, score_calibration). It does NOT switch the
@@ -27,7 +27,7 @@
 const area = document.getElementById("area");
 const ctx = area.getContext("2d");
 const MODE_NAMES = { none: "No filter", low_sensitivity: "Lower sensitivity", one_euro: "One Euro", learned: "Our model" };
-// One plain sentence per filter, shown under the filter buttons (leader's agent, Sun 15 Nov).
+// One plain sentence per filter, shown under the filter buttons.
 const MODE_HINTS = {
   none: "The cursor follows your hand exactly, shake and all. Useful for comparing.",
   low_sensitivity: "The cursor moves half as far as your hand, so shaking looks smaller. Click the area to start, Esc to stop.",
@@ -69,7 +69,7 @@ function shownPosition() {
   if (press && freezeOn && performance.now() - press.at < FREEZE_MS) return { x: press.x, y: press.y };
   return latest ? { x: latest.x, y: latest.y } : null;
 }
-// "Click where you aimed" (team leader's idea, Sun 15 Nov): at the press the cursor still
+// "Click where you aimed": at the press the cursor still
 // carries a little leftover shake, so the click is placed at the average of where the
 // corrected cursor was shown over the last AIM_MS. Only while our model is correcting tremor
 // (its gate is over half open), so a steady hand's click is never moved. 0.1 s was chosen on
@@ -111,7 +111,7 @@ function shakeNow() {
   if (shakeLog.length < 30 || now - shakeLog[0].at < 1500) return null;      // too little yet
   // A sliding window: `from`..`to` are the samples within SMOOTH_MS of sample s, and sumX/sumY
   // their totals. Both ends only ever move forward, so every sample is added and removed once.
-  // (Sun 15 Nov: this used to compare every sample with every other one, which stalled the
+  // (This used to compare every sample with every other one, which stalled the
   // page for 5 ms on a trackpad and 38 ms with a 1000-per-second mouse, 4 times a second.)
   let raw = 0, shown = 0, n = 0;
   let from = 0, to = 0, sumX = 0, sumY = 0;
@@ -200,7 +200,7 @@ async function loadStatus() {
     document.getElementById("systemwide-note").textContent =
       "Not available here: " + sw.replace(/^not available:?\s*/, "") + ".";
   }
-  // The tracking button only appears when the leader's tracker can run on this computer.
+  // The tracking button only appears when the tracker can run on this computer.
   document.getElementById("tracking-row").hidden = !String(status.tracker).startsWith("available")
     && !String(status.tracker).startsWith("running");
   settings = await (await fetch("/api/settings")).json();
@@ -731,7 +731,7 @@ for (const button of document.querySelectorAll("[data-show]")) {
 }
 window.addEventListener("hashchange", () => openTab(location.hash.slice(1)));
 
-// ------------------------------------------------------------ the assistant window (leader's lane)
+// ------------------------------------------------------------ the assistant window
 
 async function loadAssistant() {
   try {
@@ -739,7 +739,7 @@ async function loadAssistant() {
     if (!check.ok) return;
     document.getElementById("assistant-float").hidden = false;   // show the floating button
     const script = document.createElement("script");
-    script.src = "assistant/assistant.js?v=" + Date.now();   // never an old cached copy (leader's request)
+    script.src = "assistant/assistant.js?v=" + Date.now();   // never an old cached copy
     document.body.appendChild(script);
   } catch (error) { /* no assistant: fine */ }
 }

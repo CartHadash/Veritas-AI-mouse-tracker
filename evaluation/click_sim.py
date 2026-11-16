@@ -2,8 +2,7 @@
 click_sim.py - does "click freeze" help clicks land? A simulation (no real people).
 
 A click on a button only counts if the button is pressed AND released on it. Tremor while the
-button is held can carry the cursor off before the release. Click freeze (an idea from Timofey,
-a team member) holds the shown cursor still from press to release (at most 0.3 s).
+button is held can carry the cursor off before the release. Click freeze holds the shown cursor still from press to release (at most 0.3 s).
 
 The simulation: a hand aimed perfectly at the centre of a target of radius 22 px (the demo
 page's) holds still while replayed tremor shakes it. Clicks start every 0.4 s and are held

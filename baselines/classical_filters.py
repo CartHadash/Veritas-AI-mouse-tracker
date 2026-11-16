@@ -2,8 +2,7 @@
 classical_filters.py - standard (non-AI) smoothing filters, used as BASELINES that our model
 must beat, and as the "One Euro" choice on the demo page.
 
-Written from scratch during the hackathon (Sat 14 Nov 2026) from the published descriptions
-of each method, replacing the pre-hackathon file (team leader's decision; docs/REUSED_CODE.md).
+Written from scratch during the hackathon from the published descriptions of each method.
 
 Every filter works the same way, one pointer sample at a time (so it could run live):
     f = OneEuroFilter()

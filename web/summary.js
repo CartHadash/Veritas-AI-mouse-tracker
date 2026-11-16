@@ -1,6 +1,6 @@
-// summary.js - the Analysis tab of index.html (step 13; it used to be its own page,
+// summary.js - the Analysis tab of index.html (it used to be its own page,
 // summary.html). Loaded before app.js, which calls loadSummary() when the tab is shown and
-// owns MODE_NAMES. Reads GET /api/summary (Contract 2) and
+// owns MODE_NAMES. Reads GET /api/summary and
 // draws a few tiles and one chart with the browser's canvas (no chart library, so it works
 // offline). Wording is for a general reader: no medical claims.
 
@@ -237,7 +237,7 @@ async function loadSummary() {
   loadHistory(s);
 }
 
-// ------------------------------------------------------------ earlier sessions (leader's history)
+// ------------------------------------------------------------ earlier sessions
 
 function historyRow(cells) {
   const tr = document.createElement("tr");
@@ -250,7 +250,7 @@ function historyRow(cells) {
 }
 
 async function loadHistory(current) {
-  // GET /api/assistant/history belongs to the leader's assistant; without it, no panel.
+  // GET /api/assistant/history belongs to the assistant module; without it, no panel.
   let history;
   try {
     const response = await fetch("/api/assistant/history");

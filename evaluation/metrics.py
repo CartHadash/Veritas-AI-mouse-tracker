@@ -17,7 +17,7 @@ CORRECTOR (turns shaky cursor positions into steadier ones):
   lag                          = how many milliseconds the output trails the intended path
   jerkiness                    = average size (px) of the change in cursor velocity from one
                                   sample to the next. A smooth cursor is near 0. Added after the
-                                  team leader saw our corrector look jumpy although its distance
+                                  we saw our corrector look jumpy although its distance
                                   score was good: distance alone hid that problem.
 """
 

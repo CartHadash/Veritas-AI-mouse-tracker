@@ -1,5 +1,5 @@
 """
-main.py - step 10: the local web server that ties everything together.
+main.py - the local web server that ties everything together.
 
 It runs on the user's own laptop, keeps both models loaded, and talks to the interface
 (the web page in web/) in the browser.
@@ -16,17 +16,17 @@ What it offers:
                      server replies with the corrected position, the detector's tremor score,
                      and the estimated size and frequency. The page can also send
                      {"type": "click", "hit": true/false} and {"type": "reset"}.
-                     Calibration test (Godson's idea): {"type": "calibrate_start"}, then
+                     Calibration test: {"type": "calibrate_start"}, then
                      samples carrying "dot_x"/"dot_y", then {"type": "calibrate_end"}; the
                      server tries every filter in CANDIDATES on the recorded test and replies
                      {"type": "calibration", ...} with each one's distance from the dot. It
                      does not switch the filter (see calibration_val.md). Kept in memory only.
                      {"type": "calibrate_cancel"} drops the test.
-  GET  /api/summary  the session summary, exactly as Contract 2 in docs/PROJECT_PLAN.md
+  GET  /api/summary  the session summary (the assistant reads the same numbers)
   GET  /api/settings and POST /api/settings: filter mode, strength, demo tremor, tracking
-  GET  /api/status   which optional parts (leader's tracker and assistant) are loaded
+  GET  /api/status   which optional parts (tracker and assistant) are loaded
 
-The leader's modules are optional: if `tracker` or `assistant` is missing or fails to
+The tracker and assistant modules are optional: if `tracker` or `assistant` is missing or fails to
 import (for example the tracker on Windows), the server carries on without it and says so
 in /api/status.
 
@@ -77,21 +77,21 @@ async def only_local_pages(request: Request, call_next):
         return JSONResponse({"error": "only pages served by this computer may use this server"}, status_code=403)
     response = await call_next(request)
     # "no-cache" = the browser must ask the server whether a file changed before reusing its
-    # copy. Without it, a browser kept running an old app.js after `git pull` (Sun 15 Nov).
+    # copy. Without it, a browser kept running an old app.js after `git pull`.
     response.headers.setdefault("Cache-Control", "no-cache")
     return response
 
 # ---------------------------------------------------------------- shared state
 
 # Demo tremor starts at "strong": with medium tremor the correction is hard to see by eye
-# (Oleksandr's hand check, Sat 14 Nov; evaluation/results/demo_modes_test.md, medium, reaching).
+# (a hand check; evaluation/results/demo_modes_test.md, medium, reaching).
 # response: how quickly "Our model" follows a moving hand (steadiest / balanced / responsive,
-# models/corrector/live.py RESPONSE_LEVELS). Starts at the steadiest (team's choice, Sun 15 Nov).
+# models/corrector/live.py RESPONSE_LEVELS). Starts at the steadiest.
 # systemwide: "Steady cursor everywhere" (the real cursor, in every app; systemwide/service.py).
 # systemwide_demo: also add the replayed tremor to the real cursor (for showing it on video).
 settings = {"mode": "learned", "strength": 1.0, "demo_tremor": False, "demo_level": "strong",
             "response": "steadiest", "tracking": False, "systemwide": False, "systemwide_demo": False}
-# Whether "Our model" adds gated One Euro smoothing (option A). Not a user setting: evaluations
+# Whether "Our model" adds gated One Euro smoothing. Not a user setting: evaluations
 # switch it off to measure the network alone (evaluation/vs_one_euro.py). Evaluations may also
 # put fixed One Euro settings under "settings"; those then win over the page's choice.
 SMOOTH_OUTPUT = {"on": True}
@@ -148,7 +148,7 @@ class SessionStats:
             self.hits += int(bool(hit))
 
     def summary(self):
-        """Contract 2 (docs/PROJECT_PLAN.md)."""
+        """The summary served at GET /api/summary."""
         with self.lock:
             results = list(self.results)
             minutes = self.active_seconds / 60
@@ -180,7 +180,7 @@ class SessionStats:
                       "click_accuracy": None if self.clicks == 0 else round(self.hits / self.clicks, 3),
                       "steadiness_score": steadiness},
             "filter": {"mode": settings["mode"], "strength": settings["strength"],
-                       "response": settings["response"]},   # leader's request, Sun 15 Nov
+                       "response": settings["response"]},
             "model_info": {"detector_version": VERSION,
                            "missed_cases_rate": _detector_info.get("test_missed_cases_rate"),
                            "false_alarm_rate": _detector_info.get("test_false_alarm_rate")},
@@ -189,7 +189,7 @@ class SessionStats:
 
 
 demo_stats = SessionStats()      # movement from the demo page
-laptop_stats = SessionStats()    # whole-laptop movement from the leader's tracker (if running)
+laptop_stats = SessionStats()    # whole-laptop movement from the tracker (if running)
 
 
 # ---------------------------------------------------------------- demo tremor and filters
@@ -225,7 +225,7 @@ class DemoTremor:
 
 class LowSensitivity:
     """
-    The cursor moves half as far as the hand (a baseline from step 6). It adds up the hand's
+    The cursor moves half as far as the hand (one of the baselines). It adds up the hand's
     movements step by step (times 0.5) and stays inside the practice area, so every part of
     the area can still be reached, just with more hand travel. After a pause or when the
     pointer comes back into the area, it does not jump.
@@ -342,7 +342,7 @@ class CursorSession:
                 "demo": demo_info}
 
 
-# ---------------------------------------------------------------- calibration test (Godson's idea)
+# ---------------------------------------------------------------- calibration test
 
 CALIBRATION_SKIP = 2.56       # s; score after the detector's first full window (as the evaluations do)
 CALIBRATION_MIN_SECONDS = 8.0  # a shorter test (pointer left the area, ...) is not scored
@@ -389,10 +389,10 @@ def score_calibration(record):
     }
 
 
-# ---------------------------------------------------------------- leader's optional modules
+# ---------------------------------------------------------------- optional modules
 
 def load_tracker():
-    """Contract 1: tracker.start(callback) / tracker.stop(). Optional."""
+    """The tracker: tracker.start(callback) / tracker.stop(). Optional."""
     try:
         try:
             from tracker import reader as tracker_module
@@ -568,7 +568,7 @@ def get_summary():
 def reset_summary():
     """Start a new session summary (the demo page's 'new session' button)."""
     global demo_stats
-    try:                       # keep the last minute before "New session" (leader's history)
+    try:                       # keep the last minute before "New session" (session history)
         from assistant import history
         history.save(get_summary())
     except Exception:          # no assistant, or saving failed: never block a new session

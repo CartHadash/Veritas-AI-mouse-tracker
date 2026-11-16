@@ -1,4 +1,4 @@
-"""The assistant's web routes (Contract 3). The builder's server includes `router` with one line.
+"""The assistant's web routes. The server includes `router` with one line.
 
     POST /api/assistant/chat       {"messages": [{"role": "user", "content": "..."}]} -> streamed text
     GET  /api/assistant/explain    the two-or-three-sentence explanation, streamed text
@@ -25,7 +25,7 @@ router = APIRouter()
 
 
 def live_server():
-    """The builder's running server module, or None (standalone test page).
+    """The running server module, or None (standalone test page).
 
     Looked up at request time, not import time, because the server imports this module:
     importing it back here would be circular.
@@ -35,7 +35,7 @@ def live_server():
 
 
 def current_summary():
-    """The live summary from the builder's server if it is running, else the example file."""
+    """The live summary from the server if it is running, else the example file."""
     server = live_server()
     if server is not None:
         return server.get_summary()

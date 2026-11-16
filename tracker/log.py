@@ -1,6 +1,6 @@
 """Optional local log of pointer samples, and the "delete my data" function.
 
-DECISION L1 = A: the session normally lives only in memory. If the user turns saving on,
+The session normally lives only in memory. If the user turns saving on,
 samples go to a CSV file in local_logs/ (ignored by git; it never leaves the laptop).
 Each file holds only time, x and y. delete_all_logs() empties the folder.
 

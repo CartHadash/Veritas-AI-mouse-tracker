@@ -1,17 +1,17 @@
 """
-option_b.py - does a corrector retrained to aim at what the eye sees beat the app's (option A)?
+option_b.py - does a corrector retrained to aim at what the eye sees beat the app's earlier one (v4 + gated One Euro)?
 
-Option B (team's choice, Sat 14 Nov): retrain the network with an extra penalty on the cursor's
+Retrain the network with an extra penalty on the cursor's
 error wobbling around its own average over 0.3 s (models/corrector/train.py --shake K), which is
 close to the "shake" a person sees. Each candidate network is run the way the app would run it:
-with the gated One Euro smoothing of option A, through the demo page's own code, over the same
+with the app's gated One Euro smoothing, through the demo page's own code, over the same
 nine situations as evaluation/vs_one_euro.py (mild/medium/strong tremor x reaching/gliding/still,
 browser-like timing).
 
 THE RULE (fixed before training): a candidate replaces the app's network only if, on
 VALIDATION people's replayed tremor, both its average shake and its average jerk are lower than
-option A's, and its average distance is at most 5% higher. Among those, the lowest shake wins.
-With --test, the winner (if any) is scored once on TEST people next to option A.
+v4's, and its average distance is at most 5% higher. Among those, the lowest shake wins.
+With --test, the winner (if any) is scored once on TEST people next to v4.
 
 Run from the repository folder (after training the candidates; a few minutes each):
     python evaluation/option_b.py

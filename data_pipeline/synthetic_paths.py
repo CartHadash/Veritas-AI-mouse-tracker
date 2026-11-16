@@ -1,7 +1,7 @@
 """
-synthetic_paths.py - step 4: computer-generated mouse movement with NO tremor in it.
+synthetic_paths.py - computer-generated mouse movement with NO tremor in it.
 
-This plays the role of "what the person meant to do". Later (step 5) real tremor from the
+This plays the role of "what the person meant to do". Later (build_dataset.py) real tremor from the
 library is added on top, so we know exactly what the clean movement was.
 
 What a generated path contains, chosen at random one after another:
@@ -18,7 +18,7 @@ All positions are in pixels, 100 samples per second, on a 1920 x 1080 screen.
 Every path comes from a numpy random generator, so a fixed seed gives the same paths.
 
 REALISTIC VERSION (opt-in: generate_path(..., realistic=True), then device_view). Added after
-the step 4 review found gaps; the models were trained WITHOUT it, and it is not used for
+a review found gaps; the models were trained WITHOUT it, and it is not used for
 training until the team's path check (web/path_check.html) and a stress test say so.
 Version 2, after the team's first blind check called version 1 "too straight":
   - a reach's duration follows Fitts's law (a well-known rule of pointing: small or far
@@ -251,7 +251,7 @@ def zigzag(rng, here):
 
 
 def glide(rng, here):
-    """Step 12: a long, smooth, continuous curve (1-3 s at 50-300 px/s), like dragging or
+    """A long, smooth, continuous curve (1-3 s at 50-300 px/s), like dragging or
     slowly following a line. It never stops, which our first detector found suspicious."""
     seconds = rng.uniform(1.0, 3.0)
     t = np.arange(int(seconds * RATE)) / RATE
@@ -265,7 +265,7 @@ def glide(rng, here):
 # How often each kind of event is chosen. Look-alikes are about a quarter of all events.
 EVENTS = [(reach, 0.40), (pause, 0.20), (drift, 0.12), (wiggle, 0.10), (circle, 0.09), (zigzag, 0.09)]
 
-# Step 12: movement that never pauses (reaches straight into glides and drifts).
+# Movement that never pauses (for detector v2) (reaches straight into glides and drifts).
 CONTINUOUS_EVENTS = [(reach, 0.40), (glide, 0.45), (drift, 0.15)]
 
 # Realistic version: human-like reaches, pauses and drifts, plus selecting text and dragging.

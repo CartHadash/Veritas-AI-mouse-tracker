@@ -1,12 +1,12 @@
 """
-smoother_output.py - can the corrected cursor be made less jittery? (team leader's request,
-Sat 14 Nov 21:35: "closer than One Euro but still fast and jittery")
+smoother_output.py - can the corrected cursor be made less jittery? (By hand it looked
+"closer than One Euro but still fast and jittery".)
 
 Candidates, all built on the app's corrector v4 (penalty 0.5) gated by detector v2:
   - extra smoothing of the corrected cursor by a One Euro filter (cut-off 2, 4, 8 or 16 Hz) or
     by a short moving average (30 or 50 ms). The extra smoothing is applied only as much as the
     correction itself is on (the detector's gate), so a steady hand gets no added lag;
-  - the stronger-penalty correctors already trained in step 12 (v4 with S = 2 and S = 8).
+  - the stronger-penalty correctors already trained (v4 with S = 2 and S = 8).
 
 THE RULE (fixed before looking at any result): on VALIDATION sequences with marked tremor, keep
 the candidate with the LOWEST jerkiness among those with a lag of at most 20 ms and a distance

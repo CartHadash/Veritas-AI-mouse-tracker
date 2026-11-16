@@ -1,5 +1,5 @@
 """
-failure_extras.py - step 9 additions picked by the team leader (Sat 14 Nov 21:20), test people:
+failure_extras.py - more on where the models fail (test people):
 
   A. Uncertainty ranges. Our test set has 72 people; with different people the numbers would
      come out a bit different. A "bootstrap" estimates by how much: draw 72 people at random

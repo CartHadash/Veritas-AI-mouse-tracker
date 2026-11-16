@@ -1,5 +1,5 @@
 """
-model.py - the corrector network (step 8).
+model.py - the corrector network.
 
 Input : the last 64 cursor movement steps (dx, dy), i.e. 0.64 s at 100 samples per second.
         Steps, not screen positions, so it works anywhere on the screen.

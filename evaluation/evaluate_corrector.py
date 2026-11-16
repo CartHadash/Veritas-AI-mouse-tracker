@@ -1,5 +1,5 @@
 """
-evaluate_corrector.py - step 8: score corrector v1 ONCE on TEST people, next to the baselines.
+evaluate_corrector.py - score corrector v1 ONCE on TEST people, next to the baselines.
 
 Everything is computed exactly as live.py would do it, but for all test sequences at once:
   - the corrector's offset at every sample from the 64 steps before it;
@@ -8,8 +8,8 @@ Because the detector needs 2.56 s of history, the first 2.56 s of every 5.12 s s
 ignored for ALL methods (so every row is scored on the same samples).
 
 Run from the repository folder (about a minute):
-    python evaluation/evaluate_corrector.py                  # gate = detector v1 (step 8)
-    python evaluation/evaluate_corrector.py --detector v2     # gate = detector v2 (step 12, the app)
+    python evaluation/evaluate_corrector.py                  # gate = detector v1
+    python evaluation/evaluate_corrector.py --detector v2     # gate = detector v2 (the app)
 Writes evaluation/results/corrector_v1.md (or corrector_v1_gate_v2.md).
 """
 

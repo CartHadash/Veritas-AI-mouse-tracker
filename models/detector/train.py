@@ -1,5 +1,5 @@
 """
-train.py - step 7: train detector version 1 (DECISION 3, option A).
+train.py - train the detector (gradient boosting; version 1 by default).
 
 The model is "gradient boosting" from scikit-learn: many small decision trees, each one
 fixing the mistakes of the ones before it, voting together. It reads the ~20 features from
@@ -13,8 +13,8 @@ Rules we follow here:
 
 Run from the repository folder (under a minute):
     python models/detector/train.py                     # normal pixel factor
-    python models/detector/train.py --tremor-scale 0.5  # DECISION 1 check (needs the _x0.5 data)
-    python models/detector/train.py --version v2 --with-continuous   # step 12
+    python models/detector/train.py --tremor-scale 0.5  # pixel-factor check (needs the _x0.5 data)
+    python models/detector/train.py --version v2 --with-continuous   # detector v2
 Saves models/detector/detector_v1.joblib (or detector_v1_x0.5.joblib) and writes the
 validation trade-off table to evaluation/results/detector_v1_validation.md.
 """
@@ -72,7 +72,7 @@ def main():
     parser.add_argument("--tremor-scale", type=float, default=1.0)
     parser.add_argument("--version", default="v1")
     parser.add_argument("--with-continuous", action="store_true",
-                        help="step 12: also learn from (and choose settings on) the pause-free windows")
+                        help="also learn from (and choose settings on) the pause-free windows")
     args = parser.parse_args()
     suffix = "" if args.tremor_scale == 1.0 else "_x%g" % args.tremor_scale
     version = args.version

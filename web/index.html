@@ -13,7 +13,7 @@
   <link rel="stylesheet" href="vendor/ui-sdk/web.css">
   <link rel="stylesheet" href="styles.css">
   <link rel="stylesheet" href="summary.css">
-  <!-- The colour-and-movement layer (leader). Delete this line and the motion.js line at the
+  <!-- The colour-and-movement layer. Delete this line and the motion.js line at the
        end of the page to go back to the plain look; nothing else depends on them. -->
   <link rel="stylesheet" href="motion.css">
 </head>
@@ -79,7 +79,7 @@
             <span class="streak" id="streak" hidden></span>
           </p>
 
-          <!-- Builder, Sun 15 Nov (leader's requests): practice exercises (web/exercises.js).
+          <!-- Practice exercises (web/exercises.js).
                Plain markup with ids; style it freely. -->
           <div class="exercises" id="exercises">
             <button type="button" class="btn" id="spiral-start"
@@ -136,7 +136,7 @@
             </ui-slider>
             <span class="small hint">How much of the filter is used: 0 = off, 1 = full.</span>
 
-            <!-- Builder, Sun 15 Nov: how quickly "Our model" follows a moving hand.
+            <!-- How quickly "Our model" follows a moving hand.
                  Less lag always means more shake (evaluation/results/tune_lag.md). -->
             <div class="field-stack" id="response-row">
               <span class="field-name" id="response-label">Steadier or more responsive</span>
@@ -171,7 +171,7 @@
               <ui-switch id="tracking-toggle"><ui-switch-thumb></ui-switch-thumb></ui-switch>
             </label>
 
-            <!-- Builder, Sun 15 Nov: the corrector on the REAL cursor, in every app (systemwide/).
+            <!-- The corrector on the REAL cursor, in every app (systemwide/).
                  Greyed out with the reason when this computer cannot run it. -->
             <label class="option" id="systemwide-row">
               <span><b>Steady cursor everywhere</b>
@@ -352,7 +352,7 @@
   <script src="targets.js"></script>
   <script src="exercises.js"></script>
   <script src="app.js"></script>
-  <!-- First-use guide (builder, Oleksandr's request): its own file, so it never clashes with app.js. -->
+  <!-- First-use guide: its own file, so it never clashes with app.js. -->
   <script src="tutorial.js"></script>
   <script src="reading.js"></script>
   <script src="motion.js"></script>

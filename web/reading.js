@@ -1,5 +1,5 @@
 // reading.js - two reading switches in the top bar: "Easier-to-read text" and "Larger text"
-// (Oleksandr's accessibility idea; the team leader agreed, Sun 15 Nov). Plain JavaScript in
+// (accessibility). Plain JavaScript in
 // its own file, like tutorial.js.
 //
 // "Larger text" enlarges everything around the practice area by 15% (the CSS "zoom" property

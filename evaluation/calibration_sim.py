@@ -1,6 +1,6 @@
 """
 calibration_sim.py - does a 10-second calibration test pick a better filter for each person?
-(Godson's idea, a team member; a simulation with recorded tremor, no live people.)
+(A simulation with recorded tremor, no live people.)
 
 The calibration test on the demo page: hold the pointer on a dot for 4 s, then follow the dot as
 it moves slowly for about 6 s. Because the app knows where the dot was, it can replay the
@@ -25,7 +25,7 @@ Run from the repository folder (needs data/derived/tremor_library.npz; a few min
     python evaluation/calibration_sim.py --people test
 Writes evaluation/results/calibration_<people>.md.
 
-Outcome (validation, Sat 14 Nov): the calibration's choice was WORSE than always using our
+Outcome (validation): the calibration's choice was WORSE than always using our
 model at every size, and even the best choice in hindsight gained under 0.1 px. So the app's
 test only reports the distances and never switches the filter; the test-people run was not
 done, because the method was not kept.

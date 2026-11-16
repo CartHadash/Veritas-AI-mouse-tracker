@@ -1,6 +1,6 @@
 """
 response_levels.py - what each choice of the page's "Steadier or more responsive" control does.
-(Team's choice, Sun 15 Nov: let users pick between less shake and less lag; start at steadiest.)
+(The person picks between less shake and less lag; it starts at steadiest.)
 
 The three levels (models/corrector/live.py RESPONSE_LEVELS) are three points of the tuning grid in
 evaluation/results/tune_lag.md. This script checks them through the page's real path: it sets

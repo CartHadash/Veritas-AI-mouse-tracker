@@ -1,4 +1,4 @@
-/* The assistant panel. Uses the builder's warm colours (web/styles.css) when present,
+/* The assistant panel. Uses the page's warm colours (web/styles.css) when present,
    with the same values as fallbacks for the standalone test page. */
 
 .assistant {
@@ -103,11 +103,11 @@
   background: none;
 }
 
-/* Action buttons under an answer (builder, Sun 15 Nov): things the person can do with one tap. */
+/* Action buttons under an answer: things the person can do with one tap. */
 .assistant-actions { display: flex; flex-wrap: wrap; gap: 8px; margin: 0 0 14px; }
 .assistant button.assistant-action { border: 2px solid var(--steady, #1f6f57); color: var(--steady, #1f6f57); font-weight: 600; }
 
-/* The fixed reminder under every answer (builder, Sun 15 Nov). Small, but always there. */
+/* The fixed reminder under every answer. Small, but always there. */
 .assistant-reminder { margin: 6px 8% 0 4px; padding-left: 10px; border-left: 3px solid var(--line, #e8c9a8);
   font-size: 13.5px; line-height: 1.4; color: var(--muted, #6a5241); }
 /* An answer and what belongs to it (reminder, Read aloud, action buttons) sit close together;

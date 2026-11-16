@@ -1,6 +1,6 @@
 """
 notch_canceller.py - does a canceller tuned to the person's tremor rhythm beat our corrector?
-(Oleksandr's idea, Sat 14 Nov: "measure the person's tremor, then stabilise it")
+(Idea: "measure the person's tremor, then stabilise it")
 
 The detector measures the tremor's rhythm (peak frequency, 3-12 Hz) every 0.1 s from the last
 2.56 s. A notch filter (models/corrector/notch.py) removes a narrow band around that rhythm and

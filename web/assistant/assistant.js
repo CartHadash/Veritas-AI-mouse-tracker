@@ -1,4 +1,4 @@
-// The assistant's chat panel (team leader's lane). It fills <div id="assistant-panel">.
+// The assistant's chat panel. It fills <div id="assistant-panel">.
 // Plain JavaScript, no libraries. Replies stream in from POST /api/assistant/chat.
 //
 // Safety: the model's text is never inserted as HTML. The only formatting we honour is
@@ -7,8 +7,8 @@
 // Each reply ends with a line "SUGGESTIONS: question | question | question" (see
 // assistant/prompt.py). We hide that line and turn it into the one-tap buttons.
 //
-// A reply may also carry a line "ACTIONS: set_mode=one_euro | open_tab=analysis" (builder,
-// Sun 15 Nov, the team leader's idea). The assistant never does anything itself: each action
+// A reply may also carry a line "ACTIONS: set_mode=one_euro | open_tab=analysis".
+// The assistant never does anything itself: each action
 // becomes a button, and only the PERSON pressing it changes something. The page accepts only
 // the names and values in ACTIONS below and ignores everything else, so text from the model
 // can never run code or change something that is not on this list.
@@ -171,7 +171,7 @@
     return bubble;
   }
 
-  // Under EVERY answer, the same fixed reminder (Oleksandr, Sun 15 Nov). It is written here,
+  // Under EVERY answer, the same fixed reminder. It is written here,
   // by the page, so it is always there whatever the model wrote.
   const REMINDER = "Reminder: these numbers are estimates from a student prototype trained on public " +
     "research recordings. They can be wrong and are not medical advice. For advice or treatment, " +

@@ -1,5 +1,5 @@
 """
-data_facts.py - step 14: the dataset facts the write-up needs, counted from the built data.
+data_facts.py - the dataset facts the write-up needs, counted from the built data.
 
 Writes evaluation/results/dataset_facts.md with: people per dataset and split, test people per
 group (diagnosis, age band, sex), tremor library size and tremor-marked counts, detector windows

@@ -1,5 +1,5 @@
 """
-build_dataset.py - step 5: turn the tremor library (step 3) and synthetic movement (step 4)
+build_dataset.py - turn the tremor library (tremor_library.py) and synthetic movement (synthetic_paths.py)
 into labelled examples, split BY PERSON into train / validation / test.
 
   1. SPLIT. Every person (469 PADS + 16 TremorDB) goes into exactly one group:
@@ -22,9 +22,9 @@ no "no tremor" example contains rule-passing tremor.
 
 Run from the repository folder:
     python data_pipeline/build_dataset.py                    # normal pixel factor
-    python data_pipeline/build_dataset.py --tremor-scale 0.5 # half (DECISION 1 check)
+    python data_pipeline/build_dataset.py --tremor-scale 0.5 # half (pixel-factor check)
     python data_pipeline/build_dataset.py --tremor-scale 2   # double
-    python data_pipeline/build_dataset.py --continuous       # step 12: pause-free movement
+    python data_pipeline/build_dataset.py --continuous       # pause-free movement (detector v2)
 Output: data/derived/detector_<split>.npz and corrector_<split>.npz (not in git).
 """
 
@@ -208,7 +208,7 @@ def print_tables(split, lib, detector, corrector):
 
 
 def build_continuous():
-    """Step 12: detector windows with pause-free synthetic movement (glides, reaches, drifts),
+    """Detector windows with pause-free synthetic movement (glides, reaches, drifts),
     from the SAME people in the same splits, with new random seeds. Saved as
     detector_<split>_continuous.npz. Used to train detector v2 and to test whether a detector
     wrongly treats uninterrupted movement as tremor."""
@@ -226,9 +226,9 @@ def build_continuous():
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("--tremor-scale", type=float, default=1.0,
-                        help="multiply every tremor by this (0.5 / 2 for the DECISION 1 check)")
+                        help="multiply every tremor by this (0.5 / 2 for the pixel-factor check)")
     parser.add_argument("--continuous", action="store_true",
-                        help="step 12: extra detector windows whose movement never pauses")
+                        help="extra detector windows whose movement never pauses")
     args = parser.parse_args()
     if args.continuous:
         build_continuous()

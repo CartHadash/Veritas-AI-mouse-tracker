@@ -1,4 +1,4 @@
-// exercises.js - three extras for the practice area (team leader's requests, Sun 15 Nov):
+// exercises.js - three extras for the practice area:
 //
 //   1. Trace the spiral: a faint spiral appears; the person follows it from the middle
 //      outwards. The raw line stays in grey and the corrected line in green, and the page
@@ -13,7 +13,7 @@
 // Loaded before app.js. app.js calls the small functions in `practiceExtras` at five places
 // (a reply arrived, draw, a click started, a click ended, is the target hidden); everything
 // else lives here. Uses app.js's own things only when called: area, settings, target,
-// postSettings, newTarget, MODE_NAMES. Plain markup with ids; the styling is the leader's.
+// postSettings, newTarget, MODE_NAMES. Plain markup with ids; the styling is in styles.css / motion.css.
 
 const SPIRAL_TURNS = 3;
 const SPIRAL_POINTS = 720;              // samples along the spiral (finer than a pixel apart)
@@ -100,7 +100,7 @@ function finishSpiral(complete) {
   spiral.phase = "done";
   const n = spiral.raw.length;
   const rawPx = spiral.sums[0] / n, correctedPx = spiral.sums[1] / n;
-  // Kept readable from outside for the leader's session card (leader's request).
+  // Kept readable from outside for the session card.
   window.lastSpiral = { raw: spiral.raw, corrected: spiral.corrected, rawDistance: rawPx, correctedDistance: correctedPx,
                         filter: settings.mode, demoTremor: Boolean(settings.demo_tremor), complete, at: new Date().toISOString() };
   const same = settings.mode === "none";

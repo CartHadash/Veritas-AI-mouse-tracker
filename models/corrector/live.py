@@ -11,7 +11,7 @@ How the two models work together ("gating"):
   cursor is returned untouched (a steady hand gets no added delay); with gate 1 the full
   correction is applied; in between it blends. The gate changes smoothly (over about 0.3 s)
   so the cursor never jumps.
-    gate = 0 when score <= 0.05; 1 when score >= the DECISION 4 cut-off; a straight line between.
+    gate = 0 when score <= 0.05; 1 when score >= the detector's cut-off; a straight line between.
 
 Samples can arrive at any rate (browsers send 60-120 per second); they are resampled to 100
 per second, the rate the models were trained on, by drawing a straight line between
@@ -34,20 +34,19 @@ from models.resample import Resampler  # noqa: E402
 
 # The version the app uses: v4 with smoothness penalty 2 (trained on plain distance like v3,
 # plus a penalty on a jumpy cursor). Penalty 0.5 was chosen first (evaluation/smoothness.py);
-# after the leader found it still jittery, evaluation/smoother_output.py chose penalty 2 on
-# validation (Sat 14 Nov 23:00). Then option B (Sun 15 Nov 00:30): v5 with an extra penalty on
+# after it still looked jittery by hand, evaluation/smoother_output.py chose penalty 2 on
+# validation. Then v5 with an extra penalty on
 # visible shake (train.py --shake 3), chosen by evaluation/option_b.py on validation, with the
-# gated One Euro smoothing of option A. v1 is weights.pt, v3 is weights_v3.pt.
+# gated One Euro smoothing. v1 is weights.pt, v3 is weights_v3.pt.
 VERSION = "v5_k3"
 WEIGHTS = ROOT / "models" / "corrector" / f"weights_{VERSION}.pt"
 RATE = 100
 GATE_LOW = 0.05          # detector score at which the gate starts opening
 GATE_SECONDS = 0.3       # how quickly the gate follows the detector
-# Settings of the One Euro smoothing of the corrected cursor (option A). The defaults are One
+# Settings of the One Euro smoothing of the corrected cursor. The defaults are One
 # Euro's original ones; evaluation/tune_lag.py tunes them on validation to reduce lag.
 SMOOTHING = {"min_cutoff": 1.0, "beta": 0.004}
-# The page's "Steadier <-> More responsive" choice (Sun 15 Nov: the team chose to let users
-# pick). Three points from evaluation/results/tune_lag.md (validation people): steadiest = the
+# The page's "Steadier <-> More responsive" choice (the person picks). Three points from evaluation/results/tune_lag.md (validation people): steadiest = the
 # settings above (67 ms lag while moving, shake 2.98 px), balanced (42 ms, 3.39 px), most
 # responsive (27 ms, 3.83 px). Less lag always means more shake; the default stays steadiest.
 RESPONSE_LEVELS = {
@@ -79,7 +78,7 @@ class LiveCorrector:
         use_gate=False applies the full correction always (used to measure the model alone).
         strength: 0-1 user setting that scales the correction.
         smooth_output: also smooth the corrected cursor with One Euro, as much as the gate is
-            open (Sat 14 Nov, option A: our cursor was nearly as jumpy as no filter, see
+            open (our cursor was nearly as jumpy as no filter, see
             evaluation/results/vs_one_euro_val.md). False = the network's correction only.
         """
         self.smooth_output = smooth_output

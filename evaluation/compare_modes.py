@@ -1,5 +1,5 @@
 """
-compare_modes.py - how much does each filter mode help ON THE DEMO PAGE? (leader's request)
+compare_modes.py - how much does each filter mode help ON THE DEMO PAGE?
 
 Runs the server's real per-connection code (server.main.CursorSession) in-process, so the
 numbers are what the demo page gets. It adds replayed tremor to an intended movement and
@@ -14,8 +14,8 @@ Whose tremor (--people):
                    (server/demo_tremor.npz). Use once, for the final reported figure.
 
 Kinds of intended movement:
-  reaches   - the step 4 generator (reaches, pauses, look-alikes): like the training data
-  glide     - one slow, smooth, continuous curve (like the leader's test path)
+  reaches   - the synthetic_paths.py generator (reaches, pauses, look-alikes): like the training data
+  glide     - one slow, smooth, continuous curve (like a hand-made test path)
   still     - a hand holding still
 "60 Hz, uneven" sends samples like a browser does (about 60 per second, uneven timing).
 

@@ -1,7 +1,7 @@
 """
 smoothness.py - choose how strongly to penalise a jumpy cursor (corrector v4), fairly.
 
-The team leader saw our corrector look jumpy on the demo page although its distance score was
+We saw our corrector look jumpy on the demo page although its distance score was
 good. Corrector v4 is trained with an extra penalty on the corrected cursor's jerkiness
 (models/corrector/train.py --smooth S). We trained S = 0.5, 2 and 8.
 
@@ -36,7 +36,7 @@ CORRECTOR = ROOT / "models" / "corrector"
 RESULT = ROOT / "evaluation" / "results" / "smoothness.md"
 CANDIDATES = [("v1", "weights.pt"), ("v3", "weights_v3.pt"), ("v4, S=0.5", "weights_v4_s0.5.pt"),
               ("v4, S=2", "weights_v4_s2.pt"), ("v4, S=8", "weights_v4_s8.pt"),
-              # Added Sun 15 Nov for reporting only (the rule below picks among v4 versions): the
+              # For reporting only (the rule below picks among v4 versions): the
               # network the app uses now, chosen by evaluation/option_b.py.
               ("v5, shake penalty 3 (the app's network)", "weights_v5_k3.pt")]
 

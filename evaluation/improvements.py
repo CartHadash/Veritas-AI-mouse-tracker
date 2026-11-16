@@ -1,5 +1,5 @@
 """
-improvements.py - step 12: one measured improvement to each model.
+improvements.py - one measured improvement to each model.
 
 The official schedule asks for "one improvement, measured". For each model we changed one
 thing, compared before and after on VALIDATION people, and keep the change only if it helps.
@@ -8,13 +8,13 @@ Only then is the kept version scored once on TEST people.
 DETECTOR: v1 vs v2. v2 also learned from windows whose movement never pauses (glides,
   reaches, drifts), because the failure analysis showed v1 treats uninterrupted movement as
   a sign of tremor. Both get their cut-off the same way: at most 20% missed on the normal
-  validation windows (DECISION 4). Measured on normal AND on pause-free validation windows.
+  validation windows. Measured on normal AND on pause-free validation windows.
 
 CORRECTOR: v1 vs v2. v2 is trained with every sequence's tremor randomly made 0.5x-2x as
   large (a response to "different mouse DPI settings move the cursor different distances").
   Measured on validation sequences at tremor size x0.5, x1 and x2. (Not kept.)
 
-CORRECTOR v3 (second corrector attempt, after the leader found the demo gain small): trained to
+CORRECTOR v3 (second corrector attempt, after the demo gain looked small): trained to
   minimise the plain distance instead of the squared distance. Compared with v1 per tremor size,
   with the detector v2 gate as in the app. (Kept.)
 

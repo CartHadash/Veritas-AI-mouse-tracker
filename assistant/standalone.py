@@ -2,7 +2,7 @@
 
     python -m assistant.standalone        then open http://127.0.0.1:8001
 
-Lets us build and test the assistant without the builder's server or models.
+Lets us build and test the assistant without the main server or models.
 """
 
 import time

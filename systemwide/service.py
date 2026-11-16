@@ -1,6 +1,6 @@
 """
 service.py - "Steady cursor everywhere" as a switch: runs the system-wide correction (B3) in the
-background of our server until it is switched off. (Team leader's task, Sun 15 Nov.)
+background of our server until it is switched off.
 
 The terminal test mode (systemwide/run.py) stops by itself after a set time. This mode has no
 time limit, so its safety rules matter even more:

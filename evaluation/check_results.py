@@ -1,5 +1,5 @@
 """
-check_results.py - step 14: make sure RESULTS.md contains no invented number.
+check_results.py - make sure RESULTS.md contains no invented number.
 
 Every number in evaluation/results/RESULTS.md must appear in a file a script generated
 (evaluation/results/*.md and evaluation/results/failures/*.md, except RESULTS.md itself).
@@ -28,7 +28,7 @@ DEFINITIONS = {
     "12": "3-12 Hz tremor band",
     "10": "10 ms step; '10 px' size boundary; groups 'under 10 people'",
     "19": "the detector reads 19 measurements (features.py FEATURE_NAMES)",
-    "20%": "DECISION 4: at most 20% missed on validation",
+    "20%": "cut-off rule: at most 20% missed on validation",
     "0.5": "smoothness penalty 0.5; 0.5x tremor size",
     "2": "2x tremor size / hand travel; penalty 2",
     "8": "penalty 8",

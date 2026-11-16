@@ -2,7 +2,7 @@
 systemwide_clicks.py - reach for a button, stop, click: how often does the click land when the
 REAL cursor is corrected (B3, systemwide/)? A simulation (no real people).
 
-Why (team leader's check on the demo Mac, Sun 15 Nov): with our model the real cursor was
+Why (a hand check on a Mac): with our model the real cursor was
 visibly steadier, but clicking real buttons was still hard. Two suspects this script measures:
 the cursor trails the hand (lag) and is still catching up when the click comes, and shaking
 while the button is held carries the click off the button (no click freeze in B3 until now).
@@ -18,7 +18,7 @@ Compared: no filter, One Euro, and our model at each smoothing level (Steadiest 
 Faster), each without and with click freeze, for a 22 px button (the demo page's target) and a
 10 px one (a small checkbox).
 
-"Click where you aimed" (team leader's idea, Sun 15 Nov, after re-checking by hand): the click
+"Click where you aimed": the click
 is placed at the average of where the cursor was shown over the last 0.1 / 0.2 / 0.3 s, while
 tremor is being corrected. Its rule, also fixed before running, is printed with its table.
 

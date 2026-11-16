@@ -1,6 +1,5 @@
-// tutorial.js - a first-use walkthrough of the Practice tab (Oleksandr's idea, Sun 15 Nov:
-// "text bubbles with a cursor over them, showing what to do"). It replaces the small 4-step
-// card of Sat 14 Nov. Plain JavaScript, its own file, nothing sent anywhere.
+// tutorial.js - a first-use walkthrough of the Practice tab: text
+// bubbles with a cursor over them, showing what to do. Plain JavaScript, its own file, nothing sent anywhere.
 //
 // How it works. Each step names a real part of the page. The page is dimmed except for that
 // part (the "spotlight"), a speech bubble with a little arrow points at it, and a demo cursor

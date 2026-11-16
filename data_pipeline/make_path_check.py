@@ -1,11 +1,11 @@
 """
-make_path_check.py - the paths for the team's step 4 check (web/path_check.html).
+make_path_check.py - the paths for the blind plausibility check (web/path_check.html).
 
-Step 4 is "done" when a human finds the generated movement plausible. This makes that check
+The generated movement is only useful if a human finds it plausible. This makes that check
 blind: 12 paths of 10.24 s, 6 from the generator the models were trained on ("current") and 6
 from the realistic version (realistic=True, seen through device_view), shuffled. The page
 replays each one at real speed; the tester rates it without knowing which version it is.
-Only the clean "intended" movement is shown (no tremor): step 4 is about that movement.
+Only the clean "intended" movement is shown (no tremor): the check is about that movement.
 
 Needs no datasets. Run from the repository folder:
     python data_pipeline/make_path_check.py

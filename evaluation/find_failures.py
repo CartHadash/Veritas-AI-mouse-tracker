@@ -1,5 +1,5 @@
 """
-find_failures.py - step 9: where do our models go wrong? (test people only)
+find_failures.py - where do our models go wrong? (test people only)
 
 Saves to evaluation/results/failures/:
   - detector_missed_1..3.png    : the 3 most confident MISSED cases (tremor called "no tremor")

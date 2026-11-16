@@ -1,8 +1,7 @@
 """
 time_live.py - how long does one live update take on this computer's processor?
 
-Rule 11 of CLAUDE.md: a model that runs live must take well under 8 ms per sample.
-The team leader runs this on the demo Mac too.
+A model that runs live must take well under 8 ms per sample.
 
 Run from the repository folder:
     python models/corrector/time_live.py

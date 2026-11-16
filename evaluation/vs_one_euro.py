@@ -1,6 +1,6 @@
 """
 vs_one_euro.py - an extensive comparison of our model with One Euro, the way a person SEES it.
-(Team request, Sat 14 Nov 23:14: "our model doesn't work at all compared with One Euro".)
+(By hand, our model looked worse than One Euro.)
 
 Earlier evaluations mostly scored distance from the intended path. That favours our model,
 because One Euro lags behind a moving hand. What the eye notices is shaking and jitter, so
@@ -13,8 +13,8 @@ with replayed tremor, at browser-like timing (about 60 uneven samples per second
   lag       how far behind the hand the cursor runs while moving (ms; reaches and glide)
 
 Filters: no filter, One Euro (original settings), our model's network alone, and our model with
-One Euro smoothing on top, applied only as much as our detector's gate is open (option A; the
-app's "Our model" since Sat 14 Nov 23:30). Both versions of our model run through the app's own
+One Euro smoothing on top, applied only as much as our detector's gate is open (the
+app's "Our model"). Both versions of our model run through the app's own
 code (server.SMOOTH_OUTPUT switches the smoothing).
 
 Whose tremor (--people): val (default; development) or test (report once).

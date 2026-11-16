@@ -1,4 +1,4 @@
-"""Session history (DECISION L1 changed from A to B by the team leader, Sat 14 Nov).
+"""Session history.
 
 Saves a copy of each session's SUMMARY NUMBERS to local_logs/sessions/, one small JSON
 file per session, named after the session's start time. Never raw pointer movement.

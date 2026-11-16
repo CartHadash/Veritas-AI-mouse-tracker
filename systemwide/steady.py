@@ -2,7 +2,7 @@
 steady.py - B3: the logic of correcting the REAL cursor everywhere, kept apart from macOS so it
 can be tested on any computer (systemwide/test_steady.py). The macOS part is systemwide/run.py.
 
-Written fresh during the hackathon (Sat 14 Nov); nothing from the pre-hackathon experiment.
+Written from scratch during the hackathon.
 
 The idea. macOS moves the cursor by the pointer device's movement, starting from where the
 cursor is now. We keep our own running total of that movement: the "hand" position. The hand
@@ -66,7 +66,7 @@ class SteadyCursor:
     freeze: click freeze, as on the page: from a button press the shown cursor stays where it
         was pressed until the release, at most 0.3 s, so shaking while the button is down
         cannot carry the click off a button. The hand keeps being followed underneath.
-    aim_seconds: "click where you aimed" (team leader's idea, Sun 15 Nov). At the press the
+    aim_seconds: "click where you aimed". At the press the
         cursor still carries some leftover shake, so the click is placed at the AVERAGE of
         where the cursor was shown over the last aim_seconds (tremor is 4-6 shakes a second,
         so about one shake averages out). Only while our model is correcting tremor (gate

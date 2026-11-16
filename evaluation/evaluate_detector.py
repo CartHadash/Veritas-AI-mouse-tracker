@@ -1,16 +1,16 @@
 """
-evaluate_detector.py - step 7: score detector v1 ONCE on the locked-away TEST people.
+evaluate_detector.py - score detector v1 ONCE on the locked-away TEST people.
 
-The cut-off (DECISION 4) is chosen on VALIDATION: the strictest cut-off whose missed-case
+The cut-off is chosen on VALIDATION: the strictest cut-off whose missed-case
 rate on validation is at most --missed-target. The same rule picks the frequency-rule
 baseline's cut-off, so the comparison is fair. Then everything is scored on test, overall
 and per group (age band, sex, diagnosis, tremor size, task type, moving vs still), and the
-headline is repeated at half and double the pixel factor (DECISION 1 check).
+headline is repeated at half and double the pixel factor (pixel-factor check).
 
 Run from the repository folder (after models/detector/train.py, also with --tremor-scale
 0.5 and 2):
     python evaluation/evaluate_detector.py --missed-target 0.20
-    python evaluation/evaluate_detector.py --missed-target 0.20 --version v2   # step 12
+    python evaluation/evaluate_detector.py --missed-target 0.20 --version v2
 Writes evaluation/results/detector_<version>.md and models/detector/detector_<version>_threshold.json.
 (The cut-off is always chosen on the NORMAL validation windows, for every version.)
 """
@@ -84,7 +84,7 @@ def evaluate_scale(scale, target, version):
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("--missed-target", type=float, required=True,
-                        help="DECISION 4: highest missed-case rate allowed on validation, e.g. 0.20")
+                        help="highest missed-case rate allowed on validation, e.g. 0.20")
     parser.add_argument("--version", default="v1")
     args = parser.parse_args()
     target, version = args.missed_target, args.version

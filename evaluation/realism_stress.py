@@ -1,6 +1,6 @@
 """
-realism_stress.py - step 4 stress test: do the app's models still work on more realistic
-movement? (team leader's list, Sat 14 Nov)
+realism_stress.py - stress test: do the app's models still work on more realistic
+movement?
 
 The models were trained on the original synthetic movement. This rebuilds the VALIDATION
 people's examples with the realistic version 2 (data_pipeline/synthetic_paths.py,

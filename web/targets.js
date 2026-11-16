@@ -1,4 +1,4 @@
-// targets.js - the things to click in the practice area (team leader, Sun 15 Nov).
+// targets.js - the things to click in the practice area.
 //
 // Before, every target was the same orange circle. Real screens are full of things of
 // different shapes and sizes, and the small ones (a checkbox, a close button) are exactly

@@ -1,9 +1,9 @@
 """
 tune_lag.py - make the app's cursor less laggy without letting it shake more.
-(Oleksandr, Sun 15 Nov: "it feels a bit laggy in places".)
+(By hand: "it feels a bit laggy in places".)
 
 The page and server are fast (median round trip about 1 ms in the browser). The lag comes from
-the One Euro smoothing the app adds to our network's cursor (option A): with One Euro's original
+the One Euro smoothing the app adds to our network's cursor: with One Euro's original
 settings (min_cutoff 1.0, beta 0.004) it trails a moving hand by tens of milliseconds. beta
 decides how quickly smoothing backs off when the pointer moves fast; min_cutoff how smooth a slow
 pointer is. This tries a grid of both, through the demo page's own code (the app's network,

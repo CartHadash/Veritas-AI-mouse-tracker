@@ -1,6 +1,6 @@
 """Talks to the Claude API: takes the session summary and the chat, streams back text.
 
-Only the SUMMARY numbers (Contract 2) are sent to the API. Raw pointer samples never are.
+Only the SUMMARY numbers (GET /api/summary) are sent to the API. Raw pointer samples never are.
 Without an API key, the assistant is switched off and fixed_explanation() builds a plain,
 clearly non-AI summary from the numbers with ordinary code.
 """
@@ -15,11 +15,11 @@ from dotenv import load_dotenv
 
 from assistant.prompt import DISCLAIMER, SYSTEM_PROMPT, past_block, summary_block
 
-MODEL = "claude-sonnet-5-5"      # DECISION L2 (team leader): Sonnet 5.5
+MODEL = "claude-sonnet-5-5"      # Sonnet 5.5
 EFFORT = "low"                   # recommended start for chat on this model: quick, cheap
 MAX_TOKENS = 8000                # room for its thinking plus a short answer
 MAX_MESSAGES = 20                # only the latest messages are sent
-MAX_WORDS = 200                  # per message (Oleksandr, Sun 15 Nov): enough for a real question,
+MAX_WORDS = 200                  # per message: enough for a real question,
                                  # no room to paste a long document or program for it to work on
 MAX_CHARS = 2000                 # and never more characters than this, whatever the words are
 

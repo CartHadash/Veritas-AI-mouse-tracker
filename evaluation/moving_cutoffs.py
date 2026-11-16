@@ -1,6 +1,5 @@
 """
 moving_cutoffs.py - a movement-aware detector, cheap version: two cut-offs instead of one.
-(Timofey's idea 1; team leader's task, Sun 15 Nov, 1.5 h time box.)
 
 Why: detector v2 raises more false alarms while the hand moves on purpose than while it is
 still (evaluation/results/detector_v2.md), and in the app a false alarm switches smoothing on
@@ -8,7 +7,7 @@ in the middle of a reach, which adds lag. No retraining here: the same model and
 scores, but one cut-off for windows that look like a moving hand and another for windows that
 look still. "Looks moving" is models.detector.features.looks_moving, a guess from the shaky
 cursor alone, because the app never sees the intended path. Each cut-off is chosen on
-VALIDATION people by the project's usual rule (DECISION 4): the fewest false alarms with at
+VALIDATION people by the project's usual rule: the fewest false alarms with at
 most 20% missed cases, inside its own group.
 
 THE RULE (fixed before looking at any result): keep the two cut-offs only if, on VALIDATION,

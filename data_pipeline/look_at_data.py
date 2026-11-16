@@ -1,5 +1,5 @@
 """
-look_at_data.py - step 2: look at the data with our own eyes before training anything.
+look_at_data.py - look at the data with our own eyes before training anything.
 
 It does two things:
   1. Counts the PADS subjects by diagnosis, age band and sex (to check the download is

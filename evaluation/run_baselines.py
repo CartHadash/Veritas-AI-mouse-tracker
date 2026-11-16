@@ -1,5 +1,5 @@
 """
-run_baselines.py - step 6: score the simplest possible approaches, so judges can see how
+run_baselines.py - score the simplest possible approaches, so judges can see how
 much our AI models add on top of them.
 
 DETECTOR baselines (2.56 s windows):
@@ -7,7 +7,7 @@ DETECTOR baselines (2.56 s windows):
   2. Frequency rule: "tremor" when enough of the window's movement (its sample-to-sample
      steps, i.e. velocity) lies between 3 and 12 Hz. The cut-off is chosen on VALIDATION
      only, at two operating points: best balance of missed cases and false alarms, and
-     fewest false alarms with missed cases at most 10% (the target from DECISION 4).
+     fewest false alarms with missed cases at most 10% (the cut-off rule used for our detector).
 
 CORRECTOR baselines (5.12 s sequences):
   1. No filter.
